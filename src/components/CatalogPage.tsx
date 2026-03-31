@@ -14,76 +14,76 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { useLanguage } from '../utils/language-context';
 
 // Импорт изображений кашпо 5л с ручкой
-import kashpo5lBeigeWithHandle from 'figma:asset/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.png';
-import kashpo5lGrayWithHandle from 'figma:asset/734c7fe27be9c768b54eb373aeac20283920d105.png';
-import kashpo5lWhiteBirchWithHandle from 'figma:asset/5701c82eee99edfcfac44cfab9b4fa6a6b5cdb96.png';
+import kashpo5lBeigeWithHandle from '@/assets/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.png';
+import kashpo5lGrayWithHandle from '@/assets/734c7fe27be9c768b54eb373aeac20283920d105.png';
+import kashpo5lWhiteBirchWithHandle from '@/assets/5701c82eee99edfcfac44cfab9b4fa6a6b5cdb96.png';
 // Импорт изображений для остальных кашпо
-import kashpoBeige from 'figma:asset/0b7c7dcc56f444de68a9e6496bc108a610b7c82f.png';
-import kashpo5lGray from 'figma:asset/e8de77f3d28f94c652df287a8da1004169f8162e.png';
-import kashpo5lDarkGray from 'figma:asset/114bfc7a118b6cf373f80f044aa151482b15fa44.png';
-import kashpoBrownPuhlyash from 'figma:asset/5f133ac607b25721754cfe9f973bbe34b26e36ed.png';
+import kashpoBeige from '@/assets/0b7c7dcc56f444de68a9e6496bc108a610b7c82f.png';
+import kashpo5lGray from '@/assets/e8de77f3d28f94c652df287a8da1004169f8162e.png';
+import kashpo5lDarkGray from '@/assets/114bfc7a118b6cf373f80f044aa151482b15fa44.png';
+import kashpoBrownPuhlyash from '@/assets/5f133ac607b25721754cfe9f973bbe34b26e36ed.png';
 // Импорт изображения серого кашпо для Классика 10л и 16л
-import kashpoGrayClassic from 'figma:asset/0e131a3e8829dc4da84f9e7575911fe10b4833d2.png';
+import kashpoGrayClassic from '@/assets/0e131a3e8829dc4da84f9e7575911fe10b4833d2.png';
 // Импорт изображения коричневого кашпо для Классика и Пухляш
-import kashpoBrownClassicPuhlyash from 'figma:asset/dec339423c65660420decd542cca4f740c2299fb.png';
+import kashpoBrownClassicPuhlyash from '@/assets/dec339423c65660420decd542cca4f740c2299fb.png';
 // Импорт бежевого кашпо для Пухляш с логотипом BTT
-import kashpoBeigePuhlyash from 'figma:asset/6d9496c1540d1c8b9f1aaa416fd88b8490415176.png';
+import kashpoBeigePuhlyash from '@/assets/6d9496c1540d1c8b9f1aaa416fd88b8490415176.png';
 // Импорт Белая берёзка для Классика с логотипом BTT (ОБНОВЛЕНО)
-import kashpoWhiteBirchClassic from 'figma:asset/3b4b7222cc87dd7311b78e54e217ce632dcf0d39.png';
+import kashpoWhiteBirchClassic from '@/assets/3b4b7222cc87dd7311b78e54e217ce632dcf0d39.png';
 // Импорт Белая берёзка для Пухляш
-import kashpoWhiteBirchPuhlyash from 'figma:asset/17b6a4aade43c236d9217a95e06e703ce84bbf1b.png';
+import kashpoWhiteBirchPuhlyash from '@/assets/17b6a4aade43c236d9217a95e06e703ce84bbf1b.png';
 // Импорт Жёлтого кашпо для Пухляш (НОВОЕ!)
-import kashpoYellowPuhlyash from 'figma:asset/9f329516c8d5112fbb9787ea70fdd093473d5a0f.png';
+import kashpoYellowPuhlyash from '@/assets/9f329516c8d5112fbb9787ea70fdd093473d5a0f.png';
 // Импорт Жёлтого кашпо для Классика (НОВОЕ!)
-import kashpoYellowClassic from 'figma:asset/21ce3b8cddac4fef8eb09323347c87f108aa2db9.png';
+import kashpoYellowClassic from '@/assets/21ce3b8cddac4fef8eb09323347c87f108aa2db9.png';
 // Импорт Кремового кашпо для Классика (НОВОЕ!)
-import kashpoButteryClassic from 'figma:asset/6a9947a54669e33d505d5a2832d5e0f98e8f9366.png';
+import kashpoButteryClassic from '@/assets/6a9947a54669e33d505d5a2832d5e0f98e8f9366.png';
 // Импорт Кремового кашпо для Пухляш (НОВОЕ БЕЛОЕ ОКРУГЛОЕ!)
-import kashpoButteryPuhlyash from 'figma:asset/8c0b031033de8bbdf5913fe421c9826a043b0c48.png';
+import kashpoButteryPuhlyash from '@/assets/8c0b031033de8bbdf5913fe421c9826a043b0c48.png';
 // Импорт Коричнево-Белого кашпо для Пухляш (НОВОЕ!)
-import kashpoBrownWhitePuhlyash from 'figma:asset/92dff26663eec7d00cb2053e36c95d0a03961737.png';
+import kashpoBrownWhitePuhlyash from '@/assets/92dff26663eec7d00cb2053e36c95d0a03961737.png';
 // Импорт Трёхцветного кашпо для Пухляш (НОВОЕ!)
-import kashpoTricolorPuhlyash from 'figma:asset/ee3cad7c86c64ba4f0451d2507d30fd34b6ad147.png'; // ✅ ОБНОВЛЕНО: трёхцветное кашпо Пухляш с чёткими полосами
+import kashpoTricolorPuhlyash from '@/assets/ee3cad7c86c64ba4f0451d2507d30fd34b6ad147.png'; // ✅ ОБНОВЛЕНО: трёхцветное кашпо Пухляш с чёткими полосами
 // Импорт коричневого ротанга плоского (Артикул 0306Пл) - ФИНАЛЬНОЕ ПРАВИЛЬНОЕ ИЗОБРАЖЕНИЕ ✅✅
-import rattanFlatBrown from 'figma:asset/177f1c7cd3459b0703ab2446345b951405612976.png';
+import rattanFlatBrown from '@/assets/177f1c7cd3459b0703ab2446345b951405612976.png';
 // Импорт бледно-жёлтого ротанга плоского (Артикул 1110Пл) - ПРАВИЛЬНОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanFlatPaleYellow from 'figma:asset/d17b9362fc21ad53ca996a3b990bb483b7ab28d5.png';
+import rattanFlatPaleYellow from '@/assets/d17b9362fc21ad53ca996a3b990bb483b7ab28d5.png';
 // Импорт жемчужного ротанга плоского (Артикул 2305ПЛ) - НОВОЕ ИЗОБРАЖЕНИЕ ✅✅
-import rattanFlatPearl from 'figma:asset/079b54909d5ddebe540fb63575239bb603b00f6b.png';
+import rattanFlatPearl from '@/assets/079b54909d5ddebe540fb63575239bb603b00f6b.png';
 // Импорт песочного ротанга плоского (Артикул 2310ПЛ) - ПРАВИЛЬНОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanFlatSand from 'figma:asset/c68a06636b80ab92df7afcd6fd298f4a16d5a241.png';
+import rattanFlatSand from '@/assets/c68a06636b80ab92df7afcd6fd298f4a16d5a241.png';
 // Импорт светло серого ротанга плоского (Артикул 2809ПЛ) - ПРАВИЛЬНОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanFlatLightGrey from 'figma:asset/c1b3a16137e1769f526c741e5ca9497aa721ae6d.png';
+import rattanFlatLightGrey from '@/assets/c1b3a16137e1769f526c741e5ca9497aa721ae6d.png';
 // Импорт фиолетового ротанга плоского (Артикул 3034Пл) - ПРАВИЛЬНОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanFlatPurple from 'figma:asset/6f10cb4d8780e4ae7b62a1ff81a7d627cfb65c8e.png';
+import rattanFlatPurple from '@/assets/6f10cb4d8780e4ae7b62a1ff81a7d627cfb65c8e.png';
 // Импорт серого ротанга плоского (Артикул 3045ПЛ) - ПРАВИЛЬНОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanFlatGrey from 'figma:asset/f17fb0aea8be133d85d1ee2034c446e7b7cb7825.png';
+import rattanFlatGrey from '@/assets/f17fb0aea8be133d85d1ee2034c446e7b7cb7825.png';
 // Импорт жемчужного ротанга для Полусфера и Полумесяц (Артикулы 2305 и 2305П) - НОВОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanPearlSphereAndCrescent from 'figma:asset/efdbb313e67c9a0f8732fe579446757fb7a204c3.png';
+import rattanPearlSphereAndCrescent from '@/assets/efdbb313e67c9a0f8732fe579446757fb7a204c3.png';
 // Импорт песочного ротанга для Полусфера и Полумесяц (Артикулы 2310 и 2310П) - НОВОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanSandSphereAndCrescent from 'figma:asset/4935765782b02872c39cba831afac4bbbce963a0.png';
+import rattanSandSphereAndCrescent from '@/assets/4935765782b02872c39cba831afac4bbbce963a0.png';
 // Импорт светло серого ротанга для Полусфера и Полумесяц (Артикулы 2708 и 2708П) - НОВОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanLightGreySphereAndCrescent from 'figma:asset/1d08d05a3da1322da08256c31cbbf11eeccea4a9.png';
+import rattanLightGreySphereAndCrescent from '@/assets/1d08d05a3da1322da08256c31cbbf11eeccea4a9.png';
 // Импорт золотого ротанга для Полусфера и Полумесяц (Артикулы 5830 и 5830П) - НОВОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanGoldSphereAndCrescent from 'figma:asset/aa6eddd7d37a9c9221523b2cbc73643ebacbcd2c.png';
+import rattanGoldSphereAndCrescent from '@/assets/aa6eddd7d37a9c9221523b2cbc73643ebacbcd2c.png';
 // Импорт серого с начёсом ротанга для Полусфера и Полумесяц (Артикулы 0510 и 0510П) - ОБНОВЛЕНО 13.10.2025 ✅
-import rattanBrushedGreySphereAndCrescent from 'figma:asset/ba302a345a0cb69f4964b6987404c6b488e4b288.png';
+import rattanBrushedGreySphereAndCrescent from '@/assets/ba302a345a0cb69f4964b6987404c6b488e4b288.png';
 // Импорт красного дерева ротанга ТОЛЬКО для Полусфера (Артикул 0609) - ЭКСКЛЮЗИВНОЕ ИЗОБРАЖЕНИЕ ✅
-import rattanMahoganySphere from 'figma:asset/fbf8283c67ac97c1347b3472c1517ee1ae106119.png';
+import rattanMahoganySphere from '@/assets/fbf8283c67ac97c1347b3472c1517ee1ae106119.png';
 // Импорт красного дерева ротанга ТОЛЬКО для Полумесяц (Артикул 0609П) - ОБНОВЛЕНО 13.10.2025 ✅
-import rattanMahoganyCrescent from 'figma:asset/37c359c15c64d258eb771fcba8f9ca0194c2b4f8.png';
+import rattanMahoganyCrescent from '@/assets/37c359c15c64d258eb771fcba8f9ca0194c2b4f8.png';
 // Импорт белой берёзки ротанга ТОЛЬКО для Полусфера (Артикул 0310) - ОБНОВЛЕНО 13.10.2025 ✅
-import rattanWhiteBirchSphere from 'figma:asset/eb870a79ea96a752b4661fca27c38a9e37139df9.png';
+import rattanWhiteBirchSphere from '@/assets/eb870a79ea96a752b4661fca27c38a9e37139df9.png';
 // Импорт белого ротанга ТОЛЬКО для Полумесяц (Артикул 1706П) - ДОБАВЛЕНО 13.10.2025 ✅
-import rattanWhiteCrescent from 'figma:asset/db2a62875e77da60e8554a91076168a4e7227223.png';
+import rattanWhiteCrescent from '@/assets/db2a62875e77da60e8554a91076168a4e7227223.png';
 // Импорт бронзового ротанга ТОЛЬКО для Полусфера (Артикул 1710) - ДОБАВЛЕНО 13.10.2025 ✅
-import rattanBronzeSphere from 'figma:asset/0b3c1a7b210ae25d8352259acab51838a058c292.png';
+import rattanBronzeSphere from '@/assets/0b3c1a7b210ae25d8352259acab51838a058c292.png';
 // Импорт фиолетового ротанга для ОБОИХ профилей (Артикулы 3034 и 3034П) - ДОБАВЛЕНО 13.10.2025 ✅
-import rattanPurpleSphereAndCrescent from 'figma:asset/77acd21929ba49dbfb8d60d9c2295c649be7e90c.png';
+import rattanPurpleSphereAndCrescent from '@/assets/77acd21929ba49dbfb8d60d9c2295c649be7e90c.png';
 // Импорт серого ротанга для ОБОИХ профилей (Артикулы 3045 и 3045П) - ДОБАВЛЕНО 13.10.2025 ✅
-import rattanGreySphereAndCrescent from 'figma:asset/ef423c69ddac97a18befa6f16beabc634c309e09.png';
+import rattanGreySphereAndCrescent from '@/assets/ef423c69ddac97a18befa6f16beabc634c309e09.png';
 // Импорт черного с золотыми наплывами ротанга ТОЛЬКО для Трубка (Артикул 2104R) - ДОБАВЛЕНО 13.10.2025 ✅
-import rattanBlackGoldTube from 'figma:asset/311b0c857221fd36e611935ba85e0a350e4c11de.png';
+import rattanBlackGoldTube from '@/assets/311b0c857221fd36e611935ba85e0a350e4c11de.png';
 
 interface ColorVariant {
   id: string;

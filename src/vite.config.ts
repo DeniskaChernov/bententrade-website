@@ -13,8 +13,6 @@ export default defineConfig({
       { find: '@', replacement: path.resolve(__dirname, './') },
       // Normalize figma-generated imports like "pkg@x.y.z" to "pkg".
       { find: /^([^@]+)@\d+\.\d+\.\d+$/, replacement: '$1' },
-      // Replace unavailable Figma asset protocol with a real public asset.
-      { find: /^figma:asset\/.*$/, replacement: '/og-image.png' },
     ],
   },
   build: {

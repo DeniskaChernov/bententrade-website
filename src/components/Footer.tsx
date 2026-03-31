@@ -17,7 +17,7 @@ import {
 } from '../utils/lucide-stub';
 import { useLanguage } from '../utils/language-context';
 import { LanguageToggle } from './LanguageToggle';
-import logoImage from 'figma:asset/fae59665fd1772cdd61f6a4d1c95ed996e1502f5.png';
+import logoImage from '@/assets/fae59665fd1772cdd61f6a4d1c95ed996e1502f5.png';
 
 export type FooterLegalDocumentType = 'privacy' | 'cookies' | 'terms' | 'company';
 

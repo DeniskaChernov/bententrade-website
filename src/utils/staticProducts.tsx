@@ -2,14 +2,14 @@
 import type { Product, ColorVariant } from './useProducts';
 
 // Импорт изображений кашпо 5л с ручкой
-import kashpo5lBeigeWithHandle from 'figma:asset/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.png';
-import kashpo5lGrayWithHandle from 'figma:asset/734c7fe27be9c768b54eb373aeac20283920d105.png';
-import kashpo5lWhiteBirchWithHandle from 'figma:asset/5701c82eee99edfcfac44cfab9b4fa6a6b5cdb96.png';
+import kashpo5lBeigeWithHandle from '@/assets/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.png';
+import kashpo5lGrayWithHandle from '@/assets/734c7fe27be9c768b54eb373aeac20283920d105.png';
+import kashpo5lWhiteBirchWithHandle from '@/assets/5701c82eee99edfcfac44cfab9b4fa6a6b5cdb96.png';
 
 // Импорт изображений для остальных кашпо
-import kashpoBeige from 'figma:asset/0b7c7dcc56f444de68a9e6496bc108a610b7c82f.png';
-import kashpo5lGray from 'figma:asset/e8de77f3d28f94c652df287a8da1004169f8162e.png';
-import kashpo5lDarkGray from 'figma:asset/114bfc7a118b6cf373f80f044aa151482b15fa44.png';
+import kashpoBeige from '@/assets/0b7c7dcc56f444de68a9e6496bc108a610b7c82f.png';
+import kashpo5lGray from '@/assets/e8de77f3d28f94c652df287a8da1004169f8162e.png';
+import kashpo5lDarkGray from '@/assets/114bfc7a118b6cf373f80f044aa151482b15fa44.png';
 
 // Цветовые варианты для кашпо 5л с ручкой
 export const colorVariants5lWithHandle: ColorVariant[] = [

@@ -5,17 +5,17 @@ import { Badge } from './ui/badge';
 import { Sparkles, X } from '../utils/lucide-stub';
 import { useLanguage } from '../utils/language-context';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import ropeSpool from 'figma:asset/a9aee619de7250b8cf34489811e56a2ad526e961.png';
-import ropeSpool1 from 'figma:asset/d36590916e1b7d0b5ed5998f8b2a08af26a05fc6.png';
-import ropeSpool2 from 'figma:asset/72e9efb34a225204cdea61228ddf8cd0dd0441e6.png';
-import ropeSpool3 from 'figma:asset/45dd17f92f8ea4430e7ad7b039527a373d6c2d59.png';
-import ropeSpool4 from 'figma:asset/ffb54e36b4a66d77d8970c41f5751cb83b64785a.png';
-import ropeSpool5 from 'figma:asset/3fd41beb3b14ee5268f5c32e1441ffdca8e72c6c.png';
-import furnitureCenter from 'figma:asset/df191f6691e3df36b6c2ffec6edd1034665b1081.png';
-import furnitureDresser from 'figma:asset/af5f18c1da580ca3ba8f72a5e923752b97713811.png';
-import furnitureShelf from 'figma:asset/7b97b4d791cb0828b7e0ffd655bfc0d9afdf172d.png';
-import furnitureChair from 'figma:asset/62b4b964c7e9cab7d8c210451ac9a6ce8d5c5687.png';
-import furnitureChair2 from 'figma:asset/22d552fcdd6f1661126ede2d4374f50d3127ab9e.png';
+import ropeSpool from '@/assets/a9aee619de7250b8cf34489811e56a2ad526e961.png';
+import ropeSpool1 from '@/assets/d36590916e1b7d0b5ed5998f8b2a08af26a05fc6.png';
+import ropeSpool2 from '@/assets/72e9efb34a225204cdea61228ddf8cd0dd0441e6.png';
+import ropeSpool3 from '@/assets/45dd17f92f8ea4430e7ad7b039527a373d6c2d59.png';
+import ropeSpool4 from '@/assets/ffb54e36b4a66d77d8970c41f5751cb83b64785a.png';
+import ropeSpool5 from '@/assets/3fd41beb3b14ee5268f5c32e1441ffdca8e72c6c.png';
+import furnitureCenter from '@/assets/df191f6691e3df36b6c2ffec6edd1034665b1081.png';
+import furnitureDresser from '@/assets/af5f18c1da580ca3ba8f72a5e923752b97713811.png';
+import furnitureShelf from '@/assets/7b97b4d791cb0828b7e0ffd655bfc0d9afdf172d.png';
+import furnitureChair from '@/assets/62b4b964c7e9cab7d8c210451ac9a6ce8d5c5687.png';
+import furnitureChair2 from '@/assets/22d552fcdd6f1661126ede2d4374f50d3127ab9e.png';
 
 // Данные о цвета мотков
 const ropeColors = {

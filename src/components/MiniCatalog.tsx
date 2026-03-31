@@ -9,30 +9,30 @@ import { useMemo, useState, useEffect } from 'react';
 import { Badge } from './ui/badge';
 
 // Импорт изображений кашпо 5л с ручкой
-import kashpo5lBeigeWithHandle from 'figma:asset/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.png';
-import kashpo5lGrayWithHandle from 'figma:asset/734c7fe27be9c768b54eb373aeac20283920d105.png';
-import kashpo5lWhiteBirchWithHandle from 'figma:asset/5701c82eee99edfcfac44cfab9b4fa6a6b5cdb96.png';
+import kashpo5lBeigeWithHandle from '@/assets/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.png';
+import kashpo5lGrayWithHandle from '@/assets/734c7fe27be9c768b54eb373aeac20283920d105.png';
+import kashpo5lWhiteBirchWithHandle from '@/assets/5701c82eee99edfcfac44cfab9b4fa6a6b5cdb96.png';
 
 // Импорт изображений для Пухляш
-import kashpoBeigePuhlyash from 'figma:asset/6d9496c1540d1c8b9f1aaa416fd88b8490415176.png';
-import kashpoYellowPuhlyash from 'figma:asset/9f329516c8d5112fbb9787ea70fdd093473d5a0f.png';
-import kashpoButteryPuhlyash from 'figma:asset/8c0b031033de8bbdf5913fe421c9826a043b0c48.png';
-import kashpoWhiteBirchPuhlyash from 'figma:asset/17b6a4aade43c236d9217a95e06e703ce84bbf1b.png';
-import kashpoBrownWhitePuhlyash from 'figma:asset/92dff26663eec7d00cb2053e36c95d0a03961737.png';
-import kashpoTricolorPuhlyash from 'figma:asset/ee3cad7c86c64ba4f0451d2507d30fd34b6ad147.png';
-import kashpoBrownClassicPuhlyash from 'figma:asset/dec339423c65660420decd542cca4f740c2299fb.png'; // ✅ Коричневое кашпо для Пухляш
+import kashpoBeigePuhlyash from '@/assets/6d9496c1540d1c8b9f1aaa416fd88b8490415176.png';
+import kashpoYellowPuhlyash from '@/assets/9f329516c8d5112fbb9787ea70fdd093473d5a0f.png';
+import kashpoButteryPuhlyash from '@/assets/8c0b031033de8bbdf5913fe421c9826a043b0c48.png';
+import kashpoWhiteBirchPuhlyash from '@/assets/17b6a4aade43c236d9217a95e06e703ce84bbf1b.png';
+import kashpoBrownWhitePuhlyash from '@/assets/92dff26663eec7d00cb2053e36c95d0a03961737.png';
+import kashpoTricolorPuhlyash from '@/assets/ee3cad7c86c64ba4f0451d2507d30fd34b6ad147.png';
+import kashpoBrownClassicPuhlyash from '@/assets/dec339423c65660420decd542cca4f740c2299fb.png'; // ✅ Коричневое кашпо для Пухляш
 
 // Импорт изображений для Классика
-import kashpoButteryClassic from 'figma:asset/6a9947a54669e33d505d5a2832d5e0f98e8f9366.png';
-import kashpoYellowClassic from 'figma:asset/21ce3b8cddac4fef8eb09323347c87f108aa2db9.png';
-import kashpoGrayClassic from 'figma:asset/0e131a3e8829dc4da84f9e7575911fe10b4833d2.png';
-import kashpoWhiteBirchClassic from 'figma:asset/3b4b7222cc87dd7311b78e54e217ce632dcf0d39.png';
+import kashpoButteryClassic from '@/assets/6a9947a54669e33d505d5a2832d5e0f98e8f9366.png';
+import kashpoYellowClassic from '@/assets/21ce3b8cddac4fef8eb09323347c87f108aa2db9.png';
+import kashpoGrayClassic from '@/assets/0e131a3e8829dc4da84f9e7575911fe10b4833d2.png';
+import kashpoWhiteBirchClassic from '@/assets/3b4b7222cc87dd7311b78e54e217ce632dcf0d39.png';
 
 // Импорт изображений ротанговой нити
-import rattanWhiteBirchSphere from 'figma:asset/eb870a79ea96a752b4661fca27c38a9e37139df9.png';
-import rattanPearlSphereAndCrescent from 'figma:asset/efdbb313e67c9a0f8732fe579446757fb7a204c3.png';
-import rattanSandSphereAndCrescent from 'figma:asset/4935765782b02872c39cba831afac4bbbce963a0.png';
-import rattanGoldSphereAndCrescent from 'figma:asset/aa6eddd7d37a9c9221523b2cbc73643ebacbcd2c.png';
+import rattanWhiteBirchSphere from '@/assets/eb870a79ea96a752b4661fca27c38a9e37139df9.png';
+import rattanPearlSphereAndCrescent from '@/assets/efdbb313e67c9a0f8732fe579446757fb7a204c3.png';
+import rattanSandSphereAndCrescent from '@/assets/4935765782b02872c39cba831afac4bbbce963a0.png';
+import rattanGoldSphereAndCrescent from '@/assets/aa6eddd7d37a9c9221523b2cbc73643ebacbcd2c.png';
 
 interface ColorVariant {
   id: string;
