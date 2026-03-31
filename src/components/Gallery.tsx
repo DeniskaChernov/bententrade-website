@@ -7,12 +7,12 @@ import { ArrowRight, Filter } from '../utils/lucide-stub';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { useLanguage } from '../utils/language-context';
-import galleryInterior from '@/assets/34e1e699efb1018641d9930a394dc723bdc50adb.png'; // ✅ Новое изображение интерьера с кашпо
-import galleryBalcony from '@/assets/7905d3aa42621eee5548ee5f00682ef7af0c51c3.png'; // ✅ Три плетёных кашпо на балконе
-import galleryBalconyTable from '@/assets/71bfd806bb1277b91db0ddf2bfda802015f357b8.png'; // ✅ Лоджия-оранжерея с множеством растений в плетёных кашпо
-import galleryTerrace from '@/assets/c6279dc196e639ab9117b3bd52d9643cec978332.png'; // ✅ Садовая терраса с ротанговой мебелью на закате
-import galleryOffice from '@/assets/16309b32c3ec97655ada1f9929625a07524f4a43.png'; // ✅ Офис с плетёным кашпо
-import galleryKitchen from '@/assets/2a3211d68096375b397daebf7f56a693cb94e135.png'; // ✅ Кня с плетёным кашпо
+import galleryInterior from '@/assets/34e1e699efb1018641d9930a394dc723bdc50adb.webp'; // ✅ Новое изображение интерьера с кашпо
+import galleryBalcony from '@/assets/7905d3aa42621eee5548ee5f00682ef7af0c51c3.webp'; // ✅ Три плетёных кашпо на балконе
+import galleryBalconyTable from '@/assets/71bfd806bb1277b91db0ddf2bfda802015f357b8.webp'; // ✅ Лоджия-оранжерея с множеством растений в плетёных кашпо
+import galleryTerrace from '@/assets/c6279dc196e639ab9117b3bd52d9643cec978332.webp'; // ✅ Садовая терраса с ротанговой мебелью на закате
+import galleryOffice from '@/assets/16309b32c3ec97655ada1f9929625a07524f4a43.webp'; // ✅ Офис с плетёным кашпо
+import galleryKitchen from '@/assets/2a3211d68096375b397daebf7f56a693cb94e135.webp'; // ✅ Кня с плетёным кашпо
 
 interface GalleryProject {
   id: string;

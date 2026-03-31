@@ -14,7 +14,16 @@ export const ImageWithFallback = memo(function ImageWithFallback(props: React.Im
     setDidError(true)
   }
 
-  const { src, alt, style, className, loading = 'lazy', decoding = 'async', ...rest } = props
+  const {
+    src,
+    alt,
+    style,
+    className,
+    loading = 'lazy',
+    decoding = 'async',
+    fetchPriority = 'low',
+    ...rest
+  } = props
 
   // Если src пустая строка или undefined, показываем placeholder
   if (!src || src.trim() === '') {
@@ -47,6 +56,7 @@ export const ImageWithFallback = memo(function ImageWithFallback(props: React.Im
       style={style} 
       loading={loading}
       decoding={decoding}
+      fetchPriority={fetchPriority}
       {...rest} 
       onError={handleError} 
     />

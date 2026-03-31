@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { Menu, ShoppingCart, Globe, X, Sparkles } from '../utils/lucide-stub';
 import { useLanguage } from '../utils/language-context';
 import { LanguageToggle } from './LanguageToggle';
-import logoImage from '@/assets/fae59665fd1772cdd61f6a4d1c95ed996e1502f5.png';
+import logoImage from '@/assets/fae59665fd1772cdd61f6a4d1c95ed996e1502f5.webp';
 
 interface HeaderProps {
   cartItems: number;
@@ -157,6 +157,9 @@ export const Header = memo(function Header({
                 <img 
                   src={logoImage} 
                   alt="Bententrade Logo" 
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                   className="w-8 h-8 object-contain filter brightness-110"
                 />
               </motion.div>

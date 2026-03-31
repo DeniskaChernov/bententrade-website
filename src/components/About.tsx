@@ -6,7 +6,7 @@ import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { CheckCircle, Award, Users, Truck, Phone } from '../utils/lucide-stub';
 import { useLanguage } from '../utils/language-context';
-import aboutImage from '@/assets/4a325745d14bda219a7c6548cbb5b9e9b8c0bd41.png'; // ✅ Новое изображение для секции About
+import aboutImage from '@/assets/4a325745d14bda219a7c6548cbb5b9e9b8c0bd41.webp'; // ✅ Новое изображение для секции About
 
 export function About() {
   const { t, language } = useLanguage();

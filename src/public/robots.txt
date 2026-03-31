@@ -1,27 +1,7 @@
-# Bententrade.uz Robots.txt
-# Обновлено: 2025-01-15
-
-# Разрешить всем поисковым ботам индексировать весь сайт
+# Bententrade robots
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
-Disallow: *.json$
 
-# Специальные правила для Google
-User-agent: Googlebot
-Allow: /
-Disallow: /admin
-Crawl-delay: 0
-
-# Специальные правила для Яндекс
-User-agent: Yandex
-Allow: /
-Disallow: /admin
-Crawl-delay: 0
-
-# Карта сайта
 Sitemap: https://bententrade.uz/sitemap.xml
-
-# Host (для Яндекса)
-Host: https://bententrade.uz

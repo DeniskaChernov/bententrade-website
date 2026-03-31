@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
@@ -15,6 +15,7 @@ interface HeroProps {
 
 export function Hero({ onViewCatalog }: HeroProps = {}) {
   const { t, language } = useLanguage();
+  const prefersReducedMotion = useReducedMotion();
   const [showConsultationForm, setShowConsultationForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -106,13 +107,13 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
         {/* Анимированный параллакс фон с эффектами */}
         <motion.div 
           className="absolute inset-0"
-          style={{ y }}
+          style={{ y: prefersReducedMotion ? '0%' : y }}
         >
           {/* Большие плавающие градиентные сферы */}
           <motion.div
             className="absolute top-20 -left-20 w-96 h-96 rounded-full opacity-20 blur-3xl"
             style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 70%)' }}
-            animate={{
+            animate={prefersReducedMotion ? undefined : {
               x: [0, 100, 0],
               y: [0, 50, 0],
               scale: [1, 1.2, 1],
@@ -127,7 +128,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           <motion.div
             className="absolute bottom-10 right-0 w-80 h-80 rounded-full opacity-15 blur-3xl"
             style={{ background: 'radial-gradient(circle, #F5F3F0 0%, transparent 60%)' }}
-            animate={{
+            animate={prefersReducedMotion ? undefined : {
               x: [0, -80, 0],
               y: [0, -60, 0],
               scale: [1, 1.3, 1],
@@ -143,7 +144,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           <motion.div
             className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full opacity-10 blur-3xl"
             style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 50%)' }}
-            animate={{
+            animate={prefersReducedMotion ? undefined : {
               x: [0, -50, 0],
               y: [0, 40, 0],
               scale: [1, 1.4, 1],
@@ -160,7 +161,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
         {/* Основной контент */}
         <motion.div 
           className="relative z-10 container mx-auto px-4 text-center"
-          style={{ opacity }}
+          style={{ opacity: prefersReducedMotion ? 1 : opacity }}
         >
           <div className="max-w-5xl mx-auto">
             {/* Премиальный заголовок */}
@@ -330,7 +331,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           {/* Пульсирующие круги */}
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-primary"
-            animate={{
+            animate={prefersReducedMotion ? undefined : {
               scale: [1, 1.5, 1],
               opacity: [0.5, 0, 0.5],
             }}
@@ -342,7 +343,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           />
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-primary"
-            animate={{
+            animate={prefersReducedMotion ? undefined : {
               scale: [1, 1.8, 1],
               opacity: [0.3, 0, 0.3],
             }}
@@ -356,7 +357,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           
           <motion.div
             className="relative z-10"
-            animate={{ y: [0, 6, 0] }}
+            animate={prefersReducedMotion ? undefined : { y: [0, 6, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
             <ChevronDown className="w-5 h-5 text-primary group-hover:text-primary/80" />

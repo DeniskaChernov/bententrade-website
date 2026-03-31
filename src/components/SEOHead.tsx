@@ -1,5 +1,6 @@
 import { memo, useEffect } from 'react';
 import { useLanguage } from '../utils/language-context';
+import { getPageKeywords } from '../utils/seo-keywords';
 
 interface SEOHeadProps {
   page: 'home' | 'catalog' | 'legal';
@@ -63,126 +64,99 @@ export const SEOHead = memo(function SEOHead({
 
   const title = customTitle || pageData.title;
   const description = customDescription || pageData.description;
-  const keywords = customKeywords || pageData.keywords;
+  const generatedKeywords = getPageKeywords(page, language);
+  const keywords = customKeywords || generatedKeywords.join(', ');
   const image = customImage || 'https://bententrade.uz/og-image.png';
-  const canonicalUrl = page === 'catalog' 
-    ? 'https://bententrade.uz/catalog' 
-    : 'https://bententrade.uz/';
+  const canonicalUrl =
+    page === 'catalog'
+      ? 'https://bententrade.uz/catalog'
+      : page === 'legal'
+        ? 'https://bententrade.uz/legal'
+        : 'https://bententrade.uz/';
 
   useEffect(() => {
+    const upsertMeta = (
+      selector: string,
+      attrs: Record<string, string>,
+      content: string
+    ) => {
+      let meta = document.head.querySelector(selector) as HTMLMetaElement | null;
+      if (!meta) {
+        meta = document.createElement('meta');
+        Object.entries(attrs).forEach(([key, value]) => meta!.setAttribute(key, value));
+        document.head.appendChild(meta);
+      }
+      meta.content = content;
+    };
+
+    const upsertLink = (
+      selector: string,
+      attrs: Record<string, string>
+    ) => {
+      let link = document.head.querySelector(selector) as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement('link');
+        document.head.appendChild(link);
+      }
+      Object.entries(attrs).forEach(([key, value]) => {
+        (link as HTMLLinkElement).setAttribute(key, value);
+      });
+    };
+
     // Обновляем title
     document.title = title;
 
-    // ✅ ВАЖНО: Удаляем ВСЕ старые мета-теги robots (из index.html тоже!)
-    // Удаляем старые теги с data-seo="true" (созданные этим компонентом)
-    const oldMetaTags = document.querySelectorAll('meta[data-seo="true"]');
-    oldMetaTags.forEach(tag => tag.remove());
-    
-    // Удаляем также теги из index.html, чтобы не было дублирования
-    const robotsFromHTML = document.querySelectorAll('meta[name="robots"], meta[name="googlebot"], meta[name="bingbot"]');
-    robotsFromHTML.forEach(tag => {
-      // Удаляем только если НЕ создан этим компонентом
-      if (!tag.hasAttribute('data-seo')) {
-        tag.remove();
-      }
-    });
+    // Robots
+    upsertMeta('meta[name="robots"]', { name: 'robots' }, 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+    upsertMeta('meta[name="googlebot"]', { name: 'googlebot' }, 'index, follow');
+    upsertMeta('meta[name="bingbot"]', { name: 'bingbot' }, 'index, follow');
 
-    // Создаем массив мета-тегов
-    const metaTags: Array<{name?: string; property?: string; httpEquiv?: string; content: string}> = [
-      // Robots
-      { 
-        name: 'robots', 
-        content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
-      },
-      { name: 'googlebot', content: 'index, follow' },
-      { name: 'bingbot', content: 'index, follow' },
-      
-      // Primary Meta Tags
-      { name: 'description', content: description },
-      { name: 'keywords', content: keywords },
-      { name: 'author', content: 'Bententrade' },
-      
-      // Language & Geo
-      { httpEquiv: 'content-language', content: language === 'uz' ? 'uz-UZ' : 'ru-UZ' },
-      { name: 'geo.region', content: 'UZ-TK' },
-      { name: 'geo.placename', content: 'Ташкент' },
-      { name: 'geo.position', content: '41.2995;69.2401' },
-      { name: 'ICBM', content: '41.2995, 69.2401' },
-      
-      // Open Graph / Facebook
-      { property: 'og:type', content: 'website' },
-      { property: 'og:url', content: canonicalUrl },
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      { property: 'og:image', content: image },
-      { property: 'og:image:width', content: '1200' },
-      { property: 'og:image:height', content: '630' },
-      { property: 'og:site_name', content: 'Bententrade' },
-      { property: 'og:locale', content: language === 'uz' ? 'uz_UZ' : 'ru_UZ' },
-      { property: 'og:locale:alternate', content: language === 'uz' ? 'ru_UZ' : 'uz_UZ' },
-      
-      // Twitter
-      { property: 'twitter:card', content: 'summary_large_image' },
-      { property: 'twitter:url', content: canonicalUrl },
-      { property: 'twitter:title', content: title },
-      { property: 'twitter:description', content: description },
-      { property: 'twitter:image', content: image },
-      
-      // Mobile
-      { name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=5.0' },
-      { name: 'theme-color', content: '#D4A574' },
-      
-      // Performance
-      { httpEquiv: 'X-UA-Compatible', content: 'IE=edge' },
-      { name: 'format-detection', content: 'telephone=no' },
-      
-      // Google verification
-      { name: 'google-site-verification', content: 'QnkIBpzO6K2FktpV6_xI4QtjDQxHVcfVkNSC9WEstHY' }
-    ];
+    // Primary
+    upsertMeta('meta[name="description"]', { name: 'description' }, description);
+    upsertMeta('meta[name="keywords"]', { name: 'keywords' }, keywords);
+    upsertMeta('meta[name="news_keywords"]', { name: 'news_keywords' }, generatedKeywords.slice(0, 50).join(', '));
+    upsertMeta('meta[name="author"]', { name: 'author' }, 'Bententrade');
 
-    // Добавляем мета-теги
-    metaTags.forEach(tag => {
-      const meta = document.createElement('meta');
-      meta.setAttribute('data-seo', 'true');
-      
-      if (tag.name) meta.name = tag.name;
-      if (tag.property) meta.setAttribute('property', tag.property);
-      if (tag.httpEquiv) meta.setAttribute('http-equiv', tag.httpEquiv);
-      meta.content = tag.content;
-      
-      document.head.appendChild(meta);
-    });
+    // Language & geo
+    upsertMeta('meta[http-equiv="content-language"]', { 'http-equiv': 'content-language' }, language === 'uz' ? 'uz-UZ' : 'ru-UZ');
+    upsertMeta('meta[name="geo.region"]', { name: 'geo.region' }, 'UZ-TK');
+    upsertMeta('meta[name="geo.placename"]', { name: 'geo.placename' }, 'Ташкент');
+    upsertMeta('meta[name="geo.position"]', { name: 'geo.position' }, '41.2995;69.2401');
+    upsertMeta('meta[name="ICBM"]', { name: 'ICBM' }, '41.2995, 69.2401');
 
-    // Обновляем или создаем canonical link
-    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = 'canonical';
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = canonicalUrl;
+    // Open Graph
+    upsertMeta('meta[property="og:type"]', { property: 'og:type' }, 'website');
+    upsertMeta('meta[property="og:url"]', { property: 'og:url' }, canonicalUrl);
+    upsertMeta('meta[property="og:title"]', { property: 'og:title' }, title);
+    upsertMeta('meta[property="og:description"]', { property: 'og:description' }, description);
+    upsertMeta('meta[property="og:image"]', { property: 'og:image' }, image);
+    upsertMeta('meta[property="og:image:width"]', { property: 'og:image:width' }, '1200');
+    upsertMeta('meta[property="og:image:height"]', { property: 'og:image:height' }, '630');
+    upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt' }, 'Bententrade - ротанговая нить и плетеные кашпо');
+    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name' }, 'Bententrade');
+    upsertMeta('meta[property="og:locale"]', { property: 'og:locale' }, language === 'uz' ? 'uz_UZ' : 'ru_UZ');
+    upsertMeta('meta[property="og:locale:alternate"]', { property: 'og:locale:alternate' }, language === 'uz' ? 'ru_UZ' : 'uz_UZ');
 
-    // Добавляем hreflang links
-    const hreflangRu = document.querySelector('link[hreflang="ru"]') as HTMLLinkElement 
-      || document.createElement('link');
-    hreflangRu.rel = 'alternate';
-    hreflangRu.hreflang = 'ru';
-    hreflangRu.href = canonicalUrl;
-    if (!hreflangRu.parentNode) document.head.appendChild(hreflangRu);
+    // Twitter
+    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card' }, 'summary_large_image');
+    upsertMeta('meta[name="twitter:url"]', { name: 'twitter:url' }, canonicalUrl);
+    upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title' }, title);
+    upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description' }, description);
+    upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image' }, image);
+    upsertMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt' }, 'Bententrade - каталог ротанговой нити и кашпо');
 
-    const hreflangUz = document.querySelector('link[hreflang="uz"]') as HTMLLinkElement 
-      || document.createElement('link');
-    hreflangUz.rel = 'alternate';
-    hreflangUz.hreflang = 'uz';
-    hreflangUz.href = canonicalUrl;
-    if (!hreflangUz.parentNode) document.head.appendChild(hreflangUz);
+    // Mobile/perf
+    upsertMeta('meta[name="viewport"]', { name: 'viewport' }, 'width=device-width, initial-scale=1.0, maximum-scale=5.0');
+    upsertMeta('meta[name="theme-color"]', { name: 'theme-color' }, '#D4A574');
+    upsertMeta('meta[http-equiv="X-UA-Compatible"]', { 'http-equiv': 'X-UA-Compatible' }, 'IE=edge');
+    upsertMeta('meta[name="format-detection"]', { name: 'format-detection' }, 'telephone=no');
+    upsertMeta('meta[name="google-site-verification"]', { name: 'google-site-verification' }, 'QnkIBpzO6K2FktpV6_xI4QtjDQxHVcfVkNSC9WEstHY');
 
-    const hreflangXDefault = document.querySelector('link[hreflang="x-default"]') as HTMLLinkElement 
-      || document.createElement('link');
-    hreflangXDefault.rel = 'alternate';
-    hreflangXDefault.hreflang = 'x-default';
-    hreflangXDefault.href = 'https://bententrade.uz/';
-    if (!hreflangXDefault.parentNode) document.head.appendChild(hreflangXDefault);
+    // Canonical + hreflang
+    upsertLink('link[rel="canonical"]', { rel: 'canonical', href: canonicalUrl });
+    upsertLink('link[hreflang="ru"]', { rel: 'alternate', hreflang: 'ru', href: canonicalUrl });
+    upsertLink('link[hreflang="uz"]', { rel: 'alternate', hreflang: 'uz', href: canonicalUrl });
+    upsertLink('link[hreflang="x-default"]', { rel: 'alternate', hreflang: 'x-default', href: 'https://bententrade.uz/' });
 
   }, [title, description, keywords, image, canonicalUrl, language]);
 

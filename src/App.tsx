@@ -21,6 +21,7 @@ import { CookieBanner } from './components/CookieBanner';
 import { LegalDocuments, LegalDocumentType } from './components/LegalDocuments';
 import { TelegramQuickFixWizard } from './components/TelegramQuickFixWizard';
 import { SEOContent } from './components/SEOContent';
+import { HomeSEOClusters } from './components/HomeSEOClusters';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
 import { Input } from './components/ui/input';
@@ -291,29 +292,83 @@ export default function App() {
   const [showTelegramHelper, setShowTelegramHelper] = useState(false);
   const [telegramError, setTelegramError] = useState<any>(null);
 
+  const legalFromPath = useCallback((path: string): LegalDocumentType | null => {
+    const legacyMap: Record<string, LegalDocumentType> = {
+      '/privacy': 'privacy',
+      '/cookies': 'cookies',
+      '/terms': 'terms',
+      '/company': 'company',
+    };
+    if (legacyMap[path]) return legacyMap[path];
+    if (path.startsWith('/legal/')) {
+      const slug = path.replace('/legal/', '');
+      if (slug === 'privacy' || slug === 'cookies' || slug === 'terms' || slug === 'company') {
+        return slug;
+      }
+    }
+    return null;
+  }, []);
+
+  const updateUrl = useCallback((path: string) => {
+    if (window.location.pathname !== path) {
+      window.history.pushState({}, '', path);
+    }
+  }, []);
+
   // ✅ Обработка начальной навигации по URL (для SEO и прямых ссылок)
   useEffect(() => {
     const path = window.location.pathname;
     
     if (path === '/catalog') {
       startTransition(() => setCurrentPage('catalog'));
+    } else if (path === '/admin') {
+      startTransition(() => setCurrentPage('admin'));
+    } else if (path === '/legal') {
+      startTransition(() => {
+        setCurrentLegalDocument('privacy');
+        setCurrentPage('legal');
+      });
     } else {
-      // Проверка юридических страниц: /privacy, /cookies, /terms, /company
-      const legalPages: Record<string, LegalDocumentType> = {
-        '/privacy': 'privacy',
-        '/cookies': 'cookies',
-        '/terms': 'terms',
-        '/company': 'company'
-      };
-
-      if (legalPages[path]) {
+      const legalType = legalFromPath(path);
+      if (legalType) {
         startTransition(() => {
-          setCurrentLegalDocument(legalPages[path]);
+          setCurrentLegalDocument(legalType);
           setCurrentPage('legal');
         });
       }
     }
-  }, []);
+  }, [legalFromPath]);
+
+  // Синхронизация SPA состояния с back/forward браузера.
+  useEffect(() => {
+    const onPopState = () => {
+      const path = window.location.pathname;
+      if (path === '/catalog') {
+        setCurrentPage('catalog');
+        setCurrentLegalDocument(null);
+        return;
+      }
+      if (path === '/admin') {
+        setCurrentPage('admin');
+        return;
+      }
+      if (path === '/legal') {
+        setCurrentPage('legal');
+        setCurrentLegalDocument('privacy');
+        return;
+      }
+      const legalType = legalFromPath(path);
+      if (legalType) {
+        setCurrentPage('legal');
+        setCurrentLegalDocument(legalType);
+        return;
+      }
+      setCurrentPage('home');
+      setCurrentLegalDocument(null);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [legalFromPath]);
 
   // ✅ SEO теги управляются компонентом <SEOHead /> - НЕ дублируем здесь!
   // Удалён дублирующий useEffect для мета-тегов
@@ -322,7 +377,8 @@ export default function App() {
     setIsAdminMode(false);
     setIsAuthenticated(false);
     setCurrentPage('home');
-  }, []);
+    updateUrl('/');
+  }, [updateUrl]);
 
   // Скрытые способы доступа к админ-панели
   useEffect(() => {
@@ -422,9 +478,10 @@ export default function App() {
       setCurrentPage(page);
       setCurrentLegalDocument(null);
     });
+    updateUrl(page === 'catalog' ? '/catalog' : page === 'admin' ? '/admin' : '/');
     // Use smooth scrolling to reduce render blocking
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [updateUrl]);
 
   const handleLogoSecretAccess = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if ('shiftKey' in e && e.shiftKey) {
@@ -443,7 +500,8 @@ export default function App() {
     setIsAdminMode(true);
     setShowAdminLogin(false);
     setCurrentPage('admin');
-  }, []);
+    updateUrl('/admin');
+  }, [updateUrl]);
 
   const handleCartClick = useCallback(() => setIsCartOpen(true), []);
   const handleCartClose = useCallback(() => setIsCartOpen(false), []);
@@ -453,16 +511,18 @@ export default function App() {
       setCurrentLegalDocument(type);
       setCurrentPage('legal');
     });
+    updateUrl(`/legal/${type}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [updateUrl]);
 
   const handleBackFromLegal = useCallback(() => {
     startTransition(() => {
       setCurrentPage('home');
       setCurrentLegalDocument(null);
     });
+    updateUrl('/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [updateUrl]);
 
   const handleViewPrivacyPolicy = useCallback(() => {
     handleLegalDocumentClick('privacy');
@@ -582,6 +642,7 @@ export default function App() {
             <ModernBackground />
             
             <main className="pt-20 relative z-10">
+              <h1 className="sr-only">Каталог Bententrade: ротанговая нить и плетеные кашпо</h1>
               <Suspense fallback={
                 <div className="container mx-auto px-4 py-8">
                   <LoadingSpinner size="lg" text="Загрузка каталога..." />
@@ -634,6 +695,7 @@ export default function App() {
             <ModernBackground />
             
             <main className="relative z-10">
+              <h1 className="sr-only">Юридическая информация Bententrade</h1>
               <LegalDocuments 
                 type={currentLegalDocument}
                 onBack={handleBackFromLegal}
@@ -699,6 +761,7 @@ export default function App() {
             
             {/* SEO-оптимизированная секция с подробным описанием товаров */}
             <SEOContent />
+            <HomeSEOClusters />
             
             <WhyUs />
             
