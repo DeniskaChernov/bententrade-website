@@ -1,0 +1,41 @@
+{
+  "name": "Bententrade Website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@jsr/supabase__supabase-js": "^2.49.8",
+    "@vitejs/plugin-react": "*",
+    "cmdk": "^1.1.1",
+    "embla-carousel-react": "^8.6.0",
+    "framer-motion": "*",
+    "hono": "*",
+    "input-otp": "^1.4.2",
+    "path": "*",
+    "react": "^18.3.1",
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.55.0",
+    "react-intersection-observer": "^9.13.1",
+    "react-resizable-panels": "^2.1.7",
+    "recharts": "^2.15.2",
+    "serve": "^14.2.6",
+    "serve-handler": "^6.1.7",
+    "tailwindcss": "*",
+    "tw-animate-css": "^1.3.8",
+    "vaul": "^1.1.2",
+    "vite": "*"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.12",
+    "@types/node": "^20.10.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "tailwindcss": "4.1.12",
+    "vite": "6.3.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node server.js"
+  }
+}

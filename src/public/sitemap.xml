@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Главная страница -->
+  <url>
+    <loc>https://bententrade.uz/</loc>
+    <lastmod>2025-01-15</lastmod>
+    <priority>1.0</priority>
+    <changefreq>daily</changefreq>
+  </url>
+
+  <!-- Каталог продукции -->
+  <url>
+    <loc>https://bententrade.uz/catalog</loc>
+    <lastmod>2025-01-15</lastmod>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+
+  <!-- Юридические документы -->
+  <url>
+    <loc>https://bententrade.uz/privacy</loc>
+    <lastmod>2025-01-15</lastmod>
+    <priority>0.5</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <url>
+    <loc>https://bententrade.uz/terms</loc>
+    <lastmod>2025-01-15</lastmod>
+    <priority>0.5</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <url>
+    <loc>https://bententrade.uz/cookies</loc>
+    <lastmod>2025-01-15</lastmod>
+    <priority>0.5</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <url>
+    <loc>https://bententrade.uz/company</loc>
+    <lastmod>2025-01-15</lastmod>
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+</urlset>

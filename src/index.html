@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  
+  <!-- SEO Fix: Aggressively Remove Figma Make noindex -->
+  <script>
+    (function() {
+      'use strict';
+      
+      console.log('🔍 SEO Guard: Initializing anti-noindex protection...');
+      
+      // 1. Immediate cleanup function
+      function cleanRobots() {
+        const metaTags = document.querySelectorAll('meta[name="robots"], meta[name="googlebot"], meta[name="bingbot"]');
+        let hasIndexRobots = false;
+        let hasIndexGooglebot = false;
+        let hasIndexBingbot = false;
+        
+        metaTags.forEach(tag => {
+          const name = tag.getAttribute('name');
+          const content = tag.getAttribute('content') || '';
+          
+          if (content.includes('noindex') || content.includes('none')) {
+            tag.remove();
+            console.log(`🚫 SEO Guard: Removed ${name} with noindex:`, content);
+          } else {
+            if (name === 'robots' && content.includes('index')) hasIndexRobots = true;
+            if (name === 'googlebot' && content.includes('index')) hasIndexGooglebot = true;
+            if (name === 'bingbot' && content.includes('index')) hasIndexBingbot = true;
+          }
+        });
+        
+        // Ensure we have proper index tags
+        if (!hasIndexRobots) {
+          const meta = document.createElement('meta');
+          meta.setAttribute('name', 'robots');
+          meta.setAttribute('content', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+          meta.setAttribute('data-seo-guard', 'true');
+          document.head.appendChild(meta);
+          console.log('✅ SEO Guard: Added robots index tag');
+        }
+        
+        if (!hasIndexGooglebot) {
+          const meta = document.createElement('meta');
+          meta.setAttribute('name', 'googlebot');
+          meta.setAttribute('content', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+          meta.setAttribute('data-seo-guard', 'true');
+          document.head.appendChild(meta);
+          console.log('✅ SEO Guard: Added googlebot index tag');
+        }
+        
+        if (!hasIndexBingbot) {
+          const meta = document.createElement('meta');
+          meta.setAttribute('name', 'bingbot');
+          meta.setAttribute('content', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+          meta.setAttribute('data-seo-guard', 'true');
+          document.head.appendChild(meta);
+          console.log('✅ SEO Guard: Added bingbot index tag');
+        }
+      }
+      
+      // 2. Run immediately
+      cleanRobots();
+      
+      // 3. Run on DOMContentLoaded
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', cleanRobots);
+      }
+      
+      // 4. Watch for DOM changes with MutationObserver
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'META') {
+              const name = node.getAttribute('name');
+              const content = node.getAttribute('content') || '';
+              
+              if ((name === 'robots' || name === 'googlebot' || name === 'bingbot') && 
+                  (content.includes('noindex') || content.includes('none'))) {
+                node.remove();
+                console.log(`🚫 SEO Guard: Blocked dynamic ${name} noindex insertion`);
+                cleanRobots(); // Re-add index tags if needed
+              }
+            }
+          });
+          
+          mutation.removedNodes.forEach((node) => {
+            if (node.nodeName === 'META' && node.hasAttribute('data-seo-guard')) {
+              console.log('⚠️ SEO Guard: Index tag was removed, restoring...');
+              setTimeout(cleanRobots, 0);
+            }
+          });
+        });
+      });
+      
+      observer.observe(document.head, { 
+        childList: true, 
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['content']
+      });
+      
+      // 5. Periodic check every 2 seconds (fallback)
+      setInterval(cleanRobots, 2000);
+      
+      // 6. Check before page unload
+      window.addEventListener('beforeunload', cleanRobots);
+      
+      console.log('✅ SEO Guard: Protection active');
+    })();
+  </script>
+  
+  <!-- Indexing Rules -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  
+  <!-- Primary Meta Tags -->
+  <title>Купить ротанговую нить в Ташкенте от 36000 сум | Плетеные кашпо 18 цветов - Bententrade</title>
+  <meta name="title" content="Ротанговая нить Ташкент от производителя | Кашпо от 120000 сум - Bententrade">
+  <meta name="description" content="⭐ Ротанговая нить от производителя - 36000 сум/кг, 5 типов, 18 цветов ⭐ Плетеные кашпо ручной работы от 120000 сум ⭐ Доставка по Узбекистану ☎️ +998 77 104 44 22">
+  <meta name="keywords" content="ротанговая нить ташкент, купить ротанг ташкент, кашпо купить ташкент, плетеные кашпо, искусственный ротанг узбекистан, ротанг оптом, кашпо ротанг, синтетический ротанг, мебельная нить, ротанг цена за кг, кашпо ручной работы, плетение ротанг, купить ротанг для плетения, ротанг 18 цветов, кашпо 10 литров">
+  <meta name="author" content="Bententrade">
+  <meta name="language" content="Russian">
+  <meta name="coverage" content="Uzbekistan">
+  <meta name="distribution" content="global">
+  <meta name="rating" content="general">
+  <meta name="revisit-after" content="3 days">
+  <meta http-equiv="last-modified" content="2025-10-23T12:00:00+05:00">
+  <meta name="date" content="2025-10-23" scheme="YYYY-MM-DD">
+  
+  <!-- Google Site Verification -->
+  <meta name="google-site-verification" content="QnkIBpzO6K2FktpV6_xI4QtjDQxHVcfVkNSC9WEstHY">
+  
+  <!-- Facebook Domain Verification -->
+  <meta name="facebook-domain-verification" content="vkvp0okxojp9ily02z3f1fvfcshyet" />
+  
+  <!-- Rendering optimization -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bententrade.uz/">
+  <meta property="og:title" content="Bententrade - Ротанговая нить и плетёные кашпо в Ташкенте">
+  <meta property="og:description" content="Производство и продажа качественной искусственной ротанговой нити и плетёных кашпо в Ташкенте. Широкий выбор цветов и размеров. ☎️ +998 77 104 44 22">
+  <meta property="og:site_name" content="Bententrade">
+  <meta property="og:locale" content="ru_UZ">
+  <meta property="og:locale:alternate" content="uz_UZ">
+  <meta property="og:updated_time" content="2025-10-23T12:00:00+05:00">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://bententrade.uz/">
+  <meta property="twitter:title" content="Bententrade - Ротанговая нить и плетёные кашпо в Ташкенте">
+  <meta property="twitter:description" content="Производство и продажа качественной искусственной ротанговой нити и плетёных кашпо в Ташкенте">
+  
+  <!-- Geo Tags -->
+  <meta name="geo.region" content="UZ-TK">
+  <meta name="geo.placename" content="Ташкент">
+  <meta name="geo.position" content="41.2995;69.2401">
+  <meta name="ICBM" content="41.2995, 69.2401">
+  <meta name="DC.title" content="Bententrade - Ротанговая нить и плетёные кашпо в Ташкенте">
+  
+  <!-- Contact Information -->
+  <meta property="business:contact_data:street_address" content="Ташкент">
+  <meta property="business:contact_data:locality" content="Ташкент">
+  <meta property="business:contact_data:region" content="Ташкент">
+  <meta property="business:contact_data:country_name" content="Узбекистан">
+  <meta property="business:contact_data:phone_number" content="+998771044422">
+  <meta property="business:contact_data:website" content="https://bententrade.uz">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://bententrade.uz/">
+  
+  <!-- Alternate language pages -->
+  <link rel="alternate" hreflang="ru" href="https://bententrade.uz/">
+  <link rel="alternate" hreflang="uz" href="https://bententrade.uz/">
+  <link rel="alternate" hreflang="x-default" href="https://bententrade.uz/">
+  
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  
+  <!-- SPA Hint for Google -->
+  <meta name="fragment" content="!">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7W51Z8TFY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'AW-17695225016');
+    gtag('config', 'G-7W51Z8TFY6');
+  </script>
+  
+  <!-- SEO Monitor (только для разработки) -->
+  <script src="/seo-monitor.js" defer></script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Bententrade",
+    "image": "https://bententrade.uz/logo.png",
+    "@id": "https://bententrade.uz",
+    "url": "https://bententrade.uz",
+    "telephone": "+998771044422",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "",
+      "addressLocality": "Ташкент",
+      "postalCode": "",
+      "addressCountry": "UZ"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 41.2995,
+      "longitude": 69.2401
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ],
+      "opens": "09:00",
+      "closes": "18:00"
+    },
+    "sameAs": [
+      "https://t.me/BenTenTrade"
+    ],
+    "priceRange": "$$",
+    "description": "Производство и продажа качественной искусственной ротанговой нити и плетёных кашпо в Ташкенте"
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Bententrade",
+    "url": "https://bententrade.uz",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://bententrade.uz/catalog?search={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": "https://bententrade.uz/catalog#kashpo",
+    "name": "Плетёные кашпо из искусственного ротанга",
+    "description": "Плетёные кашпо ручной работы из качественного искусственного ротанга. Доступны в 18 цветах и разных размерах: 5л, 10л, 16л.",
+    "brand": {
+      "@type": "Brand",
+      "name": "Bententrade"
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "priceCurrency": "UZS",
+      "lowPrice": "120000",
+      "highPrice": "245000",
+      "offerCount": "5",
+      "availability": "https://schema.org/InStock",
+      "url": "https://bententrade.uz/catalog"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "47"
+    }
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": "https://bententrade.uz/catalog#rattan",
+    "name": "Искусственная ротанговая нить",
+    "description": "Качественная искусственная ротанговая нить для плетения. 5 типов: полусфера, сфера, плоский, полумесяц, трубка. 18 цветов. Минимальная покупка от 5 кг.",
+    "brand": {
+      "@type": "Brand",
+      "name": "Bententrade"
+    },
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "UZS",
+      "price": "36000",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "36000",
+        "priceCurrency": "UZS",
+        "referenceQuantity": {
+          "@type": "QuantitativeValue",
+          "value": "1",
+          "unitCode": "KGM"
+        }
+      },
+      "availability": "https://schema.org/InStock",
+      "url": "https://bententrade.uz/catalog",
+      "eligibleQuantity": {
+        "@type": "QuantitativeValue",
+        "minValue": "5",
+        "unitCode": "KGM"
+      }
+    }
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Цвета ротанга и кашпо",
+    "description": "Доступные цвета для ротанговой нити и кашпо",
+    "numberOfItems": 18,
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Белый"},
+      {"@type": "ListItem", "position": 2, "name": "Бежевый"},
+      {"@type": "ListItem", "position": 3, "name": "Крем"},
+      {"@type": "ListItem", "position": 4, "name": "Капучино"},
+      {"@type": "ListItem", "position": 5, "name": "Коричневый"},
+      {"@type": "ListItem", "position": 6, "name": "Шоколад"},
+      {"@type": "ListItem", "position": 7, "name": "Терракота"},
+      {"@type": "ListItem", "position": 8, "name": "Красный"},
+      {"@type": "ListItem", "position": 9, "name": "Бордо"},
+      {"@type": "ListItem", "position": 10, "name": "Малиновый"},
+      {"@type": "ListItem", "position": 11, "name": "Лаванда"},
+      {"@type": "ListItem", "position": 12, "name": "Серый"},
+      {"@type": "ListItem", "position": 13, "name": "Графит"},
+      {"@type": "ListItem", "position": 14, "name": "Чёрный"},
+      {"@type": "ListItem", "position": 15, "name": "Голубой"},
+      {"@type": "ListItem", "position": 16, "name": "Изумруд"},
+      {"@type": "ListItem", "position": 17, "name": "Оливковый"},
+      {"@type": "ListItem", "position": 18, "name": "Черный с золотыми наплывами"}
+    ]
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Главная",
+        "item": "https://bententrade.uz/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Каталог",
+        "item": "https://bententrade.uz/catalog"
+      }
+    ]
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Какая минимальная партия для заказа ротанговой нити?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Для ротанговой нити минимальная покупка составляет от 5 кг. Кашпо можно заказывать поштучно."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Есть ли доставка по Узбекистану?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, мы доставляем продукцию по всему Узбекистану через надёжные транспортные компании."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Можно ли заказать индивидуальный цвет ротанга?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Да, возможно изготовление под заказ. Свяжитесь с нами по телефону +998 77 104 44 22 или через Telegram @BenTenTrade для обсуждения деталей."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Какие типы ротанговой нити доступны?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Доступны 5 типов ротанговой нити: полусфера, сфера, плоский, полумесяц и трубка. Все типы стоят 36 000 сум за килограмм."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Сколько стоят кашпо?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Цены на кашпо: 5л с ручкой - 120 000 сум, 10л - 187 000 сум, 16л - 245 000 сум. Доступны разные стили плетения: классика, пухляш, ромбик."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/main.tsx"></script>
+</body>
+</html>
