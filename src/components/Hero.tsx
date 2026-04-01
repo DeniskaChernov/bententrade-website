@@ -18,6 +18,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
   const prefersReducedMotion = useReducedMotion();
   const [showConsultationForm, setShowConsultationForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLowPowerDevice, setIsLowPowerDevice] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -27,6 +28,16 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const reduceHeavyMotion = prefersReducedMotion || isLowPowerDevice;
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    const update = () => setIsLowPowerDevice(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
 
   const handleConsultationClick = () => {
     setShowConsultationForm(true);
@@ -113,7 +124,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           <motion.div
             className="absolute top-20 -left-20 w-96 h-96 rounded-full opacity-20 blur-3xl"
             style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 70%)' }}
-            animate={prefersReducedMotion ? undefined : {
+            animate={reduceHeavyMotion ? undefined : {
               x: [0, 100, 0],
               y: [0, 50, 0],
               scale: [1, 1.2, 1],
@@ -128,7 +139,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           <motion.div
             className="absolute bottom-10 right-0 w-80 h-80 rounded-full opacity-15 blur-3xl"
             style={{ background: 'radial-gradient(circle, #F5F3F0 0%, transparent 60%)' }}
-            animate={prefersReducedMotion ? undefined : {
+            animate={reduceHeavyMotion ? undefined : {
               x: [0, -80, 0],
               y: [0, -60, 0],
               scale: [1, 1.3, 1],
@@ -144,7 +155,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           <motion.div
             className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full opacity-10 blur-3xl"
             style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 50%)' }}
-            animate={prefersReducedMotion ? undefined : {
+            animate={reduceHeavyMotion ? undefined : {
               x: [0, -50, 0],
               y: [0, 40, 0],
               scale: [1, 1.4, 1],
@@ -331,7 +342,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           {/* Пульсирующие круги */}
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-primary"
-            animate={prefersReducedMotion ? undefined : {
+            animate={reduceHeavyMotion ? undefined : {
               scale: [1, 1.5, 1],
               opacity: [0.5, 0, 0.5],
             }}
@@ -343,7 +354,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           />
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-primary"
-            animate={prefersReducedMotion ? undefined : {
+            animate={reduceHeavyMotion ? undefined : {
               scale: [1, 1.8, 1],
               opacity: [0.3, 0, 0.3],
             }}
@@ -357,7 +368,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           
           <motion.div
             className="relative z-10"
-            animate={prefersReducedMotion ? undefined : { y: [0, 6, 0] }}
+            animate={reduceHeavyMotion ? undefined : { y: [0, 6, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
             <ChevronDown className="w-5 h-5 text-primary group-hover:text-primary/80" />

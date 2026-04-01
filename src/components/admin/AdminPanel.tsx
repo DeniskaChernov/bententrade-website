@@ -24,7 +24,7 @@ import {
   AlertCircle,
   Database
 } from '../../utils/lucide-stub';
-import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { API_BASE_URL, API_TOKEN } from '../../utils/env';
 import { TelegramStatusIndicator } from '../TelegramStatusIndicator';
 import { DataLoader } from '../DataLoader';
 
@@ -86,14 +86,14 @@ export default function AdminPanel({ onExit }: AdminPanelProps) {
       
       // Загружаем заказы и статистику параллельно
       const [ordersResponse, statsResponse] = await Promise.all([
-        fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/orders`, {
+        fetch(`${API_BASE_URL}/orders`, {
           headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
+            'Authorization': `Bearer ${API_TOKEN}`,
           },
         }),
-        fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/stats`, {
+        fetch(`${API_BASE_URL}/stats`, {
           headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
+            'Authorization': `Bearer ${API_TOKEN}`,
           },
         }),
       ]);
@@ -151,11 +151,11 @@ export default function AdminPanel({ onExit }: AdminPanelProps) {
   // Обновление статуса заказа
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/orders/${orderId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
         },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -189,10 +189,10 @@ export default function AdminPanel({ onExit }: AdminPanelProps) {
     }
     
     try {
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/orders/${orderId}`, {
+      const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${publicAnonKey}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
         },
       });
 
@@ -919,12 +919,12 @@ export default function AdminPanel({ onExit }: AdminPanelProps) {
                                 💡 Данные временные. Для постоянного хранения настройте БД
                               </p>
                               <a 
-                                href="https://supabase.com/dashboard/project/mvrljchbupekmuhryvlw/sql/new" 
+                                href="https://railway.com/project" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="text-xs text-primary hover:underline inline-block"
                               >
-                                Инструкция по настройке (2 мин) →
+                                Открыть Railway PostgreSQL →
                               </a>
                             </div>
                           )}

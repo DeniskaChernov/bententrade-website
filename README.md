@@ -22,21 +22,26 @@ npm run build
 npm run start
 ```
 
-## Переменные окружения
+## Переменные окружения (Railway PostgreSQL)
 
 Создайте `.env` на основе `.env.example`:
 
 ```env
-VITE_SUPABASE_PROJECT_ID=your_project_id
-VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_API_BASE_URL=https://your-api-domain/functions/v1/make-server-ee878259
+DATABASE_URL=postgresql://...
+DATABASE_SSL=true
+API_TOKEN=your_api_token
+ADMIN_PASSWORD=your_admin_password
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id
+VITE_API_BASE_URL=/api
+VITE_API_TOKEN=your_api_token
 ```
 
-`VITE_API_BASE_URL` позволяет переключить API на ваш бэкенд/БД в Railway без правок кода.
+При старте `server.js` автоматически создаёт таблицы `products` и `orders` в PostgreSQL.
 
 ## Railway
 
 - Конфиг деплоя находится в `railway.json`
-- Build: `npm ci && npm run build`
+- Build: `npm install --include=dev && npm run build`
 - Start: `npm run start`
   

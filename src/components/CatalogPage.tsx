@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer@9.13.1';
 import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Check, Star, Filter, Search, ArrowLeft, Package, Sparkles } from '../utils/lucide-stub';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -118,6 +118,8 @@ interface CatalogPageProps {
 export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
   // Используем систему переводов
   const { language, t } = useLanguage();
+  const prefersReducedMotion = useReducedMotion();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   
   // Проверка загрузки изображений
   console.log('🎨 [CatalogPage] Коричневое изображение Пухляша загружено:', kashpoBrownPuhlyash);
@@ -136,16 +138,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
   const [sizeFilter, setSizeFilter] = useState<string>('all');
   const [styleFilter, setStyleFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('name');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<'planters' | 'materials'>('planters');
-
-  // Симулируем загрузку данных
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const [visibleCount, setVisibleCount] = useState(8);
 
   // Логирование изменений selectedVariants
   useEffect(() => {
@@ -1005,6 +1000,27 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
         return 0;
     }
   });
+  const reduceListAnimations = prefersReducedMotion || sortedProducts.length > 8;
+
+  useEffect(() => {
+    setVisibleCount(8);
+  }, [activeCategory, searchTerm, colorFilter, sizeFilter, styleFilter, sortBy]);
+
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + 8, sortedProducts.length));
+        }
+      },
+      { rootMargin: '300px 0px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [sortedProducts.length]);
 
   const handleVariantChange = (productId: string, variantId: string) => {
     console.log(`🎨 [CatalogPage] Измен��ние варианта для продукта ${productId} на ${variantId}`);
@@ -1190,7 +1206,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
       <motion.div 
         className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-20"
         style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 70%)' }}
-        animate={{ 
+        animate={prefersReducedMotion ? undefined : { 
           scale: [1, 1.2, 1],
           opacity: [0.2, 0.3, 0.2] 
         }}
@@ -1204,7 +1220,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
       <motion.div 
         className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full opacity-15"
         style={{ background: 'radial-gradient(circle, #F5F3F0 0%, transparent 60%)' }}
-        animate={{ 
+        animate={prefersReducedMotion ? undefined : { 
           scale: [1.2, 1, 1.2],
           opacity: [0.15, 0.25, 0.15] 
         }}
@@ -1219,7 +1235,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
       <motion.div 
         className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full opacity-10"
         style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 50%)' }}
-        animate={{ 
+        animate={prefersReducedMotion ? undefined : { 
           x: [0, 50, 0],
           y: [0, -30, 0],
           scale: [1, 1.1, 1] 
@@ -1415,13 +1431,13 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
           <ProductGridSkeleton count={8} />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {sortedProducts.map((product, index) => (
+            {sortedProducts.slice(0, visibleCount).map((product, index) => (
               <motion.div
                 key={product.id}
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={inView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.9 }}
-                transition={{ duration: 0.6, delay: index * 0.05 }}
-                whileHover={{ y: -10, scale: 1.02 }}
+                initial={reduceListAnimations ? { opacity: 0 } : { opacity: 0, y: 50, scale: 0.9 }}
+                animate={inView ? (reduceListAnimations ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }) : { opacity: 0 }}
+                transition={{ duration: reduceListAnimations ? 0.2 : 0.6, delay: reduceListAnimations ? 0 : index * 0.05 }}
+                whileHover={reduceListAnimations ? undefined : { y: -10, scale: 1.02 }}
                 className="group"
               >
                 <Card className="overflow-hidden glass-card border-primary/10 hover:border-primary/30 transition-all duration-500 flex flex-col hover-lift rounded-3xl backdrop-blur-20">
@@ -1429,8 +1445,8 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                     <div className="aspect-square overflow-hidden relative">
                       {/* Изображение товара */}
                       <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.6 }}
+                        whileHover={reduceListAnimations ? undefined : { scale: 1.05 }}
+                        transition={{ duration: 0.25 }}
                         className="w-full h-full relative"
                       >
                         <ImageWithFallback
@@ -1464,9 +1480,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                     {/* Информация о размерах - универсальный блок с одинаковым отступом */}
                     {(product.dimensions || product.category === 'materials') && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                        transition={{ duration: 0.4, delay: index * 0.05 + 0.2 }}
+                        initial={reduceListAnimations ? { opacity: 1 } : { opacity: 0, y: 10 }}
+                        animate={reduceListAnimations ? { opacity: 1 } : (inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 })}
+                        transition={{ duration: reduceListAnimations ? 0 : 0.4, delay: reduceListAnimations ? 0 : index * 0.05 + 0.2 }}
                         className="mt-4 mb-4 p-4 glass-card rounded-xl border border-primary/10 hover:border-primary/20 transition-all duration-300"
                       >
                         {/* Размеры кашпо */}
@@ -1513,9 +1529,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                     {/* Селектор цвета для кашпо с вариантами */}
                     {product.variants && (
                       <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                        transition={{ duration: 0.5, delay: index * 0.05 + 0.3 }}
+                        initial={reduceListAnimations ? { opacity: 1 } : { opacity: 0, y: 20 }}
+                        animate={reduceListAnimations ? { opacity: 1 } : (inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 })}
+                        transition={{ duration: reduceListAnimations ? 0 : 0.5, delay: reduceListAnimations ? 0 : index * 0.05 + 0.3 }}
                         className="mb-4"
                       >
                         <p className="font-medium mb-4 text-primary font-grotesk">{t.selectColor}:</p>
@@ -1523,11 +1539,11 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                           {product.variants.map((variant, variantIndex) => (
                             <motion.button
                               key={variant.id}
-                              initial={{ opacity: 0, scale: 0 }}
-                              animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                              transition={{ duration: 0.3, delay: index * 0.05 + variantIndex * 0.02 }}
-                              whileHover={{ scale: 1.05, y: -2 }}
-                              whileTap={{ scale: 0.95 }}
+                              initial={reduceListAnimations ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
+                              animate={reduceListAnimations ? { opacity: 1, scale: 1 } : (inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 })}
+                              transition={{ duration: reduceListAnimations ? 0 : 0.3, delay: reduceListAnimations ? 0 : index * 0.05 + variantIndex * 0.02 }}
+                              whileHover={reduceListAnimations ? undefined : { scale: 1.05, y: -2 }}
+                              whileTap={reduceListAnimations ? undefined : { scale: 0.95 }}
                               onClick={() => handleVariantChange(product.id, variant.id)}
                               className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all duration-300 micro-interaction ${
                                 selectedVariants[product.id] === variant.id
@@ -1556,14 +1572,14 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                         {product.features.slice(0, 3).map((feature, featureIndex) => (
                           <motion.li
                             key={featureIndex}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                            transition={{ duration: 0.4, delay: (index * 0.05) + (featureIndex * 0.02) }}
+                            initial={reduceListAnimations ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                            animate={reduceListAnimations ? { opacity: 1, x: 0 } : (inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 })}
+                            transition={{ duration: reduceListAnimations ? 0 : 0.4, delay: reduceListAnimations ? 0 : (index * 0.05) + (featureIndex * 0.02) }}
                             className="flex items-center group-hover:text-primary/80 transition-colors"
                           >
                             <motion.div
-                              whileHover={{ scale: 1.2, rotate: 360 }}
-                              transition={{ duration: 0.3 }}
+                              whileHover={reduceListAnimations ? undefined : { scale: 1.2, rotate: 360 }}
+                              transition={{ duration: 0.2 }}
                             >
                               <Check className="w-3 h-3 text-primary mr-2 flex-shrink-0" />
                             </motion.div>
@@ -1611,8 +1627,8 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                     </motion.div>
                     
                     <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={reduceListAnimations ? undefined : { scale: 1.02 }}
+                      whileTap={reduceListAnimations ? undefined : { scale: 0.98 }}
                       className="w-full"
                     >
                       <Button 
@@ -1620,7 +1636,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                         onClick={() => handleAddToCart(product)}
                       >
                         <motion.span
-                          whileHover={{ scale: 1.05 }}
+                          whileHover={reduceListAnimations ? undefined : { scale: 1.05 }}
                           transition={{ duration: 0.2 }}
                           className="flex items-center gap-2"
                         >
@@ -1637,6 +1653,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
               </motion.div>
             ))}
           </div>
+        )}
+        {!isLoading && visibleCount < sortedProducts.length && (
+          <div ref={loadMoreRef} className="h-8 w-full mt-6" aria-hidden="true" />
         )}
 
         {/* ообщение об отсутствии результатов */}

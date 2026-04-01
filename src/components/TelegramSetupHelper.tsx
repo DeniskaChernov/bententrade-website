@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 import { X, MessageCircle, CheckCircle, AlertCircle, ExternalLink, Copy, RefreshCw, Phone } from '../utils/lucide-stub';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { API_BASE_URL, API_TOKEN } from '../utils/env';
 
 interface TelegramSetupHelperProps {
   isOpen: boolean;
@@ -18,9 +18,8 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
   const [selectedChatId, setSelectedChatId] = useState<string>('');
   const [testResults, setTestResults] = useState<Map<string, boolean>>(new Map());
 
-  const BOT_TOKEN = '8344041596:AAEAJtbcpn8wVE_NcVpXAAbwrkvjE5GHZrA';
   const BOT_USERNAME = '@zayavkassayta_bententrade_bot';
-  const CURRENT_CHAT_ID = '-1003068403630';
+  const CURRENT_CHAT_ID = '';
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     const notification = document.createElement('div');
@@ -41,9 +40,9 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
     setIsLoading(true);
     try {
       // Используем наш серверный endpoint для получения чатов
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/telegram/chats`, {
+      const response = await fetch(`${API_BASE_URL}/telegram/chats`, {
         headers: {
-          'Authorization': `Bearer ${publicAnonKey}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
         },
       });
       
@@ -76,25 +75,27 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
   const testChatId = async (chatId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      const response = await fetch(`${API_BASE_URL}/telegram/test`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`,
+        },
         body: JSON.stringify({
-          chat_id: chatId,
-          text: '✅ Отлично! Chat ID работает!\n\n🎉 Теперь обновите его в Supabase:\nSettings → Edge Functions → Secrets → TELEGRAM_CHAT_ID\n\nBententrade'
+          chatId,
         })
       });
       
       const data = await response.json();
       
-      if (data.ok) {
+      if (data.success) {
         setTestResults(new Map(testResults.set(chatId, true)));
         setSelectedChatId(chatId);
         showNotification('✅ Тестовое сообщение отправлено!', 'success');
         return true;
       } else {
         setTestResults(new Map(testResults.set(chatId, false)));
-        showNotification('❌ Ошибка: ' + data.description, 'error');
+        showNotification('❌ Ошибка: ' + (data.error || 'Не удалось отправить тест'), 'error');
         return false;
       }
     } catch (error) {
@@ -246,7 +247,7 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                         </li>
                       </ol>
                       <Button
-                        onClick={() => window.open(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CURRENT_CHAT_ID}&text=✅ Тест успешен!`, '_blank')}
+                        onClick={() => window.open('https://web.telegram.org/', '_blank')}
                         className="w-full mt-4"
                         variant="outline"
                       >
@@ -437,8 +438,8 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                         <strong>Финальный шаг:</strong>
                         <ol className="mt-2 space-y-1 list-decimal list-inside opacity-90">
                           <li>Скопируйте Chat ID: <code className="px-1 py-0.5 bg-black/30 rounded">{selectedChatId}</code></li>
-                          <li>Откройте Supabase Dashboard</li>
-                          <li>Settings → Edge Functions → Secrets</li>
+                          <li>Откройте Railway проект</li>
+                          <li>Перейдите в Variables</li>
                           <li>Найдите <code>TELEGRAM_CHAT_ID</code></li>
                           <li>Вставьте новый ID → Save</li>
                         </ol>
@@ -446,11 +447,11 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                       <Button
                         onClick={() => {
                           copyToClipboard(selectedChatId);
-                          window.open('https://supabase.com/dashboard', '_blank');
+                          window.open('https://railway.com/project', '_blank');
                         }}
                         className="w-full rounded-xl"
                       >
-                        Скопировать ID и открыть Supabase
+                        Скопировать ID и открыть Railway
                         <ExternalLink className="w-4 h-4 ml-2" />
                       </Button>
                     </div>

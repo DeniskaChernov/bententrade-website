@@ -9,7 +9,7 @@ import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { X, Minus, Plus, ShoppingBag, CheckCircle, Shield, Mail, Wallet } from '../utils/lucide-stub';
 import { useLanguage } from '../utils/language-context';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { API_BASE_URL, API_TOKEN } from '../utils/env';
 import { formatPrice } from '../utils/translations';
 
 interface ColorVariant {
@@ -161,11 +161,11 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
       };
 
       // Отправляем в Telegram через наш сервер
-      const telegramResponse = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/telegram/send`, {
+      const telegramResponse = await fetch(`${API_BASE_URL}/telegram/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
         },
         body: JSON.stringify(orderData),
       });
@@ -336,11 +336,11 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
       
       // Сохраняем заказ на сервере
       try {
-        const serverResponse = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/orders`, {
+        const serverResponse = await fetch(`${API_BASE_URL}/orders`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
+            'Authorization': `Bearer ${API_TOKEN}`,
           },
           body: JSON.stringify({
             items: orderData.items,

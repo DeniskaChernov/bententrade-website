@@ -65,9 +65,6 @@ interface MiniCatalogProps {
 }
 
 export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps) {
-  // Проверка загрузки коричневого изображения для Пухляша  
-  console.log('🎨 [MiniCatalog] Коричневое изображение Пухляша загружено:', kashpoBrownClassicPuhlyash);
-  
   const { t, language } = useLanguage();
   const { ref, inView } = useInView({
     threshold: 0.1,
@@ -349,31 +346,17 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
       if (product.variants && product.variants.length > 0) {
         initialVariants[product.id] = product.variants[0].id;
         
-        // Логирование для товаров Пухляш
-        if (product.name.includes('Пухляш') || product.name.includes('Puffy')) {
-          console.log(`🔧 [MiniCatalog] Инициализация ${product.name}:`, {
-            productId: product.id,
-            defaultVariantId: product.variants[0].id,
-            defaultVariantName: product.variants[0].name,
-            defaultImage: product.variants[0].images[0]
-          });
-        }
       }
     });
-    console.log('🔧 [MiniCatalog] Инициализация selectedVariants:', initialVariants);
     setSelectedVariants(initialVariants);
   }, [popularProducts]);
   
   const handleVariantChange = (productId: string, variantId: string) => {
-    console.log(`🎨 [MiniCatalog] Изменение варианта для продукта ${productId} на ${variantId}`);
-    
     setSelectedVariants(prev => {
-      const newVariants = {
+      return {
         ...prev,
         [productId]: variantId
       };
-      console.log('✅ [MiniCatalog] Новые выбранные варианты:', newVariants);
-      return newVariants;
     });
   };
 
@@ -392,15 +375,6 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
     if (product.variants && selectedVariants[product.id]) {
       const selectedVariant = product.variants.find(v => v.id === selectedVariants[product.id]);
       const currentImage = selectedVariant?.images[0] || product.image;
-      
-      // Логирование для товаров Пухляш
-      if (product.name.includes('Пухляш') || product.name.includes('Puffy')) {
-        console.log(`🖼️ [MiniCatalog] Текущее изображение для ${product.name}:`, {
-          variantId: selectedVariants[product.id],
-          variantName: selectedVariant?.name,
-          currentImage
-        });
-      }
       
       return currentImage;
     }

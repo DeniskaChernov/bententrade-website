@@ -3,6 +3,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Lock, Shield, Eye, EyeOff, AlertCircle } from '../../utils/lucide-stub';
+import { API_BASE_URL, API_TOKEN } from '../../utils/env';
 
 interface AdminLoginProps {
   isOpen: boolean;
@@ -17,7 +18,6 @@ export function AdminLogin({ isOpen, onClose, onLogin }: AdminLoginProps) {
   const [attempts, setAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
 
-  const ADMIN_PASSWORD = 'admin2024';
   const MAX_ATTEMPTS = 3;
   const LOCKOUT_TIME = 30000; // 30 секунд
 
@@ -49,16 +49,27 @@ export function AdminLogin({ isOpen, onClose, onLogin }: AdminLoginProps) {
     
     setIsLoading(true);
     
-    // Имитация проверки пароля
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (password === ADMIN_PASSWORD) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`,
+          'X-Admin-Password': password,
+        },
+        body: JSON.stringify({}),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Неверный пароль');
+      }
+
       showNotification('Добро пожаловать в админ-панель!', 'success');
       setPassword('');
       setAttempts(0);
       setIsLoading(false);
       onLogin();
-    } else {
+    } catch {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       setIsLoading(false);
@@ -184,7 +195,7 @@ export function AdminLogin({ isOpen, onClose, onLogin }: AdminLoginProps) {
           </form>
 
           <div className="text-xs text-center text-muted-foreground border-t pt-4">
-            💡 Для демонстрации: пароль "admin2024"
+            💡 Пароль проверяется на сервере Railway
           </div>
         </div>
       </DialogContent>

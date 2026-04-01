@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy, useCallback, useMemo, startTransition } from 'react';
+import { useState, useEffect, Suspense, lazy, useCallback, useMemo, startTransition, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from './components/ui/sonner';
 import { LoadingSpinner } from './components/ui/loading-spinner';
@@ -9,23 +9,16 @@ import { SEOHead } from './components/SEOHead';
 import { StructuredData } from './components/StructuredData';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
-import { About } from './components/About';
-import { MiniCatalog } from './components/MiniCatalog';
-import { WhyUs } from './components/WhyUs';
-import { Reviews } from './components/Reviews';
 import { Cart } from './components/Cart';
-import { Contacts } from './components/Contacts';
-import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { CookieBanner } from './components/CookieBanner';
 import { LegalDocuments, LegalDocumentType } from './components/LegalDocuments';
 import { TelegramQuickFixWizard } from './components/TelegramQuickFixWizard';
-import { SEOContent } from './components/SEOContent';
-import { HomeSEOClusters } from './components/HomeSEOClusters';
 import { Button } from './components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
 import { Input } from './components/ui/input';
 import { Lock, Shield, AlertCircle, Sparkles } from './utils/lucide-stub';
+import { API_BASE_URL, API_TOKEN } from './utils/env';
 
 // Optimized lazy loading with shorter timeout and retry mechanism
 const Gallery = lazy(() => 
@@ -48,6 +41,14 @@ const AdminPanel = lazy(() =>
     .then(module => ({ default: module.default }))
     .catch(() => ({ default: () => <div className="text-center p-8 text-muted-foreground">Админ-панель временно недоступна</div> }))
 );
+const About = lazy(() => import('./components/About').then(module => ({ default: module.About })));
+const MiniCatalog = lazy(() => import('./components/MiniCatalog').then(module => ({ default: module.MiniCatalog })));
+const WhyUs = lazy(() => import('./components/WhyUs').then(module => ({ default: module.WhyUs })));
+const FAQ = lazy(() => import('./components/FAQ').then(module => ({ default: module.FAQ })));
+const Reviews = lazy(() => import('./components/Reviews').then(module => ({ default: module.Reviews })));
+const Contacts = lazy(() => import('./components/Contacts').then(module => ({ default: module.Contacts })));
+const SEOContent = lazy(() => import('./components/SEOContent').then(module => ({ default: module.SEOContent })));
+const HomeSEOClusters = lazy(() => import('./components/HomeSEOClusters').then(module => ({ default: module.HomeSEOClusters })));
 
 interface ColorVariant {
   id: string;
@@ -79,7 +80,6 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
   const [attempts, setAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
 
-  const ADMIN_PASSWORD = 'admin2024';
   const MAX_ATTEMPTS = 3;
   const LOCKOUT_TIME = 30000;
 
@@ -112,15 +112,27 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
     
     setIsLoading(true);
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (password === ADMIN_PASSWORD) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`,
+          'X-Admin-Password': password,
+        },
+        body: JSON.stringify({}),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Неверный пароль');
+      }
+
       showNotification('Добро пожаловать в админ-панель! ✨', 'success');
       setPassword('');
       setAttempts(0);
       setIsLoading(false);
       onLogin();
-    } else {
+    } catch {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       setIsLoading(false);
@@ -270,7 +282,7 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
                   transition={{ delay: 0.4 }}
                 >
                   <Sparkles className="inline w-3 h-3 mr-1" />
-                  Для демонстрации: пароль "admin2024"
+                  Проверка пароля выполняется на сервере Railway
                 </motion.div>
               </div>
             </motion.div>
@@ -291,6 +303,8 @@ export default function App() {
   const [currentLegalDocument, setCurrentLegalDocument] = useState<LegalDocumentType | null>(null);
   const [showTelegramHelper, setShowTelegramHelper] = useState(false);
   const [telegramError, setTelegramError] = useState<any>(null);
+  const [shouldRenderTrend, setShouldRenderTrend] = useState(false);
+  const trendTriggerRef = useRef<HTMLDivElement | null>(null);
 
   const legalFromPath = useCallback((path: string): LegalDocumentType | null => {
     const legacyMap: Record<string, LegalDocumentType> = {
@@ -369,6 +383,21 @@ export default function App() {
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, [legalFromPath]);
+
+  useEffect(() => {
+    if (currentPage !== 'home' || shouldRenderTrend || !trendTriggerRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShouldRenderTrend(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '400px 0px' },
+    );
+    observer.observe(trendTriggerRef.current);
+    return () => observer.disconnect();
+  }, [currentPage, shouldRenderTrend]);
 
   // ✅ SEO теги управляются компонентом <SEOHead /> - НЕ дублируем здесь!
   // Удалён дублирующий useEffect для мета-тегов
@@ -740,30 +769,45 @@ export default function App() {
           
           <main className="relative z-10">
             <Hero onViewCatalog={() => handleNavigate('catalog')} />
-            <About />
-            
-            <Suspense fallback={
-              <section className="py-24">
-                <div className="container mx-auto px-4">
-                  <LoadingSpinner text="Загрузка тренда 2025..." />
-                </div>
-              </section>
-            }>
-              <ErrorBoundary fallback={<LazyLoadError />}>
-                <Trend2025 />
-              </ErrorBoundary>
+            <Suspense fallback={<section className="py-10" aria-hidden="true" />}>
+              <About />
             </Suspense>
+            
+            <div ref={trendTriggerRef} className="h-2 w-full" aria-hidden="true" />
+            {shouldRenderTrend ? (
+              <Suspense fallback={
+                <section className="py-24">
+                  <div className="container mx-auto px-4">
+                    <LoadingSpinner text="Загрузка тренда 2025..." />
+                  </div>
+                </section>
+              }>
+                <ErrorBoundary fallback={<LazyLoadError />}>
+                  <Trend2025 />
+                </ErrorBoundary>
+              </Suspense>
+            ) : (
+              <section className="py-12" aria-hidden="true" />
+            )}
 
-            <MiniCatalog 
-              onAddToCart={addToCart} 
-              onViewFullCatalog={() => handleNavigate('catalog')}
-            />
+            <Suspense fallback={<section className="py-10" aria-hidden="true" />}>
+              <MiniCatalog 
+                onAddToCart={addToCart} 
+                onViewFullCatalog={() => handleNavigate('catalog')}
+              />
+            </Suspense>
             
-            {/* SEO-оптимизированная секция с подробным описанием товаров */}
-            <SEOContent />
-            <HomeSEOClusters />
+            {/* SEO-оптимизированные секции грузятся отложенно */}
+            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
+              <SEOContent />
+            </Suspense>
+            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
+              <HomeSEOClusters />
+            </Suspense>
             
-            <WhyUs />
+            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
+              <WhyUs />
+            </Suspense>
             
             <Suspense fallback={
               <section className="py-24">
@@ -777,9 +821,15 @@ export default function App() {
               </ErrorBoundary>
             </Suspense>
 
-            <FAQ />
-            <Reviews />
-            <Contacts />
+            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
+              <FAQ />
+            </Suspense>
+            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
+              <Reviews />
+            </Suspense>
+            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
+              <Contacts />
+            </Suspense>
           </main>
 
           <Footer onLegalDocumentClick={handleLegalDocumentClick} />

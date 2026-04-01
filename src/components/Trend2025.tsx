@@ -1,65 +1,24 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer@9.13.1';
 import { useRef, useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Badge } from './ui/badge';
 import { Sparkles, X } from '../utils/lucide-stub';
 import { useLanguage } from '../utils/language-context';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import ropeSpool from '@/assets/a9aee619de7250b8cf34489811e56a2ad526e961.webp';
-import ropeSpool1 from '@/assets/d36590916e1b7d0b5ed5998f8b2a08af26a05fc6.webp';
-import ropeSpool2 from '@/assets/72e9efb34a225204cdea61228ddf8cd0dd0441e6.webp';
-import ropeSpool3 from '@/assets/45dd17f92f8ea4430e7ad7b039527a373d6c2d59.webp';
-import ropeSpool4 from '@/assets/ffb54e36b4a66d77d8970c41f5751cb83b64785a.webp';
-import ropeSpool5 from '@/assets/3fd41beb3b14ee5268f5c32e1441ffdca8e72c6c.webp';
-import furnitureCenter from '@/assets/df191f6691e3df36b6c2ffec6edd1034665b1081.webp';
-import furnitureDresser from '@/assets/af5f18c1da580ca3ba8f72a5e923752b97713811.webp';
-import furnitureShelf from '@/assets/7b97b4d791cb0828b7e0ffd655bfc0d9afdf172d.webp';
-import furnitureChair from '@/assets/62b4b964c7e9cab7d8c210451ac9a6ce8d5c5687.webp';
-import furnitureChair2 from '@/assets/22d552fcdd6f1661126ede2d4374f50d3127ab9e.webp';
-
-// Данные о цвета мотков
-const ropeColors = {
-  main: {
-    uz: 'Klassik qora',
-    ru: 'Классический черный',
-    price: '35 000'
-  },
-  spool1: {
-    uz: 'Klassik yog\'och',
-    ru: 'Классический деревянный',
-    price: '35 000'
-  },
-  spool2: {
-    uz: 'Oltin',
-    ru: 'Золото',
-    price: '35 000'
-  },
-  spool3: {
-    uz: 'Bronza',
-    ru: 'Бронза',
-    price: '35 000'
-  },
-  spool4: {
-    uz: 'Qo\'ng\'ir',
-    ru: 'Темно-коричневый',
-    price: '35 000'
-  },
-  spool5: {
-    uz: 'G\'isht rangi',
-    ru: 'Кирпичный',
-    price: '35 000'
-  }
-};
 
 export function Trend2025() {
   const { language } = useLanguage();
+  const prefersReducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredSpool, setHoveredSpool] = useState<string | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+  const [isCompactLayout, setIsCompactLayout] = useState(false);
+  const [assets, setAssets] = useState<any>(null);
+  const reduceAnimations = prefersReducedMotion || isCompactLayout;
   
   const { ref, inView } = useInView({
     threshold: 0.2,
-    triggerOnce: false,
+    triggerOnce: true,
   });
 
   // Отслеживаем прогресс скролла этого контейнера
@@ -79,6 +38,15 @@ export function Trend2025() {
   // Дополнительные мотки появляются позади когда основной коснется дна
   const backgroundSpoolsOpacity = useTransform(scrollYProgress, [0.25, 0.4], [0, 1]);
   const backgroundSpoolsScale = useTransform(scrollYProgress, [0.25, 0.4], [0.8, 1]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const query = window.matchMedia('(max-width: 1024px)');
+    const apply = () => setIsCompactLayout(query.matches);
+    apply();
+    query.addEventListener('change', apply);
+    return () => query.removeEventListener('change', apply);
+  }, []);
   
   // Закрытие lightbox по Escape
   useEffect(() => {
@@ -91,6 +59,42 @@ export function Trend2025() {
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [lightboxImage]);
+
+  useEffect(() => {
+    let cancelled = false;
+    import('../data/trend-assets').then((module) => {
+      if (!cancelled) {
+        setAssets(module);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const {
+    ropeSpool,
+    ropeSpool1,
+    ropeSpool2,
+    ropeSpool3,
+    ropeSpool5,
+    furnitureCenter,
+    furnitureDresser,
+    furnitureShelf,
+    furnitureChair,
+    furnitureChair2,
+    ropeColors,
+  } = assets || {};
+
+  if (!assets) {
+    return (
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-sm text-muted-foreground">Загрузка блока...</div>
+        </div>
+      </section>
+    );
+  }
   
   return (
     <section 
@@ -142,19 +146,18 @@ export function Trend2025() {
                 x: -380,
                 zIndex: 1
               }}
-              onHoverStart={() => setHoveredSpool('spool3')}
-              onHoverEnd={() => setHoveredSpool(null)}
+              onHoverStart={reduceAnimations ? undefined : () => setHoveredSpool('spool3')}
+              onHoverEnd={reduceAnimations ? undefined : () => setHoveredSpool(null)}
             >
               <motion.img 
                 src={ropeSpool3} 
                 alt={language === 'uz' ? 'Burma rattan fotosi' : 'Моток крученого ротанга'}
                 className="w-72 h-72 object-contain"
                 onError={(e) => {
-                  console.error('Ошибка загрузки изображня мотка');
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              {hoveredSpool === 'spool3' && (
+              {!reduceAnimations && hoveredSpool === 'spool3' && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -181,19 +184,18 @@ export function Trend2025() {
                 x: 380,
                 zIndex: 1
               }}
-              onHoverStart={() => setHoveredSpool('spool2')}
-              onHoverEnd={() => setHoveredSpool(null)}
+              onHoverStart={reduceAnimations ? undefined : () => setHoveredSpool('spool2')}
+              onHoverEnd={reduceAnimations ? undefined : () => setHoveredSpool(null)}
             >
               <motion.img 
                 src={ropeSpool2} 
                 alt={language === 'uz' ? 'Burma rattan fotosi' : 'Моток крученого ротанга'}
                 className="w-72 h-72 object-contain"
                 onError={(e) => {
-                  console.error('Ошибка загрузки изображения мотка');
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              {hoveredSpool === 'spool2' && (
+              {!reduceAnimations && hoveredSpool === 'spool2' && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -222,19 +224,18 @@ export function Trend2025() {
                 x: -200,
                 zIndex: 5
               }}
-              onHoverStart={() => setHoveredSpool('spool1')}
-              onHoverEnd={() => setHoveredSpool(null)}
+              onHoverStart={reduceAnimations ? undefined : () => setHoveredSpool('spool1')}
+              onHoverEnd={reduceAnimations ? undefined : () => setHoveredSpool(null)}
             >
               <motion.img 
                 src={ropeSpool1} 
                 alt={language === 'uz' ? 'Burma rattan fotosi' : 'Моток крученого ротанга'}
                 className="w-56 h-56 object-contain"
                 onError={(e) => {
-                  console.error('Ошибка загрузки изображени мотка');
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              {hoveredSpool === 'spool1' && (
+              {!reduceAnimations && hoveredSpool === 'spool1' && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -261,19 +262,18 @@ export function Trend2025() {
                 x: 200,
                 zIndex: 5
               }}
-              onHoverStart={() => setHoveredSpool('spool5')}
-              onHoverEnd={() => setHoveredSpool(null)}
+              onHoverStart={reduceAnimations ? undefined : () => setHoveredSpool('spool5')}
+              onHoverEnd={reduceAnimations ? undefined : () => setHoveredSpool(null)}
             >
               <motion.img 
                 src={ropeSpool5} 
                 alt={language === 'uz' ? 'Burma rattan fotosi' : 'Моток крученого ротнга'}
                 className="w-80 h-80 object-contain"
                 onError={(e) => {
-                  console.error('Ошибка загрузки изображения мотка');
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              {hoveredSpool === 'spool5' && (
+              {!reduceAnimations && hoveredSpool === 'spool5' && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -298,20 +298,18 @@ export function Trend2025() {
               style={{
                 zIndex: 10
               }}
-              onHoverStart={() => setHoveredSpool('main')}
-              onHoverEnd={() => setHoveredSpool(null)}
+              onHoverStart={reduceAnimations ? undefined : () => setHoveredSpool('main')}
+              onHoverEnd={reduceAnimations ? undefined : () => setHoveredSpool(null)}
             >
               <motion.img 
                 src={ropeSpool} 
                 alt={language === 'uz' ? 'Burma rattan fotosi' : 'Моток крученого ротанга'}
                 className="w-80 h-80 object-contain"
                 onError={(e) => {
-                  console.error('Ошибка загрузки изображения мотка');
                   e.currentTarget.style.display = 'none';
                 }}
-                onLoad={() => console.log('Изображение мотка успешно загружено!')}
               />
-              {hoveredSpool === 'main' && (
+              {!reduceAnimations && hoveredSpool === 'main' && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -461,7 +459,7 @@ export function Trend2025() {
               {/* Левый верхний - Стелаж */}
               <motion.div 
                 className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group cursor-pointer"
-                whileHover={{ scale: 1.02 }}
+                whileHover={reduceAnimations ? undefined : { scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 onClick={() => setLightboxImage({ 
                   src: furnitureShelf, 
@@ -479,7 +477,7 @@ export function Trend2025() {
               {/* Центр большой - Обеденная зона */}
               <motion.div 
                 className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden group cursor-pointer"
-                whileHover={{ scale: 1.02 }}
+                whileHover={reduceAnimations ? undefined : { scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 onClick={() => setLightboxImage({ 
                   src: furnitureCenter, 
@@ -501,7 +499,7 @@ export function Trend2025() {
               {/* Правый верхний - Комод */}
               <motion.div 
                 className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group cursor-pointer"
-                whileHover={{ scale: 1.02 }}
+                whileHover={reduceAnimations ? undefined : { scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 onClick={() => setLightboxImage({ 
                   src: furnitureChair2, 
@@ -519,7 +517,7 @@ export function Trend2025() {
               {/* Левый нижний - Кресло */}
               <motion.div 
                 className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group cursor-pointer"
-                whileHover={{ scale: 1.02 }}
+                whileHover={reduceAnimations ? undefined : { scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 onClick={() => setLightboxImage({ 
                   src: furnitureDresser, 
@@ -537,7 +535,7 @@ export function Trend2025() {
               {/* Правый нижний - Столовая */}
               <motion.div 
                 className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group cursor-pointer"
-                whileHover={{ scale: 1.02 }}
+                whileHover={reduceAnimations ? undefined : { scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 onClick={() => setLightboxImage({ 
                   src: furnitureChair, 

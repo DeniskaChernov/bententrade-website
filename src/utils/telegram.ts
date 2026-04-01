@@ -1,5 +1,5 @@
 // Telegram Bot API для отправки заявок через серверный API
-import { API_BASE_URL, SUPABASE_ANON_KEY } from './env';
+import { API_BASE_URL, API_TOKEN } from './env';
 
 export interface OrderData {
   items: Array<{
@@ -39,7 +39,7 @@ async function sendTelegramMessage(messageData: any): Promise<boolean> {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
         },
         body: JSON.stringify(messageData),
       }

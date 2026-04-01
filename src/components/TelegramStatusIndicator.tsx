@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
 import { MessageCircle, CheckCircle, XCircle, AlertCircle, RefreshCw, Send } from '../utils/lucide-stub';
+import { API_BASE_URL, API_TOKEN } from '../utils/env';
 
 interface TelegramStatusIndicatorProps {
   compact?: boolean;
@@ -21,29 +22,28 @@ export function TelegramStatusIndicator({
   const [isTesting, setIsTesting] = useState(false);
   const [chatInfo, setChatInfo] = useState<{ chatId: string; isGroup: boolean } | null>(null);
 
-  const BOT_TOKEN = '8344041596:AAEAJtbcpn8wVE_NcVpXAAbwrkvjE5GHZrA';
-  const CHAT_ID = '-1003068403630';
-
   const checkTelegramConnection = async () => {
     setStatus('checking');
     try {
-      // Проверяем, может ли бот отправлять сообщения в чат
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: CHAT_ID })
+      const response = await fetch(`${API_BASE_URL}/telegram/chats`, {
+        headers: {
+          'Authorization': `Bearer ${API_TOKEN}`,
+        },
       });
 
       const data = await response.json();
 
-      if (data.ok) {
+      if (data.success) {
         setStatus('connected');
-        setChatInfo({
-          chatId: CHAT_ID,
-          isGroup: CHAT_ID.startsWith('-100')
-        });
+        const primaryChat = Array.isArray(data.chats) && data.chats.length > 0 ? data.chats[0] : null;
+        if (primaryChat) {
+          setChatInfo({
+            chatId: String(primaryChat.id),
+            isGroup: String(primaryChat.id).startsWith('-100'),
+          });
+        }
       } else {
-        console.error('❌ Telegram getChat error:', data);
+        console.error('❌ Telegram chats error:', data);
         setStatus('error');
       }
     } catch (error) {
@@ -57,19 +57,18 @@ export function TelegramStatusIndicator({
   const sendTestMessage = async () => {
     setIsTesting(true);
     try {
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      const response = await fetch(`${API_BASE_URL}/telegram/test`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: CHAT_ID,
-          text: `🧪 Тестовое сообщение\n\n✅ Интеграция Telegram работает корректно!\n\n⏰ ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}\n\nBententrade`,
-          parse_mode: 'HTML'
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`,
+        },
+        body: JSON.stringify({}),
       });
 
       const data = await response.json();
 
-      if (data.ok) {
+      if (data.success) {
         const notification = document.createElement('div');
         notification.className = 'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] glass-effect border-green-400/20 text-green-400';
         notification.innerHTML = `
@@ -88,7 +87,7 @@ export function TelegramStatusIndicator({
 
         setStatus('connected');
       } else {
-        throw new Error(data.description || 'Failed to send test message');
+        throw new Error(data.error || 'Failed to send test message');
       }
     } catch (error: any) {
       console.error('❌ Test message failed:', error);
@@ -310,7 +309,7 @@ export function TelegramStatusIndicator({
         {/* Help Text */}
         <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-primary/5">
           <p>💡 Горячая клавиша для помощника: <kbd className="px-1.5 py-0.5 bg-black/20 rounded text-[10px]">Ctrl+Shift+T</kbd></p>
-          <p>📱 Бот: @zayavkassayta_bententrade_bot</p>
+          <p>📱 Проверка идет через Railway API</p>
         </div>
       </div>
     </Card>

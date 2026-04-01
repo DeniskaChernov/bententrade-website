@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle2, XCircle, Loader2, Database, RefreshCw } from '../utils/lucide-stub';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { API_BASE_URL, API_TOKEN } from '../utils/env';
 
 export function DataLoader() {
   const [loading, setLoading] = useState(false);
@@ -16,11 +16,11 @@ export function DataLoader() {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ee878259/load-data`,
+        `${API_BASE_URL}/load-data`,
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
+            'Authorization': `Bearer ${API_TOKEN}`,
             'Content-Type': 'application/json',
           },
         }
@@ -50,11 +50,11 @@ export function DataLoader() {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ee878259/get-data`,
+        `${API_BASE_URL}/get-data`,
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
+            'Authorization': `Bearer ${API_TOKEN}`,
             'Content-Type': 'application/json',
           },
         }
@@ -83,10 +83,10 @@ export function DataLoader() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
             <Database className="w-6 h-6 text-primary" />
-            Загрузка данных в Supabase
+            Загрузка данных в Railway PostgreSQL
           </CardTitle>
           <CardDescription className="text-base">
-            Загрузите актуальные данные каталога в Supabase KV Store
+            Загрузите актуальные данные каталога в PostgreSQL
           </CardDescription>
         </CardHeader>
 
@@ -187,7 +187,7 @@ export function DataLoader() {
           </div>
 
           <div className="text-xs text-muted-foreground space-y-1">
-            <p>💡 Загрузка данных перезаписывает все существующие данные в KV Store</p>
+            <p>💡 Загрузка данных перезаписывает существующие записи в PostgreSQL</p>
             <p>🔄 Перезагружайте данные после изменения цен или добавления товаров</p>
           </div>
         </CardContent>

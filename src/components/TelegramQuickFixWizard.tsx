@@ -17,7 +17,7 @@ import {
   UserPlus,
   Shield
 } from '../utils/lucide-stub';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { API_BASE_URL, API_TOKEN } from '../utils/env';
 
 interface TelegramQuickFixWizardProps {
   isOpen: boolean;
@@ -26,8 +26,7 @@ interface TelegramQuickFixWizardProps {
 }
 
 const BOT_USERNAME = '@zayavkassayta_bententrade_bot';
-const BOT_TOKEN = '8344041596:AAEAJtbcpn8wVE_NcVpXAAbwrkvjE5GHZrA';
-const CURRENT_CHAT_ID = '-1003068403630';
+const CURRENT_CHAT_ID = '';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -69,9 +68,9 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
   const searchForChats = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-ee878259/telegram/chats`, {
+      const response = await fetch(`${API_BASE_URL}/telegram/chats`, {
         headers: {
-          'Authorization': `Bearer ${publicAnonKey}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
         },
       });
       
@@ -100,19 +99,20 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
     try {
       const testMessage = `🧪 Тестовое сообщение от Bententrade\n\nЭто автоматическая проверка связи.\nВремя: ${new Date().toLocaleString('ru-RU')}`;
       
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      const response = await fetch(`${API_BASE_URL}/telegram/test`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`,
+        },
         body: JSON.stringify({
-          chat_id: chatId,
-          text: testMessage,
-          parse_mode: 'HTML'
+          chatId,
         })
       });
       
       const result = await response.json();
       
-      if (result.ok) {
+      if (result.success) {
         setTestResults(new Map(testResults.set(chatId, true)));
         showNotification('✅ Сообщение отправлено! Проверьте Telegram', 'success');
         return true;
@@ -133,8 +133,8 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
     showNotification('✅ Скопировано!', 'success');
   };
 
-  const openSupabase = () => {
-    window.open('https://supabase.com/dashboard', '_blank');
+  const openRailway = () => {
+    window.open('https://railway.com/project', '_blank');
   };
 
   const StepIndicator = ({ step, label, isActive, isCompleted }: { 
@@ -493,7 +493,7 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                     <div className="text-6xl mb-4">🎉</div>
                     <h3 className="text-2xl font-bold mb-2">Почти готово!</h3>
                     <p className="text-muted-foreground">
-                      Осталось обновить Chat ID в Supabase
+                      Осталось обновить Chat ID в Railway
                     </p>
                   </div>
 
@@ -518,10 +518,10 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                     </div>
 
                     <div className="space-y-3 text-sm">
-                      <h4 className="font-semibold">Инструкция для Supabase:</h4>
+                      <h4 className="font-semibold">Инструкция для Railway:</h4>
                       <ol className="space-y-2 list-decimal list-inside text-muted-foreground">
-                        <li>Откройте Supabase Dashboard (кнопка ниже)</li>
-                        <li>Перейдите: <strong>Settings → Edge Functions → Secrets</strong></li>
+                        <li>Откройте Railway проект (кнопка ниже)</li>
+                        <li>Перейдите: <strong>Variables</strong></li>
                         <li>Найдите переменную: <code className="px-2 py-0.5 bg-black/20 rounded">TELEGRAM_CHAT_ID</code></li>
                         <li>Вставьте новый ID: <code className="px-2 py-0.5 bg-black/20 rounded">{selectedChatId}</code></li>
                         <li>Нажмите <strong>Save</strong></li>
@@ -529,11 +529,11 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                     </div>
 
                     <Button
-                      onClick={openSupabase}
+                      onClick={openRailway}
                       className="w-full mt-4 rounded-xl bg-green-600 hover:bg-green-700 text-white"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
-                      Открыть Supabase Dashboard
+                      Открыть Railway Variables
                     </Button>
                   </Card>
 

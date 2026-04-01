@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL, SUPABASE_ANON_KEY } from './env';
+import { API_BASE_URL, API_TOKEN } from './env';
 
 // Интерфейсы
 export interface ColorVariant {
@@ -43,7 +43,7 @@ export function useProducts() {
 
       const response = await fetch(`${API_BASE_URL}/products`, {
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
       });
@@ -73,7 +73,7 @@ export function useProducts() {
     try {
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
       });
@@ -101,7 +101,7 @@ export function useProducts() {
       const response = await fetch(`${API_BASE_URL}/products`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(productData),
@@ -133,7 +133,7 @@ export function useProducts() {
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(productData),
@@ -165,7 +165,7 @@ export function useProducts() {
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
       });
@@ -196,7 +196,7 @@ export function useProducts() {
       const response = await fetch(`${API_BASE_URL}/products/bulk`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ products: productsData }),
@@ -227,7 +227,7 @@ export function useProducts() {
     try {
       const response = await fetch(`${API_BASE_URL}/products/filter/${category}`, {
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
       });
@@ -276,7 +276,7 @@ export async function migrateProductsToDatabase(productsData: Product[]): Promis
     const response = await fetch(`${API_BASE_URL}/products/bulk`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${API_TOKEN}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ products: productsData }),
