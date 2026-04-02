@@ -23,9 +23,11 @@ export type FooterLegalDocumentType = 'privacy' | 'cookies' | 'terms' | 'company
 
 interface FooterProps {
   onLegalDocumentClick: (type: FooterLegalDocumentType) => void;
+  /** Переход на страницу списка статей /blog */
+  onBlogClick?: () => void;
 }
 
-export function Footer({ onLegalDocumentClick }: FooterProps) {
+export function Footer({ onLegalDocumentClick, onBlogClick }: FooterProps) {
   const { t, language } = useLanguage();
 
   const legalLinks = [
@@ -220,23 +222,57 @@ export function Footer({ onLegalDocumentClick }: FooterProps) {
                 
                 <div className="space-y-3">
                   {[
-                    { label: t.about, href: '#about' },
-                    { label: t.catalog, href: '#catalog' },
-                    { label: t.whyUsTitle, href: '#why-us' },
-                    { label: t.contactsTitle, href: '#contacts' }
-                  ].map((link, index) => (
-                    <motion.a
-                      key={link.label}
-                      href={link.href}
-                      className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-300 hover:translate-x-2"
-                      whileHover={{ x: 4 }}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 * index }}
-                    >
-                      {link.label}
-                    </motion.a>
-                  ))}
+                    { label: t.about, href: '#about', kind: 'hash' as const },
+                    { label: t.catalog, href: '#catalog', kind: 'hash' as const },
+                    {
+                      label: language === 'uz' ? 'Blog va yangiliklar' : 'Блог и новости',
+                      href: '/blog',
+                      kind: 'blog' as const,
+                    },
+                    { label: t.whyUsTitle, href: '#why-us', kind: 'hash' as const },
+                    { label: t.contactsTitle, href: '#contacts', kind: 'hash' as const },
+                  ].map((link, index) =>
+                    link.kind === 'blog' ? (
+                      onBlogClick ? (
+                        <motion.button
+                          key={link.label}
+                          type="button"
+                          onClick={onBlogClick}
+                          className="block w-full text-left text-sm text-muted-foreground hover:text-primary transition-colors duration-300 hover:translate-x-2"
+                          whileHover={{ x: 4 }}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * index }}
+                        >
+                          {link.label}
+                        </motion.button>
+                      ) : (
+                        <motion.a
+                          key={link.label}
+                          href="/blog"
+                          className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-300 hover:translate-x-2"
+                          whileHover={{ x: 4 }}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * index }}
+                        >
+                          {link.label}
+                        </motion.a>
+                      )
+                    ) : (
+                      <motion.a
+                        key={link.label}
+                        href={link.href}
+                        className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-300 hover:translate-x-2"
+                        whileHover={{ x: 4 }}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 * index }}
+                      >
+                        {link.label}
+                      </motion.a>
+                    ),
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -37,7 +37,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prerender.mjs",
-    "start": "node server.js"
+    "start": "node server.js",
+    "env:secrets": "node scripts/generate-env-secrets.mjs"
   },
   "engines": {
     "node": ">=20 <21",

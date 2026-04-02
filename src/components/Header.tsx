@@ -12,7 +12,7 @@ interface HeaderProps {
   cartItems: number;
   onCartClick: () => void;
   currentPage: 'home' | 'catalog' | 'admin' | 'legal' | 'blog';
-  onNavigate: (page: 'home' | 'catalog' | 'admin') => void;
+  onNavigate: (page: 'home' | 'catalog' | 'admin' | 'blog') => void;
   onLogoSecretAccess?: (e: React.MouseEvent | React.TouchEvent) => void;
   onLogoLongPress?: () => void;
   isAdminMode?: boolean;
@@ -46,7 +46,7 @@ export const Header = memo(function Header({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavigation = (page: 'home' | 'catalog' | 'admin') => {
+  const handleNavigation = (page: 'home' | 'catalog' | 'admin' | 'blog') => {
     onNavigate(page);
     setIsMobileMenuOpen(false);
   };
@@ -89,19 +89,25 @@ export const Header = memo(function Header({
     }
   };
 
-  const primaryMenuItems = [
+  const blogNavLabel = language === 'uz' ? 'Blog va yangiliklar' : 'Блог и новости';
+
+  const primaryMenuItems: Array<
+    | { name: string; id: string; navPage?: undefined }
+    | { name: string; id: string; navPage: 'catalog' | 'blog' }
+  > = [
     { name: t.about, id: 'about' },
-    { name: t.catalog, id: 'catalog', isPage: true },
+    { name: t.catalog, id: 'catalog', navPage: 'catalog' },
     { name: t.projectGallery, id: 'gallery' },
-    { name: t.contacts, id: 'contacts' }
+    { name: blogNavLabel, id: 'blog-list', navPage: 'blog' },
+    { name: t.contacts, id: 'contacts' },
   ];
 
   const secondaryMenuItems = [
     { name: t.whyUsTitle, id: 'why-us' },
     { name: t.projectGallery, id: 'gallery' },
-    { name: language === 'uz' ? 'Blog va yangiliklar' : 'Блог и новости', id: 'blog' },
+    { name: language === 'uz' ? 'Blog (bosh sahifa)' : 'Блог на главной', id: 'blog' },
     { name: 'FAQ', id: 'faq' },
-    { name: language === 'uz' ? 'Sharhlar' : 'Отзывы', id: 'reviews' }
+    { name: language === 'uz' ? 'Sharhlar' : 'Отзывы', id: 'reviews' },
   ];
 
   return (
@@ -191,20 +197,17 @@ export const Header = memo(function Header({
                 key={item.id}
                 variant="ghost"
                 onClick={() => {
-                  if (item.isPage) {
-                    // Безопасная навигация только к известным страницам
-                    if (item.id === 'catalog') {
-                      handleNavigation('catalog');
-                    } else if (item.id === 'admin') {
-                      handleNavigation('admin');
-                    } else {
-                      handleNavigation('home');
-                    }
+                  if ('navPage' in item && item.navPage) {
+                    handleNavigation(item.navPage);
                   } else {
                     scrollToSection(item.id);
                   }
                 }}
-                className="text-base font-medium px-4 py-2 h-auto rounded-xl hover-glass-nav micro-interaction group"
+                className={`text-base font-medium px-4 py-2 h-auto rounded-xl hover-glass-nav micro-interaction group ${
+                  currentPage === 'blog' && 'navPage' in item && item.navPage === 'blog'
+                    ? 'text-primary bg-primary/10'
+                    : ''
+                }`}
               >
                 <span className="group-hover:text-gradient transition-all duration-300">
                   {item.name}
@@ -310,7 +313,11 @@ export const Header = memo(function Header({
                         >
                           <Button
                             variant="ghost"
-                            onClick={() => item.isPage ? handleNavigation(item.id as 'catalog') : scrollToSection(item.id)}
+                            onClick={() =>
+                              'navPage' in item && item.navPage
+                                ? handleNavigation(item.navPage)
+                                : scrollToSection(item.id)
+                            }
                             className="w-full justify-start text-base p-4 h-auto rounded-xl hover:bg-primary/10 micro-interaction text-left"
                           >
                             {item.name}

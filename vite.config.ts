@@ -1,11 +1,30 @@
 
   import { defineConfig } from 'vite';
+  import type { Plugin } from 'vite';
   import react from '@vitejs/plugin-react';
   import tailwindcss from '@tailwindcss/vite';
   import path from 'path';
 
+  /**
+   * Vite по умолчанию вставляет entry script раньше link на CSS.
+   * Тогда модуль React может выполниться до применения основного бандла стилей — FOUC («голый» интерфейс).
+   * Ставим все stylesheet до script type="module".
+   */
+  function cssBeforeModuleScripts(): Plugin {
+    return {
+      name: 'css-before-module-scripts',
+      enforce: 'post',
+      transformIndexHtml(html) {
+        const re =
+          /(<script[^>]*type="module"[^>]*>\s*<\/script>)\s*(<link[^>]*rel="stylesheet"[^>]*\/?>)/gi;
+        const out = html.replace(re, '$2\n      $1');
+        return out === html ? html : out;
+      },
+    };
+  }
+
   export default defineConfig({
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), cssBeforeModuleScripts()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {

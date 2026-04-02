@@ -539,13 +539,23 @@ export default function App() {
     }));
   }, []);
 
-  const handleNavigate = useCallback((page: 'home' | 'catalog' | 'admin') => {
+  const handleNavigate = useCallback((page: 'home' | 'catalog' | 'admin' | 'blog') => {
+    if (page === 'blog') {
+      startTransition(() => {
+        setCurrentPage('blog');
+        setCurrentBlogSlug(null);
+        setCurrentLegalDocument(null);
+      });
+      updateUrl('/blog');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     startTransition(() => {
       setCurrentPage(page);
+      setCurrentBlogSlug(null);
       setCurrentLegalDocument(null);
     });
     updateUrl(page === 'catalog' ? '/catalog' : page === 'admin' ? '/admin' : '/');
-    // Use smooth scrolling to reduce render blocking
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [updateUrl]);
 
@@ -847,7 +857,7 @@ export default function App() {
                 <BlogPostPage slug={currentBlogSlug} onBack={handleBackFromBlog} />
               </Suspense>
             </main>
-            <Footer onLegalDocumentClick={handleLegalDocumentClick} />
+            <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
             <Cart
               isOpen={isCartOpen}
               onClose={handleCartClose}
@@ -885,7 +895,7 @@ export default function App() {
                 <BlogListPage onBack={handleBackFromBlog} onOpenPost={handleOpenBlogPost} />
               </Suspense>
             </main>
-            <Footer onLegalDocumentClick={handleLegalDocumentClick} />
+            <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
             <Cart
               isOpen={isCartOpen}
               onClose={handleCartClose}
@@ -995,7 +1005,7 @@ export default function App() {
             </Suspense>
           </main>
 
-          <Footer onLegalDocumentClick={handleLegalDocumentClick} />
+          <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
 
           <Cart
             isOpen={isCartOpen}
