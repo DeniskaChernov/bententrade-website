@@ -73,7 +73,7 @@ interface Stats {
 
 interface AdminPanelProps {
   onExit: () => void;
-  adminPassword: string;
+  adminToken: string;
 }
 
 interface CmsProduct {
@@ -100,7 +100,7 @@ interface CmsPost {
   content?: unknown;
 }
 
-export default function AdminPanel({ onExit, adminPassword }: AdminPanelProps) {
+export default function AdminPanel({ onExit, adminToken }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -220,13 +220,14 @@ export default function AdminPanel({ onExit, adminPassword }: AdminPanelProps) {
     }
   };
 
-  const adminHeaders = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_TOKEN}`,
-    'X-Admin-Password': adminPassword,
-    'X-Admin-Role': 'owner',
-    'X-Admin-User': 'admin',
-  };
+  const adminHeaders = useMemo(
+    () => ({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${API_TOKEN}`,
+      'X-Admin-Token': adminToken,
+    }),
+    [adminToken],
+  );
 
   const fetchCmsData = async () => {
     try {

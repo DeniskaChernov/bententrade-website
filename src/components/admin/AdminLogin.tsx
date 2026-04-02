@@ -8,7 +8,7 @@ import { API_BASE_URL, API_TOKEN } from '../../utils/env';
 interface AdminLoginProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: () => void;
+  onLogin: (session: { token: string }) => void;
 }
 
 export function AdminLogin({ isOpen, onClose, onLogin }: AdminLoginProps) {
@@ -48,7 +48,7 @@ export function AdminLogin({ isOpen, onClose, onLogin }: AdminLoginProps) {
     }
     
     setIsLoading(true);
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/admin/login`, {
         method: 'POST',
@@ -59,34 +59,44 @@ export function AdminLogin({ isOpen, onClose, onLogin }: AdminLoginProps) {
         },
         body: JSON.stringify({}),
       });
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Неверный пароль');
+      const result = await response.json().catch(() => ({}));
+
+      if (response.status === 429) {
+        showNotification(String(result.error || 'Слишком много попыток входа. Повторите позже.'));
+        setPassword('');
+        return;
+      }
+
+      if (!response.ok || !result.success || !result.token) {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+
+        if (newAttempts >= MAX_ATTEMPTS) {
+          setIsLocked(true);
+          showNotification(`Превышено количество попыток. Доступ заблокирован на ${LOCKOUT_TIME / 1000} секунд.`);
+
+          setTimeout(() => {
+            setIsLocked(false);
+            setAttempts(0);
+          }, LOCKOUT_TIME);
+        } else {
+          showNotification(
+            String(result.error || `Неверный пароль. Осталось попыток: ${MAX_ATTEMPTS - newAttempts}`),
+          );
+        }
+        setPassword('');
+        return;
       }
 
       showNotification('Добро пожаловать в админ-панель!', 'success');
       setPassword('');
       setAttempts(0);
-      setIsLoading(false);
-      onLogin();
+      onLogin({ token: result.token });
     } catch {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      setIsLoading(false);
-      
-      if (newAttempts >= MAX_ATTEMPTS) {
-        setIsLocked(true);
-        showNotification(`Превышено количество попыток. Доступ заблокирован на ${LOCKOUT_TIME / 1000} секунд.`);
-        
-        setTimeout(() => {
-          setIsLocked(false);
-          setAttempts(0);
-        }, LOCKOUT_TIME);
-      } else {
-        showNotification(`Неверный пароль. Осталось попыток: ${MAX_ATTEMPTS - newAttempts}`);
-      }
-      
+      showNotification('Не удалось связаться с сервером.');
       setPassword('');
+    } finally {
+      setIsLoading(false);
     }
   };
 

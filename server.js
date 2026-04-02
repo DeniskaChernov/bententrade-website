@@ -1,13 +1,106 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash, timingSafeEqual } from 'node:crypto';
 import handler from 'serve-handler';
 import { Pool } from 'pg';
 import { ensureCmsSchema, handleCmsApi } from './cms-api.js';
+import { signAdminJwt, verifyAdminJwt } from './admin-auth.js';
 
 const port = Number(process.env.PORT || 3000);
 const apiPrefix = '/api';
+
+/** Шаг продакшен-чеклиста: в production без секретов сервер не поднимается (открытый API и т.д.). */
+const PROD_SECRETS_REQUIRED =
+  process.env.NODE_ENV === 'production' || process.env.REQUIRE_PROD_SECRETS === 'true';
+
+const MIN_API_TOKEN_LEN = Number(process.env.MIN_API_TOKEN_LEN || 16);
+const MIN_ADMIN_PASSWORD_LEN = Number(process.env.MIN_ADMIN_PASSWORD_LEN || 12);
+
+/** Сравнение секретов без утечки по времени (хэши фиксированной длины). */
+function constantTimeEqualString(expected, candidate) {
+  const a = createHash('sha256').update(String(expected ?? ''), 'utf8').digest();
+  const b = createHash('sha256').update(String(candidate ?? ''), 'utf8').digest();
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/** GET /load-data и /get-data: в production выключены, пока не задан ENABLE_LEGACY_DATA_ENDPOINTS=true. */
+function legacyDataEndpointsEnabled() {
+  if (PROD_SECRETS_REQUIRED) return process.env.ENABLE_LEGACY_DATA_ENDPOINTS === 'true';
+  return process.env.ENABLE_LEGACY_DATA_ENDPOINTS !== 'false';
+}
+
+const MAX_ORDER_ITEMS = Math.min(100, Math.max(1, Number(process.env.MAX_ORDER_ITEMS || 40)));
+const MAX_ORDER_FIELD_LEN = Math.min(8000, Math.max(200, Number(process.env.MAX_ORDER_FIELD_LEN || 2000)));
+const MAX_ORDER_ITEM_NAME_LEN = Math.min(2000, Math.max(100, Number(process.env.MAX_ORDER_ITEM_NAME_LEN || 500)));
+
+function validateOrderPayload(body) {
+  const items = body?.items;
+  if (!Array.isArray(items)) return { ok: false, error: 'Некорректный формат заказа' };
+  if (items.length === 0) return { ok: false, error: 'Пустой заказ' };
+  if (items.length > MAX_ORDER_ITEMS) return { ok: false, error: 'Слишком много позиций в заказе' };
+  for (const item of items) {
+    const q = Number(item?.quantity ?? 1);
+    if (!Number.isFinite(q) || q < 1 || q > 99_999) return { ok: false, error: 'Некорректное количество' };
+    if (String(item?.name || '').length > MAX_ORDER_ITEM_NAME_LEN) {
+      return { ok: false, error: 'Слишком длинное название товара' };
+    }
+  }
+  const c = body?.customerInfo;
+  if (c && typeof c === 'object' && !Array.isArray(c)) {
+    for (const key of ['name', 'phone', 'address', 'notes']) {
+      const v = c[key];
+      if (v != null && String(v).length > MAX_ORDER_FIELD_LEN) {
+        return { ok: false, error: 'Слишком длинное поле в контактах' };
+      }
+    }
+  }
+  return { ok: true };
+}
+
+function assertProductionSecretsOrExit() {
+  if (!PROD_SECRETS_REQUIRED) return;
+
+  const problems = [];
+  const dbUrl = String(process.env.DATABASE_URL || '').trim();
+  if (!dbUrl) problems.push('DATABASE_URL пустой или не задан');
+
+  const apiTok = String(process.env.API_TOKEN || '').trim();
+  if (apiTok.length < MIN_API_TOKEN_LEN) {
+    problems.push(
+      `API_TOKEN слишком короткий (нужно ≥ ${MIN_API_TOKEN_LEN} символов), иначе API фактически без защиты`,
+    );
+  }
+
+  const adminPass = String(process.env.ADMIN_PASSWORD || '').trim();
+  if (adminPass.length < MIN_ADMIN_PASSWORD_LEN) {
+    problems.push(`ADMIN_PASSWORD слишком короткий (нужно ≥ ${MIN_ADMIN_PASSWORD_LEN} символов)`);
+  }
+
+  const jwtSecret = String(process.env.ADMIN_JWT_SECRET || '').trim();
+  if (jwtSecret.length < 32) {
+    problems.push(
+      'ADMIN_JWT_SECRET не задан или короче 32 символов (нужен для подписи админского JWT; сгенерируйте: openssl rand -hex 32)',
+    );
+  }
+
+  if (problems.length === 0) return;
+
+  console.error('');
+  console.error('[Bententrade] Остановка: для production не выполнены требования безопасности окружения:');
+  for (const p of problems) console.error(`  • ${p}`);
+  console.error('');
+  console.error(
+    'Укажите переменные в Railway (Web-сервис) или в .env. Локально: не ставьте NODE_ENV=production для server.js',
+  );
+  console.error(
+    'либо временно отключите проверку: REQUIRE_PROD_SECRETS=false (только для отладки, не в публичном проде).',
+  );
+  console.error('');
+  process.exit(1);
+}
+
+assertProductionSecretsOrExit();
 
 const API_TOKEN = process.env.API_TOKEN || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
@@ -27,6 +120,39 @@ const pool = new Pool({
 pool.on('error', (err) => {
   console.error('PostgreSQL pool error:', err.message);
 });
+
+const ADMIN_ROLE_ENV = process.env.ADMIN_ROLE || 'owner';
+
+/** В production можно включить: для CMS принимается только JWT (заголовок X-Admin-Password для API не действует). Логин POST /admin/login без изменений. */
+const ADMIN_SESSION_PASSWORD_DISABLED = process.env.ADMIN_SESSION_PASSWORD_DISABLED === 'true';
+
+/** Роль только из JWT или из БД после проверки пароля; заголовок X-Admin-Role не используется. */
+async function resolveAdminSession(req) {
+  const token = String(req.headers['x-admin-token'] || '').trim();
+  if (token) {
+    const p = verifyAdminJwt(token);
+    if (p) {
+      return { role: p.role, actor: String(p.email || p.sub || 'admin') };
+    }
+    return null;
+  }
+  if (ADMIN_SESSION_PASSWORD_DISABLED) return null;
+  const pwd = String(req.headers['x-admin-password'] || '');
+  if (ADMIN_PASSWORD && constantTimeEqualString(ADMIN_PASSWORD, pwd)) {
+    const email = process.env.ADMIN_EMAIL || 'admin@local';
+    try {
+      const r = await pool.query('SELECT role FROM admin_users WHERE email = $1 LIMIT 1', [email]);
+      let dbRole = r.rows[0]?.role;
+      if (dbRole !== 'owner' && dbRole !== 'editor' && dbRole !== 'manager') {
+        dbRole = ADMIN_ROLE_ENV;
+      }
+      return { role: dbRole || ADMIN_ROLE_ENV, actor: email };
+    } catch {
+      return { role: ADMIN_ROLE_ENV, actor: email };
+    }
+  }
+  return null;
+}
 
 let dbReady = false;
 let dbInitError = null;
@@ -72,6 +198,43 @@ async function initializeDatabase() {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS admin_login_failures (
+      id TEXT PRIMARY KEY,
+      ip TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_admin_login_failures_ip_created_at
+    ON admin_login_failures (ip, created_at DESC);
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS order_submit_attempts (
+      id TEXT PRIMARY KEY,
+      ip TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_order_submit_attempts_ip_created_at
+    ON order_submit_attempts (ip, created_at DESC);
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS telegram_outbound_attempts (
+      id TEXT PRIMARY KEY,
+      ip TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_telegram_outbound_ip_created_at
+    ON telegram_outbound_attempts (ip, created_at DESC);
+  `);
+
   await ensureCmsSchema(pool);
 }
 
@@ -89,13 +252,240 @@ const PRERENDER_HTML = {
 function sendJson(res, statusCode, payload) {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.end(JSON.stringify(payload));
 }
 
-function setCorsHeaders(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+/** Идентификатор запроса для логов и поддержки (всегда новый UUID на стороне сервера). */
+function assignApiRequestId(req, res) {
+  res.setHeader('X-Request-Id', randomUUID());
+}
+
+/** За прокси (Railway и т.п.) берём первый hop из X-Forwarded-For. */
+function getClientIp(req) {
+  const xf = req.headers['x-forwarded-for'];
+  if (typeof xf === 'string' && xf.trim()) {
+    return xf.split(',')[0].trim().slice(0, 80);
+  }
+  const rip = req.socket?.remoteAddress;
+  return typeof rip === 'string' ? rip : 'unknown';
+}
+
+const ADMIN_LOGIN_RATE_DISABLED = process.env.ADMIN_LOGIN_RATE_DISABLED === 'true';
+const ADMIN_LOGIN_RATE_MAX = Math.max(1, Number(process.env.ADMIN_LOGIN_RATE_MAX || 15));
+const ADMIN_LOGIN_RATE_WINDOW_MS = Math.max(
+  60_000,
+  Number(process.env.ADMIN_LOGIN_RATE_WINDOW_MS || 15 * 60 * 1000),
+);
+
+/** In-memory fallback, если БД ещё не готова или запрос к PostgreSQL не удался. */
+const adminLoginFailTimestamps = new Map();
+
+function adminLoginFailCountMemory(ip) {
+  const now = Date.now();
+  let arr = adminLoginFailTimestamps.get(ip) || [];
+  arr = arr.filter((t) => now - t < ADMIN_LOGIN_RATE_WINDOW_MS);
+  if (arr.length === 0) adminLoginFailTimestamps.delete(ip);
+  else adminLoginFailTimestamps.set(ip, arr);
+  return arr.length;
+}
+
+function adminLoginRecordFailMemory(ip) {
+  const now = Date.now();
+  const arr = (adminLoginFailTimestamps.get(ip) || []).filter((t) => now - t < ADMIN_LOGIN_RATE_WINDOW_MS);
+  arr.push(now);
+  adminLoginFailTimestamps.set(ip, arr);
+}
+
+function adminLoginClearFailsMemory(ip) {
+  adminLoginFailTimestamps.delete(ip);
+}
+
+/** Скользящее окно в PostgreSQL (переживает рестарт процесса; несколько инстансов видят общий счётчик). */
+async function adminLoginFailCountStored(ip) {
+  if (ADMIN_LOGIN_RATE_DISABLED) return 0;
+  if (!dbReady) return adminLoginFailCountMemory(ip);
+  try {
+    const since = new Date(Date.now() - ADMIN_LOGIN_RATE_WINDOW_MS).toISOString();
+    const pruneBefore = new Date(Date.now() - ADMIN_LOGIN_RATE_WINDOW_MS * 4).toISOString();
+    await pool.query(`DELETE FROM admin_login_failures WHERE created_at < $1::timestamptz`, [pruneBefore]);
+    const r = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM admin_login_failures WHERE ip = $1 AND created_at > $2::timestamptz`,
+      [ip, since],
+    );
+    return r.rows[0]?.c ?? 0;
+  } catch {
+    return adminLoginFailCountMemory(ip);
+  }
+}
+
+async function adminLoginRecordFailStored(ip) {
+  if (ADMIN_LOGIN_RATE_DISABLED) return;
+  if (!dbReady) {
+    adminLoginRecordFailMemory(ip);
+    return;
+  }
+  try {
+    await pool.query(`INSERT INTO admin_login_failures (id, ip) VALUES ($1, $2)`, [randomUUID(), ip]);
+  } catch {
+    adminLoginRecordFailMemory(ip);
+  }
+}
+
+async function adminLoginClearFailsStored(ip) {
+  if (ADMIN_LOGIN_RATE_DISABLED) return;
+  if (!dbReady) {
+    adminLoginClearFailsMemory(ip);
+    return;
+  }
+  try {
+    await pool.query(`DELETE FROM admin_login_failures WHERE ip = $1`, [ip]);
+  } catch {
+    adminLoginClearFailsMemory(ip);
+  }
+}
+
+const ORDER_SUBMIT_RATE_DISABLED = process.env.ORDER_SUBMIT_RATE_DISABLED === 'true';
+const ORDER_SUBMIT_RATE_MAX = Math.max(1, Number(process.env.ORDER_SUBMIT_RATE_MAX || 25));
+const ORDER_SUBMIT_RATE_WINDOW_MS = Math.max(
+  60_000,
+  Number(process.env.ORDER_SUBMIT_RATE_WINDOW_MS || 15 * 60 * 1000),
+);
+
+const orderSubmitAttemptTimestamps = new Map();
+
+function orderSubmitRateCountMemory(ip) {
+  const now = Date.now();
+  let arr = orderSubmitAttemptTimestamps.get(ip) || [];
+  arr = arr.filter((t) => now - t < ORDER_SUBMIT_RATE_WINDOW_MS);
+  if (arr.length === 0) orderSubmitAttemptTimestamps.delete(ip);
+  else orderSubmitAttemptTimestamps.set(ip, arr);
+  return arr.length;
+}
+
+function orderSubmitRecordAttemptMemory(ip) {
+  const now = Date.now();
+  const arr = (orderSubmitAttemptTimestamps.get(ip) || []).filter((t) => now - t < ORDER_SUBMIT_RATE_WINDOW_MS);
+  arr.push(now);
+  orderSubmitAttemptTimestamps.set(ip, arr);
+}
+
+async function orderSubmitRateCountStored(ip) {
+  if (ORDER_SUBMIT_RATE_DISABLED) return 0;
+  if (!dbReady) return orderSubmitRateCountMemory(ip);
+  try {
+    const since = new Date(Date.now() - ORDER_SUBMIT_RATE_WINDOW_MS).toISOString();
+    const pruneBefore = new Date(Date.now() - ORDER_SUBMIT_RATE_WINDOW_MS * 4).toISOString();
+    await pool.query(`DELETE FROM order_submit_attempts WHERE created_at < $1::timestamptz`, [pruneBefore]);
+    const r = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM order_submit_attempts WHERE ip = $1 AND created_at > $2::timestamptz`,
+      [ip, since],
+    );
+    return r.rows[0]?.c ?? 0;
+  } catch {
+    return orderSubmitRateCountMemory(ip);
+  }
+}
+
+async function orderSubmitRecordAttemptStored(ip) {
+  if (ORDER_SUBMIT_RATE_DISABLED) return;
+  if (!dbReady) {
+    orderSubmitRecordAttemptMemory(ip);
+    return;
+  }
+  try {
+    await pool.query(`INSERT INTO order_submit_attempts (id, ip) VALUES ($1, $2)`, [randomUUID(), ip]);
+  } catch {
+    orderSubmitRecordAttemptMemory(ip);
+  }
+}
+
+const TELEGRAM_OUTBOUND_RATE_DISABLED = process.env.TELEGRAM_OUTBOUND_RATE_DISABLED === 'true';
+const TELEGRAM_OUTBOUND_RATE_MAX = Math.max(1, Number(process.env.TELEGRAM_OUTBOUND_RATE_MAX || 35));
+const TELEGRAM_OUTBOUND_RATE_WINDOW_MS = Math.max(
+  60_000,
+  Number(process.env.TELEGRAM_OUTBOUND_RATE_WINDOW_MS || 15 * 60 * 1000),
+);
+
+const telegramOutboundTimestamps = new Map();
+
+function telegramOutboundRateCountMemory(ip) {
+  const now = Date.now();
+  let arr = telegramOutboundTimestamps.get(ip) || [];
+  arr = arr.filter((t) => now - t < TELEGRAM_OUTBOUND_RATE_WINDOW_MS);
+  if (arr.length === 0) telegramOutboundTimestamps.delete(ip);
+  else telegramOutboundTimestamps.set(ip, arr);
+  return arr.length;
+}
+
+function telegramOutboundRecordMemory(ip) {
+  const now = Date.now();
+  const arr = (telegramOutboundTimestamps.get(ip) || []).filter((t) => now - t < TELEGRAM_OUTBOUND_RATE_WINDOW_MS);
+  arr.push(now);
+  telegramOutboundTimestamps.set(ip, arr);
+}
+
+async function telegramOutboundRateCountStored(ip) {
+  if (TELEGRAM_OUTBOUND_RATE_DISABLED) return 0;
+  if (!dbReady) return telegramOutboundRateCountMemory(ip);
+  try {
+    const since = new Date(Date.now() - TELEGRAM_OUTBOUND_RATE_WINDOW_MS).toISOString();
+    const pruneBefore = new Date(Date.now() - TELEGRAM_OUTBOUND_RATE_WINDOW_MS * 4).toISOString();
+    await pool.query(`DELETE FROM telegram_outbound_attempts WHERE created_at < $1::timestamptz`, [pruneBefore]);
+    const r = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM telegram_outbound_attempts WHERE ip = $1 AND created_at > $2::timestamptz`,
+      [ip, since],
+    );
+    return r.rows[0]?.c ?? 0;
+  } catch {
+    return telegramOutboundRateCountMemory(ip);
+  }
+}
+
+async function telegramOutboundRecordStored(ip) {
+  if (TELEGRAM_OUTBOUND_RATE_DISABLED) return;
+  if (!dbReady) {
+    telegramOutboundRecordMemory(ip);
+    return;
+  }
+  try {
+    await pool.query(`INSERT INTO telegram_outbound_attempts (id, ip) VALUES ($1, $2)`, [randomUUID(), ip]);
+  } catch {
+    telegramOutboundRecordMemory(ip);
+  }
+}
+
+/** Список разрешённых Origin для CORS. Пустой → `*`. Иначе: явный `CORS_ALLOWED_ORIGINS` (через запятую) или один `SITE_ORIGIN`. */
+function buildCorsAllowedList() {
+  const explicit = process.env.CORS_ALLOWED_ORIGINS;
+  if (explicit !== undefined) {
+    return explicit.split(',').map((s) => s.trim().replace(/\/$/, '')).filter(Boolean);
+  }
+  const site = String(process.env.SITE_ORIGIN || '').trim().replace(/\/$/, '');
+  return site ? [site] : [];
+}
+
+const CORS_ALLOWED_LIST = buildCorsAllowedList();
+
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin;
+  if (CORS_ALLOWED_LIST.length === 0) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  } else if (origin && CORS_ALLOWED_LIST.includes(String(origin).trim().replace(/\/$/, ''))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  } else {
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Password');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-Admin-Password, X-Admin-Token, X-Admin-User, X-Request-Id',
+  );
+  res.setHeader('Access-Control-Expose-Headers', 'X-Request-Id');
 }
 
 function getBearerToken(req) {
@@ -106,21 +496,22 @@ function getBearerToken(req) {
 
 function isAuthorized(req) {
   if (!API_TOKEN) return true;
-  return getBearerToken(req) === API_TOKEN;
+  return constantTimeEqualString(API_TOKEN, getBearerToken(req));
 }
 
-function isAdminAuthorized(req, body) {
-  const provided = req.headers['x-admin-password'] || body?.password || '';
-  if (!ADMIN_PASSWORD) return false;
-  return String(provided) === ADMIN_PASSWORD;
-}
+const DEFAULT_JSON_BODY_MAX = 2 * 1024 * 1024;
+const ORDER_BODY_MAX_BYTES = Math.min(
+  DEFAULT_JSON_BODY_MAX,
+  Math.max(16 * 1024, Number(process.env.ORDER_BODY_MAX_BYTES || 256 * 1024)),
+);
 
-function readBody(req) {
+function readBody(req, maxBytes = DEFAULT_JSON_BODY_MAX) {
+  const limit = Math.min(maxBytes, DEFAULT_JSON_BODY_MAX);
   return new Promise((resolve, reject) => {
     let data = '';
     req.on('data', (chunk) => {
       data += chunk;
-      if (data.length > 2 * 1024 * 1024) {
+      if (data.length > limit) {
         reject(new Error('Payload too large'));
       }
     });
@@ -220,7 +611,8 @@ function formatOrderMessage(orderData) {
 }
 
 async function handleApi(req, res, pathname) {
-  setCorsHeaders(res);
+  setCorsHeaders(req, res);
+  assignApiRequestId(req, res);
   if (req.method === 'OPTIONS') {
     res.statusCode = 204;
     res.end();
@@ -231,14 +623,24 @@ async function handleApi(req, res, pathname) {
   const path = pathname.replace(apiPrefix, '') || '/';
 
   if (method === 'GET' && path === '/health') {
-    sendJson(res, 200, {
+    const healthUrl = new URL(req.url || '/api/health', 'http://127.0.0.1');
+    const wantDetails =
+      healthUrl.searchParams.get('detailed') === '1' ||
+      healthUrl.searchParams.get('detailed') === 'true';
+    const canSeeDetails = wantDetails && API_TOKEN && getBearerToken(req) === API_TOKEN;
+
+    const dbState = dbReady ? 'ready' : dbInitError ? 'error' : 'initializing';
+    const payload = {
       success: true,
       status: 'ok',
-      db: dbReady ? 'ready' : 'initializing',
-      dbError: dbInitError ? String(dbInitError.message || dbInitError) : null,
+      db: dbState,
       uptimeSec: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
-    });
+    };
+    if (canSeeDetails && dbInitError) {
+      payload.dbError = String(dbInitError.message || dbInitError);
+    }
+    sendJson(res, 200, payload);
     return true;
   }
 
@@ -248,6 +650,50 @@ async function handleApi(req, res, pathname) {
   }
 
   try {
+    if (method === 'POST' && path === '/admin/login') {
+      const clientIp = getClientIp(req);
+      if (!ADMIN_LOGIN_RATE_DISABLED) {
+        const failN = await adminLoginFailCountStored(clientIp);
+        if (failN >= ADMIN_LOGIN_RATE_MAX) {
+          res.setHeader('Retry-After', String(Math.ceil(ADMIN_LOGIN_RATE_WINDOW_MS / 1000)));
+          sendJson(res, 429, { success: false, error: 'Слишком много попыток входа. Повторите позже.' });
+          return true;
+        }
+      }
+      const body = await readBody(req);
+      const pwd = String(req.headers['x-admin-password'] || body.password || '');
+      if (!ADMIN_PASSWORD || !constantTimeEqualString(ADMIN_PASSWORD, pwd)) {
+        if (!ADMIN_LOGIN_RATE_DISABLED) await adminLoginRecordFailStored(clientIp);
+        sendJson(res, 401, { success: false, error: 'Неверный пароль' });
+        return true;
+      }
+      if (!ADMIN_LOGIN_RATE_DISABLED) await adminLoginClearFailsStored(clientIp);
+      const email = process.env.ADMIN_EMAIL || 'admin@local';
+      let sub = 'admin-default';
+      let dbRole = ADMIN_ROLE_ENV;
+      try {
+        const r = await pool.query('SELECT id, role FROM admin_users WHERE email = $1 LIMIT 1', [email]);
+        if (r.rows[0]?.id) sub = r.rows[0].id;
+        if (
+          r.rows[0]?.role === 'owner' ||
+          r.rows[0]?.role === 'editor' ||
+          r.rows[0]?.role === 'manager'
+        ) {
+          dbRole = r.rows[0].role;
+        }
+      } catch {
+        /* БД ещё не готова — выдаём токен с ролью из окружения */
+      }
+      const token = signAdminJwt({ sub, email, role: dbRole });
+      sendJson(res, 200, {
+        success: true,
+        token,
+        expiresIn: 8 * 3600,
+        role: dbRole,
+      });
+      return true;
+    }
+
     const cmsHandled = await handleCmsApi({
       req,
       res,
@@ -256,16 +702,9 @@ async function handleApi(req, res, pathname) {
       pool,
       readBody,
       sendJson,
-      isAdminAuthorized,
+      resolveAdminSession,
     });
     if (cmsHandled) return true;
-
-    if (method === 'POST' && path === '/admin/login') {
-      const body = await readBody(req);
-      const ok = isAdminAuthorized(req, body);
-      sendJson(res, ok ? 200 : 401, { success: ok, error: ok ? undefined : 'Неверный пароль' });
-      return true;
-    }
 
     if (method === 'GET' && path === '/products') {
       const result = await pool.query('SELECT * FROM products ORDER BY created_at ASC');
@@ -396,7 +835,37 @@ async function handleApi(req, res, pathname) {
     }
 
     if (method === 'POST' && path === '/orders') {
-      const body = await readBody(req);
+      const orderClientIp = getClientIp(req);
+      if (!ORDER_SUBMIT_RATE_DISABLED) {
+        const submitN = await orderSubmitRateCountStored(orderClientIp);
+        if (submitN >= ORDER_SUBMIT_RATE_MAX) {
+          res.setHeader('Retry-After', String(Math.ceil(ORDER_SUBMIT_RATE_WINDOW_MS / 1000)));
+          sendJson(res, 429, {
+            success: false,
+            error: 'Слишком много заявок с вашего адреса. Повторите позже.',
+          });
+          return true;
+        }
+      }
+      let body;
+      try {
+        body = await readBody(req, ORDER_BODY_MAX_BYTES);
+      } catch (readErr) {
+        if (String(readErr?.message || '') === 'Payload too large') {
+          sendJson(res, 413, { success: false, error: 'Слишком большой запрос' });
+          return true;
+        }
+        if (String(readErr?.message || '') === 'Invalid JSON') {
+          sendJson(res, 400, { success: false, error: 'Некорректный JSON' });
+          return true;
+        }
+        throw readErr;
+      }
+      const orderCheck = validateOrderPayload(body);
+      if (!orderCheck.ok) {
+        sendJson(res, 400, { success: false, error: orderCheck.error });
+        return true;
+      }
       const id = `ORD-${Date.now()}`;
       const result = await pool.query(
         `INSERT INTO orders (id, items, customer_info, status, language, telegram_message_id)
@@ -411,6 +880,7 @@ async function handleApi(req, res, pathname) {
           body.telegramMessageId || null,
         ],
       );
+      if (!ORDER_SUBMIT_RATE_DISABLED) await orderSubmitRecordAttemptStored(orderClientIp);
       sendJson(res, 201, { success: true, orderId: id, order: mapOrderRow(result.rows[0]) });
       return true;
     }
@@ -461,6 +931,18 @@ async function handleApi(req, res, pathname) {
     }
 
     if (method === 'POST' && path === '/telegram/send') {
+      const tgIp = getClientIp(req);
+      if (!TELEGRAM_OUTBOUND_RATE_DISABLED) {
+        const tgN = await telegramOutboundRateCountStored(tgIp);
+        if (tgN >= TELEGRAM_OUTBOUND_RATE_MAX) {
+          res.setHeader('Retry-After', String(Math.ceil(TELEGRAM_OUTBOUND_RATE_WINDOW_MS / 1000)));
+          sendJson(res, 429, {
+            success: false,
+            error: 'Слишком много сообщений в Telegram с вашего адреса. Повторите позже.',
+          });
+          return true;
+        }
+      }
       const body = await readBody(req);
       const message = formatOrderMessage(body);
       const sent = await sendTelegram(message);
@@ -468,6 +950,7 @@ async function handleApi(req, res, pathname) {
         sendJson(res, 400, { success: false, error: sent.error });
         return true;
       }
+      if (!TELEGRAM_OUTBOUND_RATE_DISABLED) await telegramOutboundRecordStored(tgIp);
       sendJson(res, 200, { success: true, messageId: sent.messageId });
       return true;
     }
@@ -499,16 +982,33 @@ async function handleApi(req, res, pathname) {
     }
 
     if (method === 'POST' && path === '/telegram/test') {
+      const testIp = getClientIp(req);
+      if (!TELEGRAM_OUTBOUND_RATE_DISABLED) {
+        const tgN = await telegramOutboundRateCountStored(testIp);
+        if (tgN >= TELEGRAM_OUTBOUND_RATE_MAX) {
+          res.setHeader('Retry-After', String(Math.ceil(TELEGRAM_OUTBOUND_RATE_WINDOW_MS / 1000)));
+          sendJson(res, 429, {
+            success: false,
+            error: 'Слишком много обращений к Telegram с вашего адреса. Повторите позже.',
+          });
+          return true;
+        }
+      }
       const body = await readBody(req);
       const result = await sendTelegram(
         `🧪 Тест Telegram от Bententrade\nВремя: ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}`,
         body.chatId || TELEGRAM_CHAT_ID,
       );
+      if (result.success && !TELEGRAM_OUTBOUND_RATE_DISABLED) await telegramOutboundRecordStored(testIp);
       sendJson(res, result.success ? 200 : 400, result);
       return true;
     }
 
     if (method === 'GET' && path === '/load-data') {
+      if (!legacyDataEndpointsEnabled()) {
+        sendJson(res, 404, { success: false, error: 'Not found' });
+        return true;
+      }
       const existing = await pool.query('SELECT COUNT(*)::int AS count FROM products');
       if (Number(existing.rows[0]?.count || 0) > 0) {
         sendJson(res, 200, {
@@ -567,6 +1067,10 @@ async function handleApi(req, res, pathname) {
     }
 
     if (method === 'GET' && path === '/get-data') {
+      if (!legacyDataEndpointsEnabled()) {
+        sendJson(res, 404, { success: false, error: 'Not found' });
+        return true;
+      }
       const result = await pool.query('SELECT * FROM products ORDER BY created_at ASC');
       sendJson(res, 200, {
         success: true,
@@ -580,7 +1084,8 @@ async function handleApi(req, res, pathname) {
 
     return false;
   } catch (error) {
-    console.error('API error:', error);
+    const rid = res.getHeader('X-Request-Id');
+    console.error('API error:', rid ? `[${rid}]` : '', error?.message || error);
     sendJson(res, 500, { success: false, error: 'Internal server error' });
     return true;
   }
@@ -592,6 +1097,9 @@ const server = http.createServer(async (request, response) => {
   if (requestUrl.pathname.startsWith(apiPrefix)) {
     const handled = await handleApi(request, response, requestUrl.pathname);
     if (handled) return;
+    setCorsHeaders(request, response);
+    sendJson(response, 404, { success: false, error: 'Not found' });
+    return;
   }
 
   const method = request.method || 'GET';
@@ -603,6 +1111,9 @@ const server = http.createServer(async (request, response) => {
       response.statusCode = 200;
       response.setHeader('Content-Type', 'text/html; charset=utf-8');
       response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      response.setHeader('X-Content-Type-Options', 'nosniff');
+      response.setHeader('X-Frame-Options', 'SAMEORIGIN');
+      response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
       response.end(buf);
       return;
     } catch (err) {
@@ -615,6 +1126,14 @@ const server = http.createServer(async (request, response) => {
     cleanUrls: true,
     rewrites: [{ source: '**', destination: '/index.html' }],
     headers: [
+      {
+        source: '**',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
       {
         source: '**/*.@(js|css|woff2|webp|avif)',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],

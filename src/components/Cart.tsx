@@ -378,11 +378,36 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
           }),
         });
 
+        const resultJson = await serverResponse.json().catch(() => ({}));
         if (!serverResponse.ok) {
-          console.error('Server error:', await serverResponse.text());
+          const showOrderWarning = (msg: string) => {
+            const n = document.createElement('div');
+            n.className =
+              'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] max-w-sm glass-effect border-amber-400/30 text-amber-200 text-sm';
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 6000);
+          };
+          if (serverResponse.status === 429) {
+            showOrderWarning(
+              language === 'uz'
+                ? 'Juda koʻp buyurtma yuborildi. Keyinroq urinib koʻring.'
+                : String(resultJson.error || 'Слишком много заявок. Попробуйте позже.'),
+            );
+          } else if (serverResponse.status === 400 || serverResponse.status === 413) {
+            showOrderWarning(
+              String(
+                resultJson.error ||
+                  (language === 'uz'
+                    ? 'Buyurtma yuborilmadi. Maʼlumotlarni tekshiring.'
+                    : 'Заказ не сохранён. Проверьте данные или попробуйте позже.'),
+              ),
+            );
+          } else {
+            console.error('Server error:', resultJson);
+          }
         } else {
-          const result = await serverResponse.json();
-          console.log('Order saved to server:', result.orderId);
+          console.log('Order saved to server:', resultJson.orderId);
         }
       } catch (serverError) {
         console.error('Error saving order to server:', serverError);

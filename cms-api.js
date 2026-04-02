@@ -10,6 +10,11 @@ const ROLE_RANK = {
 
 const ADMIN_ROLE = process.env.ADMIN_ROLE || 'owner';
 
+/** Макс. размер загружаемого изображения (после декодирования base64), по умолчанию 5 МБ. */
+const ADMIN_MEDIA_MAX_BYTES = Math.max(256 * 1024, Number(process.env.ADMIN_MEDIA_MAX_BYTES || 5 * 1024 * 1024));
+
+const ALLOWED_UPLOAD_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
 function slugify(input = '') {
   return String(input)
     .toLowerCase()
@@ -22,11 +27,6 @@ function slugify(input = '') {
 
 function hasRole(requiredRole, currentRole = 'manager') {
   return (ROLE_RANK[currentRole] || 0) >= (ROLE_RANK[requiredRole] || 0);
-}
-
-function getAdminRole(req) {
-  const h = String(req.headers['x-admin-role'] || '').toLowerCase();
-  return h === 'owner' || h === 'editor' || h === 'manager' ? h : ADMIN_ROLE;
 }
 
 function mapCmsProductRow(row) {
@@ -64,9 +64,9 @@ function mapBlogRow(row) {
   };
 }
 
-async function writeAudit(pool, req, action, entityType, entityId, payload) {
-  const actor = String(req.headers['x-admin-user'] || 'admin');
-  const role = getAdminRole(req);
+async function writeAudit(pool, session, action, entityType, entityId, payload) {
+  const actor = String(session?.actor || 'admin');
+  const role = String(session?.role || 'manager');
   await pool.query(
     `INSERT INTO audit_log (id, actor, actor_role, action, entity_type, entity_id, payload)
      VALUES ($1,$2,$3,$4,$5,$6,$7)`,
@@ -173,10 +173,26 @@ export async function ensureCmsSchema(pool) {
   );
 }
 
-export async function handleCmsApi({ req, res, method, path: apiPath, pool, readBody, sendJson, isAdminAuthorized }) {
+export async function handleCmsApi({ req, res, method, path: apiPath, pool, readBody, sendJson, resolveAdminSession }) {
   const requestUrl = new URL(req.url || '/api', 'http://localhost');
   const search = requestUrl.searchParams;
-  const role = getAdminRole(req);
+
+  const skipAdminSession =
+    method === 'POST' && apiPath === '/admin/login';
+
+  /** @type {{ role: string; actor: string } | null} */
+  let adminSession = null;
+  if (apiPath.startsWith('/admin/') && !skipAdminSession) {
+    adminSession = await resolveAdminSession(req);
+    if (!adminSession) {
+      sendJson(res, 401, { success: false, error: 'Invalid admin credentials' });
+      return true;
+    }
+  }
+
+  const role = adminSession ? adminSession.role : 'manager';
+  const auditSession = adminSession || { role: 'manager', actor: 'system' };
+
   const ensureRole = (requiredRole) => {
     if (!hasRole(requiredRole, role)) {
       sendJson(res, 403, { success: false, error: 'Forbidden by role policy' });
@@ -256,16 +272,6 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
     return true;
   }
 
-  if (apiPath.startsWith('/admin/')) {
-    const adminOk = typeof isAdminAuthorized === 'function'
-      ? isAdminAuthorized(req, {})
-      : Boolean(String(req.headers['x-admin-password'] || '').trim());
-    if (!adminOk) {
-      sendJson(res, 401, { success: false, error: 'Invalid admin credentials' });
-      return true;
-    }
-  }
-
   if (method === 'GET' && apiPath === '/admin/roles') {
     const result = await pool.query('SELECT code, title, rank FROM admin_roles ORDER BY rank DESC');
     sendJson(res, 200, { success: true, roles: result.rows, activeRole: role });
@@ -289,26 +295,61 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
       sendJson(res, 400, { success: false, error: 'Invalid dataUrl payload' });
       return true;
     }
-    const mime = match[1];
+    const mimeRaw = String(match[1] || '').split(';')[0].trim().toLowerCase();
+    if (!ALLOWED_UPLOAD_MIMES.has(mimeRaw)) {
+      sendJson(res, 400, { success: false, error: 'Допустимы только изображения JPEG, PNG, WebP или GIF' });
+      return true;
+    }
     const base64 = match[2];
-    const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : mime.includes('jpeg') ? 'jpg' : 'bin';
+    if (base64.length * 0.75 > ADMIN_MEDIA_MAX_BYTES + 65536) {
+      sendJson(res, 400, { success: false, error: 'Файл слишком большой' });
+      return true;
+    }
+    let buf;
+    try {
+      buf = Buffer.from(base64, 'base64');
+    } catch {
+      sendJson(res, 400, { success: false, error: 'Некорректные данные изображения' });
+      return true;
+    }
+    if (buf.length > ADMIN_MEDIA_MAX_BYTES) {
+      sendJson(res, 400, { success: false, error: 'Файл слишком большой' });
+      return true;
+    }
+    const ext =
+      mimeRaw.includes('png') ? 'png' : mimeRaw.includes('webp') ? 'webp' : mimeRaw.includes('gif') ? 'gif' : 'jpg';
     const safeName = `${Date.now()}-${slugify(fileName)}.${ext}`;
     const dir = path.join(process.cwd(), 'uploads');
     await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(path.join(dir, safeName), Buffer.from(base64, 'base64'));
+    await fs.writeFile(path.join(dir, safeName), buf);
     const url = `/api/media/${encodeURIComponent(safeName)}`;
-    await writeAudit(pool, req, 'upload', 'media', safeName, { mime, url });
+    await writeAudit(pool, auditSession, 'upload', 'media', safeName, { mime: mimeRaw, url });
     sendJson(res, 201, { success: true, url, fileName: safeName });
     return true;
   }
 
   if (method === 'GET' && apiPath.startsWith('/media/')) {
-    const fileName = decodeURIComponent(apiPath.replace('/media/', ''));
-    const filePath = path.join(process.cwd(), 'uploads', fileName);
+    const decoded = decodeURIComponent(apiPath.replace('/media/', ''));
+    if (decoded.includes('..')) {
+      sendJson(res, 400, { success: false, error: 'Invalid path' });
+      return true;
+    }
+    const base = path.basename(decoded);
+    if (!base || base !== decoded.replace(/\\/g, '/').split('/').pop()) {
+      sendJson(res, 400, { success: false, error: 'Invalid path' });
+      return true;
+    }
+    const uploadsRoot = path.resolve(process.cwd(), 'uploads');
+    const filePath = path.resolve(uploadsRoot, base);
+    if (!filePath.startsWith(uploadsRoot + path.sep) && filePath !== uploadsRoot) {
+      sendJson(res, 400, { success: false, error: 'Invalid path' });
+      return true;
+    }
     try {
       const file = await fs.readFile(filePath);
       res.statusCode = 200;
-      res.setHeader('Content-Type', fileName.endsWith('.png') ? 'image/png' : fileName.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
+      res.setHeader('Content-Type', base.endsWith('.png') ? 'image/png' : base.endsWith('.webp') ? 'image/webp' : base.endsWith('.gif') ? 'image/gif' : 'image/jpeg');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
       res.end(file);
     } catch {
       sendJson(res, 404, { success: false, error: 'File not found' });
@@ -366,7 +407,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
         body.status === 'published' ? new Date().toISOString() : null,
       ],
     );
-    await writeAudit(pool, req, 'create', 'product', id, body);
+    await writeAudit(pool, auditSession, 'create', 'product', id, body);
     sendJson(res, 201, { success: true, product: mapCmsProductRow(result.rows[0]) });
     return true;
   }
@@ -400,7 +441,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
         nextStatus,
       ],
     );
-    await writeAudit(pool, req, 'update', 'product', id, body);
+    await writeAudit(pool, auditSession, 'update', 'product', id, body);
     sendJson(res, 200, { success: true, product: mapCmsProductRow(result.rows[0]) });
     return true;
   }
@@ -417,7 +458,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
       sendJson(res, 404, { success: false, error: 'Product not found' });
       return true;
     }
-    await writeAudit(pool, req, 'publish', 'product', id, {});
+    await writeAudit(pool, auditSession, 'publish', 'product', id, {});
     sendJson(res, 200, { success: true, product: mapCmsProductRow(result.rows[0]) });
     return true;
   }
@@ -426,7 +467,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
     if (!ensureRole('owner')) return true;
     const id = decodeURIComponent(apiPath.replace('/admin/products/', ''));
     await pool.query(`UPDATE cms_products SET deleted_at = NOW(), updated_at = NOW(), status='archived' WHERE id=$1`, [id]);
-    await writeAudit(pool, req, 'delete', 'product', id, {});
+    await writeAudit(pool, auditSession, 'delete', 'product', id, {});
     sendJson(res, 200, { success: true });
     return true;
   }
@@ -480,7 +521,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
         body.status === 'published' ? new Date().toISOString() : null,
       ],
     );
-    await writeAudit(pool, req, 'create', 'blog_post', id, body);
+    await writeAudit(pool, auditSession, 'create', 'blog_post', id, body);
     sendJson(res, 201, { success: true, post: mapBlogRow(result.rows[0]) });
     return true;
   }
@@ -513,7 +554,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
         nextStatus,
       ],
     );
-    await writeAudit(pool, req, 'update', 'blog_post', id, body);
+    await writeAudit(pool, auditSession, 'update', 'blog_post', id, body);
     sendJson(res, 200, { success: true, post: mapBlogRow(result.rows[0]) });
     return true;
   }
@@ -530,7 +571,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
       sendJson(res, 404, { success: false, error: 'Post not found' });
       return true;
     }
-    await writeAudit(pool, req, 'publish', 'blog_post', id, {});
+    await writeAudit(pool, auditSession, 'publish', 'blog_post', id, {});
     sendJson(res, 200, { success: true, post: mapBlogRow(result.rows[0]) });
     return true;
   }
@@ -539,7 +580,7 @@ export async function handleCmsApi({ req, res, method, path: apiPath, pool, read
     if (!ensureRole('owner')) return true;
     const id = decodeURIComponent(apiPath.replace('/admin/blog/', ''));
     await pool.query(`UPDATE blog_posts SET deleted_at = NOW(), updated_at = NOW(), status='archived' WHERE id=$1`, [id]);
-    await writeAudit(pool, req, 'delete', 'blog_post', id, {});
+    await writeAudit(pool, auditSession, 'delete', 'blog_post', id, {});
     sendJson(res, 200, { success: true });
     return true;
   }

@@ -54,6 +54,9 @@ const BlogListPage = lazy(() => import('./components/BlogListPage').then(module 
 const SEOContent = lazy(() => import('./components/SEOContent').then(module => ({ default: module.SEOContent })));
 const HomeSEOClusters = lazy(() => import('./components/HomeSEOClusters').then(module => ({ default: module.HomeSEOClusters })));
 
+/** Ключ sessionStorage для JWT после входа в админку (не localStorage — закрытие вкладки = выход). */
+const ADMIN_JWT_STORAGE_KEY = 'benten-admin-jwt';
+
 interface ColorVariant {
   id: string;
   name: string;
@@ -78,7 +81,7 @@ interface CartItem extends Product {
 }
 
 // Современный компонент для админ-логина
-function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClose: () => void; onLogin: (password: string) => void }) {
+function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClose: () => void; onLogin: (session: { token: string }) => void }) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -115,7 +118,7 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
     }
     
     setIsLoading(true);
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/admin/login`, {
         method: 'POST',
@@ -126,34 +129,44 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
         },
         body: JSON.stringify({}),
       });
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Неверный пароль');
+      const result = await response.json().catch(() => ({}));
+
+      if (response.status === 429) {
+        showNotification(String(result.error || 'Слишком много попыток входа. Повторите позже.'));
+        setPassword('');
+        return;
+      }
+
+      if (!response.ok || !result.success || !result.token) {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+
+        if (newAttempts >= MAX_ATTEMPTS) {
+          setIsLocked(true);
+          showNotification(`Превышено количество попыток. Доступ заблокирован на ${LOCKOUT_TIME / 1000} секунд.`);
+
+          setTimeout(() => {
+            setIsLocked(false);
+            setAttempts(0);
+          }, LOCKOUT_TIME);
+        } else {
+          showNotification(
+            String(result.error || `Неверный пароль. Осталось попыток: ${MAX_ATTEMPTS - newAttempts}`),
+          );
+        }
+        setPassword('');
+        return;
       }
 
       showNotification('Добро пожаловать в админ-панель! ✨', 'success');
       setPassword('');
       setAttempts(0);
-      setIsLoading(false);
-      onLogin(password);
+      onLogin({ token: result.token });
     } catch {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      setIsLoading(false);
-      
-      if (newAttempts >= MAX_ATTEMPTS) {
-        setIsLocked(true);
-        showNotification(`Превышено количество попыток. Доступ заблокирован на ${LOCKOUT_TIME / 1000} секунд.`);
-        
-        setTimeout(() => {
-          setIsLocked(false);
-          setAttempts(0);
-        }, LOCKOUT_TIME);
-      } else {
-        showNotification(`Неверный пароль. Осталось попыток: ${MAX_ATTEMPTS - newAttempts}`);
-      }
-      
+      showNotification('Не удалось связаться с сервером.');
       setPassword('');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -304,7 +317,7 @@ export default function App() {
   const [currentBlogSlug, setCurrentBlogSlug] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [adminPassword, setAdminPassword] = useState('');
+  const [adminToken, setAdminToken] = useState('');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [currentLegalDocument, setCurrentLegalDocument] = useState<LegalDocumentType | null>(null);
   const [showTelegramHelper, setShowTelegramHelper] = useState(false);
@@ -351,7 +364,21 @@ export default function App() {
     if (path === '/catalog') {
       startTransition(() => setCurrentPage('catalog'));
     } else if (path === '/admin') {
-      startTransition(() => setCurrentPage('admin'));
+      startTransition(() => {
+        setCurrentPage('admin');
+        try {
+          const stored = sessionStorage.getItem(ADMIN_JWT_STORAGE_KEY);
+          if (stored) {
+            setAdminToken(stored);
+            setIsAuthenticated(true);
+            setIsAdminMode(true);
+          } else {
+            setShowAdminLogin(true);
+          }
+        } catch {
+          setShowAdminLogin(true);
+        }
+      });
     } else if (path === '/legal') {
       startTransition(() => {
         setCurrentLegalDocument('privacy');
@@ -389,6 +416,21 @@ export default function App() {
       }
       if (path === '/admin') {
         setCurrentPage('admin');
+        try {
+          const stored = sessionStorage.getItem(ADMIN_JWT_STORAGE_KEY);
+          if (stored) {
+            setAdminToken(stored);
+            setIsAuthenticated(true);
+            setIsAdminMode(true);
+          } else {
+            setAdminToken('');
+            setIsAuthenticated(false);
+            setIsAdminMode(false);
+            setShowAdminLogin(true);
+          }
+        } catch {
+          setShowAdminLogin(true);
+        }
         return;
       }
       if (path === '/legal') {
@@ -439,7 +481,12 @@ export default function App() {
   const handleExitAdmin = useCallback(() => {
     setIsAdminMode(false);
     setIsAuthenticated(false);
-    setAdminPassword('');
+    setAdminToken('');
+    try {
+      sessionStorage.removeItem(ADMIN_JWT_STORAGE_KEY);
+    } catch {
+      /* private mode */
+    }
     setCurrentPage('home');
     updateUrl('/');
   }, [updateUrl]);
@@ -550,12 +597,35 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    if (page === 'admin') {
+      let stored: string | null = null;
+      try {
+        stored = sessionStorage.getItem(ADMIN_JWT_STORAGE_KEY);
+      } catch {
+        /* private mode */
+      }
+      startTransition(() => {
+        setCurrentPage('admin');
+        setCurrentBlogSlug(null);
+        setCurrentLegalDocument(null);
+        if (stored) {
+          setAdminToken(stored);
+          setIsAuthenticated(true);
+          setIsAdminMode(true);
+        } else {
+          setShowAdminLogin(true);
+        }
+      });
+      updateUrl('/admin');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     startTransition(() => {
       setCurrentPage(page);
       setCurrentBlogSlug(null);
       setCurrentLegalDocument(null);
     });
-    updateUrl(page === 'catalog' ? '/catalog' : page === 'admin' ? '/admin' : '/');
+    updateUrl(page === 'catalog' ? '/catalog' : '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [updateUrl]);
 
@@ -571,8 +641,13 @@ export default function App() {
     setShowAdminLogin(true);
   }, []);
 
-  const handleAdminLogin = useCallback((password: string) => {
-    setAdminPassword(password);
+  const handleAdminLogin = useCallback(({ token }: { token: string }) => {
+    try {
+      sessionStorage.setItem(ADMIN_JWT_STORAGE_KEY, token);
+    } catch {
+      /* private mode — сессия только до перезагрузки */
+    }
+    setAdminToken(token);
     setIsAuthenticated(true);
     setIsAdminMode(true);
     setShowAdminLogin(false);
@@ -714,7 +789,7 @@ export default function App() {
                 </div>
               }>
                 <ErrorBoundary fallback={<LazyLoadError />}>
-                  <AdminPanel onExit={handleExitAdmin} adminPassword={adminPassword} />
+                  <AdminPanel onExit={handleExitAdmin} adminToken={adminToken} />
                 </ErrorBoundary>
               </Suspense>
             </div>
