@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from './components/ui/input';
 import { Lock, Shield, AlertCircle, Sparkles } from './utils/lucide-stub';
 import { API_BASE_URL, API_TOKEN } from './utils/env';
+import { getBlogPostBySlug } from './data/blogPosts';
 
 // Optimized lazy loading with shorter timeout and retry mechanism
 const Gallery = lazy(() => 
@@ -47,6 +48,9 @@ const WhyUs = lazy(() => import('./components/WhyUs').then(module => ({ default:
 const FAQ = lazy(() => import('./components/FAQ').then(module => ({ default: module.FAQ })));
 const Reviews = lazy(() => import('./components/Reviews').then(module => ({ default: module.Reviews })));
 const Contacts = lazy(() => import('./components/Contacts').then(module => ({ default: module.Contacts })));
+const BlogSection = lazy(() => import('./components/BlogSection').then(module => ({ default: module.BlogSection })));
+const BlogPostPage = lazy(() => import('./components/BlogPostPage').then(module => ({ default: module.BlogPostPage })));
+const BlogListPage = lazy(() => import('./components/BlogListPage').then(module => ({ default: module.BlogListPage })));
 const SEOContent = lazy(() => import('./components/SEOContent').then(module => ({ default: module.SEOContent })));
 const HomeSEOClusters = lazy(() => import('./components/HomeSEOClusters').then(module => ({ default: module.HomeSEOClusters })));
 
@@ -74,7 +78,7 @@ interface CartItem extends Product {
 }
 
 // Современный компонент для админ-логина
-function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClose: () => void; onLogin: () => void }) {
+function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClose: () => void; onLogin: (password: string) => void }) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -131,7 +135,7 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
       setPassword('');
       setAttempts(0);
       setIsLoading(false);
-      onLogin();
+      onLogin(password);
     } catch {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -296,14 +300,17 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
 export default function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'home' | 'catalog' | 'admin' | 'legal'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'catalog' | 'admin' | 'legal' | 'blog'>('home');
+  const [currentBlogSlug, setCurrentBlogSlug] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [currentLegalDocument, setCurrentLegalDocument] = useState<LegalDocumentType | null>(null);
   const [showTelegramHelper, setShowTelegramHelper] = useState(false);
   const [telegramError, setTelegramError] = useState<any>(null);
   const [shouldRenderTrend, setShouldRenderTrend] = useState(false);
+  const [cartFeedback, setCartFeedback] = useState<string | null>(null);
   const trendTriggerRef = useRef<HTMLDivElement | null>(null);
 
   const legalFromPath = useCallback((path: string): LegalDocumentType | null => {
@@ -321,6 +328,14 @@ export default function App() {
       }
     }
     return null;
+  }, []);
+
+  const blogFromPath = useCallback((path: string): string | null => {
+    if (path === '/blog') return '__list__';
+    if (!path.startsWith('/blog/')) return null;
+    const slug = path.replace('/blog/', '');
+    if (!slug) return null;
+    return slug;
   }, []);
 
   const updateUrl = useCallback((path: string) => {
@@ -343,6 +358,16 @@ export default function App() {
         setCurrentPage('legal');
       });
     } else {
+      const blogSlug = blogFromPath(path);
+      if (blogSlug) {
+        startTransition(() => {
+          setCurrentPage('blog');
+          setCurrentBlogSlug(blogSlug === '__list__' ? null : blogSlug);
+          setCurrentLegalDocument(null);
+        });
+        return;
+      }
+
       const legalType = legalFromPath(path);
       if (legalType) {
         startTransition(() => {
@@ -351,7 +376,7 @@ export default function App() {
         });
       }
     }
-  }, [legalFromPath]);
+  }, [blogFromPath, legalFromPath]);
 
   // Синхронизация SPA состояния с back/forward браузера.
   useEffect(() => {
@@ -375,14 +400,23 @@ export default function App() {
       if (legalType) {
         setCurrentPage('legal');
         setCurrentLegalDocument(legalType);
+        setCurrentBlogSlug(null);
+        return;
+      }
+      const blogSlug = blogFromPath(path);
+      if (blogSlug) {
+        setCurrentPage('blog');
+        setCurrentBlogSlug(blogSlug === '__list__' ? null : blogSlug);
+        setCurrentLegalDocument(null);
         return;
       }
       setCurrentPage('home');
       setCurrentLegalDocument(null);
+      setCurrentBlogSlug(null);
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [legalFromPath]);
+  }, [blogFromPath, legalFromPath]);
 
   useEffect(() => {
     if (currentPage !== 'home' || shouldRenderTrend || !trendTriggerRef.current) return;
@@ -405,6 +439,7 @@ export default function App() {
   const handleExitAdmin = useCallback(() => {
     setIsAdminMode(false);
     setIsAuthenticated(false);
+    setAdminPassword('');
     setCurrentPage('home');
     updateUrl('/');
   }, [updateUrl]);
@@ -480,6 +515,8 @@ export default function App() {
       return [...prev, { ...product, quantity: initialQuantity }];
     });
     setIsCartOpen(true);
+    setCartFeedback(product.name);
+    window.setTimeout(() => setCartFeedback(null), 1800);
   }, []);
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
@@ -524,7 +561,8 @@ export default function App() {
     setShowAdminLogin(true);
   }, []);
 
-  const handleAdminLogin = useCallback(() => {
+  const handleAdminLogin = useCallback((password: string) => {
+    setAdminPassword(password);
     setIsAuthenticated(true);
     setIsAdminMode(true);
     setShowAdminLogin(false);
@@ -557,6 +595,35 @@ export default function App() {
     handleLegalDocumentClick('privacy');
   }, [handleLegalDocumentClick]);
 
+  const handleOpenBlogPost = useCallback((slug: string) => {
+    startTransition(() => {
+      setCurrentPage('blog');
+      setCurrentBlogSlug(slug);
+      setCurrentLegalDocument(null);
+    });
+    updateUrl(`/blog/${slug}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [updateUrl]);
+
+  const handleOpenBlogList = useCallback(() => {
+    startTransition(() => {
+      setCurrentPage('blog');
+      setCurrentBlogSlug(null);
+      setCurrentLegalDocument(null);
+    });
+    updateUrl('/blog');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [updateUrl]);
+
+  const handleBackFromBlog = useCallback(() => {
+    startTransition(() => {
+      setCurrentPage('home');
+      setCurrentBlogSlug(null);
+    });
+    updateUrl('/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [updateUrl]);
+
   // Оптимизированный фон с упрощенными эффектами
   const ModernBackground = () => (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -584,7 +651,7 @@ export default function App() {
   const LazyLoadError = ({ error }: { error?: Error }) => (
     <div className="flex items-center justify-center min-h-96 p-8">
       <div className="text-center glass-card p-8 rounded-2xl max-w-md">
-        <p className="text-muted-foreground mb-2">омпонент временно недоступен</p>
+        <p className="text-muted-foreground mb-2">Компонент временно недоступен</p>
         <p className="text-xs text-muted-foreground/60 mb-4">
           {error?.message || 'Попробуйте обновить страницу'}
         </p>
@@ -637,7 +704,7 @@ export default function App() {
                 </div>
               }>
                 <ErrorBoundary fallback={<LazyLoadError />}>
-                  <AdminPanel onExit={handleExitAdmin} />
+                  <AdminPanel onExit={handleExitAdmin} adminPassword={adminPassword} />
                 </ErrorBoundary>
               </Suspense>
             </div>
@@ -747,6 +814,93 @@ export default function App() {
     );
   }
 
+  // Страница публикации блога
+  if (currentPage === 'blog' && currentBlogSlug) {
+    const post = getBlogPostBySlug(currentBlogSlug);
+    const blogTitle = post ? post.title.ru : 'Блог Bententrade';
+    const blogDescription = post ? post.description.ru : 'Новости и статьи Bententrade';
+    const canonicalBlogUrl = `https://bententrade.uz/blog/${currentBlogSlug}`;
+    return (
+      <LanguageProvider>
+        <ErrorBoundary>
+          <SEOHead
+            page="blog"
+            title={blogTitle}
+            description={blogDescription}
+            canonicalUrl={canonicalBlogUrl}
+            image={post?.image}
+          />
+          <StructuredData type="home" />
+          <Header 
+            cartItems={cartItemsCount} 
+            onCartClick={handleCartClick}
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            onLogoSecretAccess={handleLogoSecretAccess}
+            onLogoLongPress={handleLogoLongPress}
+            isAdminMode={isAdminMode}
+          />
+          <div className="min-h-screen">
+            <ModernBackground />
+            <main className="relative z-10">
+              <Suspense fallback={<section className="py-10" aria-hidden="true" />}>
+                <BlogPostPage slug={currentBlogSlug} onBack={handleBackFromBlog} />
+              </Suspense>
+            </main>
+            <Footer onLegalDocumentClick={handleLegalDocumentClick} />
+            <Cart
+              isOpen={isCartOpen}
+              onClose={handleCartClose}
+              items={cartItems}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+            />
+            <ScrollToTop />
+            <Toaster />
+          </div>
+        </ErrorBoundary>
+      </LanguageProvider>
+    );
+  }
+
+  if (currentPage === 'blog' && !currentBlogSlug) {
+    return (
+      <LanguageProvider>
+        <ErrorBoundary>
+          <SEOHead page="blog" canonicalUrl="https://bententrade.uz/blog" />
+          <StructuredData type="home" />
+          <Header 
+            cartItems={cartItemsCount} 
+            onCartClick={handleCartClick}
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            onLogoSecretAccess={handleLogoSecretAccess}
+            onLogoLongPress={handleLogoLongPress}
+            isAdminMode={isAdminMode}
+          />
+          <div className="min-h-screen">
+            <ModernBackground />
+            <main className="relative z-10">
+              <Suspense fallback={<section className="py-10" aria-hidden="true" />}>
+                <BlogListPage onBack={handleBackFromBlog} onOpenPost={handleOpenBlogPost} />
+              </Suspense>
+            </main>
+            <Footer onLegalDocumentClick={handleLegalDocumentClick} />
+            <Cart
+              isOpen={isCartOpen}
+              onClose={handleCartClose}
+              items={cartItems}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+            />
+            <ScrollToTop />
+            <Toaster />
+          </div>
+        </ErrorBoundary>
+      </LanguageProvider>
+    );
+  }
+
   // Главная страница
   return (
     <LanguageProvider>
@@ -822,6 +976,15 @@ export default function App() {
             </Suspense>
 
             <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
+              <BlogSection onOpenPost={handleOpenBlogPost} />
+            </Suspense>
+            <div className="text-center pb-8">
+              <Button variant="outline" onClick={handleOpenBlogList} className="glass-card border-primary/20 hover:border-primary/40">
+                Все статьи блога
+              </Button>
+            </div>
+
+            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
               <FAQ />
             </Suspense>
             <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
@@ -858,6 +1021,21 @@ export default function App() {
 
           <ScrollToTop />
           <Toaster />
+          <AnimatePresence>
+            {cartFeedback && (
+              <motion.div
+                initial={{ opacity: 0, y: 16, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[120] px-4 py-2 rounded-xl glass-effect border border-primary/30 text-sm shadow-lg"
+                role="status"
+                aria-live="polite"
+              >
+                Товар добавлен в корзину: {cartFeedback}
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {isAdminMode && (
             <motion.div 

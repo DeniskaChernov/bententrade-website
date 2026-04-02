@@ -30,6 +30,33 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const reduceHeavyMotion = prefersReducedMotion || isLowPowerDevice;
 
+  const normalizePhoneInput = (raw: string) => {
+    const sanitized = raw.replace(/[^\d+]/g, '');
+    const plusCount = (sanitized.match(/\+/g) || []).length;
+    if (plusCount > 1) return `+${sanitized.replace(/\+/g, '')}`.slice(0, 20);
+    if (sanitized.includes('+') && !sanitized.startsWith('+')) {
+      return `+${sanitized.replace(/\+/g, '')}`.slice(0, 20);
+    }
+    return sanitized.slice(0, 20);
+  };
+
+  const formatUzbekPhone = (value: string) => {
+    const raw = normalizePhoneInput(value);
+    if (!raw) return '';
+    let digits = raw.replace(/\D/g, '');
+    if (raw.startsWith('+')) {
+      if (!digits.startsWith('998')) digits = `998${digits}`;
+      digits = digits.slice(0, 12);
+      const cc = digits.slice(0, 3);
+      const p1 = digits.slice(3, 5);
+      const p2 = digits.slice(5, 8);
+      const p3 = digits.slice(8, 10);
+      const p4 = digits.slice(10, 12);
+      return `+${cc}${p1 ? ` ${p1}` : ''}${p2 ? ` ${p2}` : ''}${p3 ? ` ${p3}` : ''}${p4 ? ` ${p4}` : ''}`;
+    }
+    return raw;
+  };
+
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mediaQuery = window.matchMedia('(max-width: 1024px)');
@@ -72,6 +99,8 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
         // Успешная отправка
         const notification = document.createElement('div');
         notification.className = 'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] transition-all duration-500 max-w-sm glass-effect border-green-400/20 text-green-400';
+        notification.setAttribute('role', 'status');
+        notification.setAttribute('aria-live', 'polite');
         notification.textContent = language === 'uz' 
           ? 'Xabar yuborildi! Tez orada bog\'lanamiz.'
           : 'Заявка отправлена! Скоро свяжемся с вами.';
@@ -95,6 +124,8 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
       
       const notification = document.createElement('div');
       notification.className = 'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] transition-all duration-500 max-w-sm glass-effect border-red-400/20 text-red-400';
+      notification.setAttribute('role', 'alert');
+      notification.setAttribute('aria-live', 'assertive');
       notification.textContent = language === 'uz' 
         ? 'Xatolik yuz berdi. Qayta urinib ko\'ring.'
         : 'Произошла ошибка. Попробуйте еще раз.';
@@ -180,10 +211,10 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}  
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-center mb-6"
+              className="text-center mb-5"
             >
               <motion.div 
-                className="inline-block mb-5 px-5 py-2 glass-effect rounded-full text-xs tracking-wide text-primary border border-primary/20"
+                className="inline-block mb-4 px-4 py-2 glass-effect rounded-full text-xs tracking-wide text-primary border border-primary/20"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -209,9 +240,9 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="max-w-2xl mx-auto text-center mb-6"
+              className="max-w-2xl mx-auto text-center mb-5"
             >
-              <p className="text-base md:text-lg leading-relaxed mb-6 text-balance opacity-80">
+              <p className="text-base md:text-lg leading-relaxed mb-5 text-balance opacity-80">
                 {language === 'uz' 
                   ? 'Zamonaviy dizayn va an\'anaviy hunarmandchilik uyg\'unligi. Har bir mahsulot – bu sizning makoning uchun san\'at asari.'
                   : 'Слияние современного дизайна и традиционного мастерства. Каждое изделие — произведение искусства для вашего пространства.'
@@ -219,7 +250,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               </p>
               
               <motion.div 
-                className="flex flex-wrap justify-center gap-6 text-xs text-muted-foreground"
+                className="flex flex-wrap justify-center gap-4 md:gap-6 text-xs text-muted-foreground"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
@@ -244,22 +275,22 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-12"
+              className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-10"
             >
               <Button
                 onClick={onViewCatalog}
                 size="lg"
-                className="h-11 px-6 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 micro-interaction neon-glow"
+                className="h-11 min-w-[220px] px-6 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 micro-interaction"
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
                 {language === 'uz' ? 'Mahsulotlarni ko\'rish' : 'Смотреть товары'}
               </Button>
               
               <Button
-                onClick={() => window.location.href = 'tel:+998771044422'}
+                onClick={handleConsultationClick}
                 variant="outline"
                 size="lg"
-                className="h-11 px-6 text-sm rounded-lg glass-effect border-primary/30 hover:border-primary/50 hover:bg-primary/10 micro-interaction"
+                className="h-11 min-w-[220px] px-6 text-sm rounded-lg glass-effect border-primary/30 hover:border-primary/50 hover:bg-primary/10 micro-interaction"
               >
                 <Phone className="w-4 h-4 mr-2" />
                 {language === 'uz' ? 'Tezkor maslahat' : 'Быстрая консультация'}
@@ -271,7 +302,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto"
+              className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 max-w-4xl mx-auto"
             >
               {[
                 { 
@@ -303,7 +334,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                     transition: { duration: 0.15, ease: "easeOut" }
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="text-center glass-card p-6 rounded-xl relative overflow-hidden group cursor-pointer border border-primary/10"
+                  className="text-center glass-card p-5 md:p-6 rounded-xl relative overflow-hidden group cursor-pointer border border-primary/10"
                   style={{ transition: "all 0.15s ease-out" }}
                 >
                   {/* Эффект свечения при наведении */}
@@ -334,6 +365,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.2 }}
           onClick={scrollToNext}
+          aria-label={language === 'uz' ? 'Keyingi bo\'limga o\'tish' : 'Прокрутить к следующему разделу'}
           className="absolute left-1/2 transform -translate-x-1/2 p-3 rounded-full glass-effect border border-primary/20 hover:border-primary/40 micro-interaction group cursor-pointer"
           style={{ bottom: '17px' }}
           whileHover={{ y: -4, scale: 1.1 }}
@@ -399,35 +431,64 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSubmitConsultation} className="space-y-6 mt-6">
+            <form onSubmit={handleSubmitConsultation} className="space-y-6 mt-6" aria-busy={isSubmitting}>
               <div className="space-y-4">
                 <div>
+                  <label htmlFor="consultation-name" className="sr-only">
+                    {language === 'uz' ? 'Ismingiz' : 'Ваше имя'}
+                  </label>
                   <Input
+                    id="consultation-name"
                     type="text"
                     placeholder={language === 'uz' ? 'Ismingiz' : 'Ваше имя'}
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
+                    autoComplete="name"
+                    disabled={isSubmitting}
                     className="glass-card border-primary/20 h-12 rounded-xl"
                   />
                 </div>
                 
                 <div>
+                  <label htmlFor="consultation-phone" className="sr-only">
+                    {language === 'uz' ? 'Telefon raqami' : 'Номер телефона'}
+                  </label>
                   <Input
+                    id="consultation-phone"
                     type="tel"
                     placeholder={language === 'uz' ? 'Telefon raqami' : 'Номер телефона'}
                     value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: normalizePhoneInput(e.target.value) }))}
+                    onFocus={() => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        phone: prev.phone.trim() ? prev.phone : '+998 ',
+                      }));
+                    }}
+                    onBlur={(e) => setFormData(prev => ({ ...prev, phone: formatUzbekPhone(e.target.value).trim() }))}
                     required
+                    autoComplete="tel"
+                    inputMode="tel"
+                    pattern="^\+?[0-9\s\-()]{9,20}$"
+                    minLength={9}
+                    title={language === 'uz' ? 'To\'g\'ri telefon raqamini kiriting' : 'Введите корректный номер телефона'}
+                    disabled={isSubmitting}
                     className="glass-card border-primary/20 h-12 rounded-xl"
                   />
                 </div>
                 
                 <div>
+                  <label htmlFor="consultation-message" className="sr-only">
+                    {language === 'uz' ? 'Qo\'shimcha xabar' : 'Дополнительное сообщение'}
+                  </label>
                   <Textarea
+                    id="consultation-message"
                     placeholder={language === 'uz' ? 'Qo\'shimcha xabar (ixtiyoriy)' : 'Дополнительное сообщение (необязательно)'}
                     value={formData.message}
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                    autoComplete="off"
+                    disabled={isSubmitting}
                     className="glass-card border-primary/20 rounded-xl"
                     rows={3}
                   />
@@ -450,11 +511,14 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                   className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 micro-interaction neon-glow"
                 >
                   {isSubmitting ? (
-                    <motion.div
-                      className="w-5 h-5 border-2 border-current border-t-transparent rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    />
+                    <div className="flex items-center justify-center gap-2">
+                      <motion.div
+                        className="w-5 h-5 border-2 border-current border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      />
+                      <span className="sr-only">{language === 'uz' ? 'Yuborilmoqda...' : 'Отправка...'}</span>
+                    </div>
                   ) : (
                     <>
                       <Phone className="w-4 h-4 mr-2" />

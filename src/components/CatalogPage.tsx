@@ -12,6 +12,7 @@ import { ProductGridSkeleton } from './ProductCardSkeleton';
 import { Breadcrumbs } from './Breadcrumbs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { useLanguage } from '../utils/language-context';
+import { API_BASE_URL } from '../utils/env';
 
 // Импорт изображений кашпо 5л с ручкой
 import kashpo5lBeigeWithHandle from '@/assets/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.webp';
@@ -141,11 +142,40 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<'planters' | 'materials'>('planters');
   const [visibleCount, setVisibleCount] = useState(8);
+  const [cmsProducts, setCmsProducts] = useState<Product[]>([]);
 
   // Логирование изменений selectedVariants
   useEffect(() => {
     console.log('🔄 [CatalogPage] selectedVariants изменён:', selectedVariants);
   }, [selectedVariants]);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadCmsProducts = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/public/products`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted || !Array.isArray(data.products) || data.products.length === 0) return;
+        const mapped: Product[] = data.products.map((p: any) => ({
+          id: p.id,
+          name: typeof p.title === 'object' ? p.title[language] || p.title.ru || p.slug : p.title || p.slug || p.id,
+          description: typeof p.description === 'object' ? p.description[language] || p.description.ru || '' : p.description || '',
+          image: p.image || '',
+          features: [],
+          variants: [],
+          category: p.category || 'kashpo',
+        }));
+        setCmsProducts(mapped);
+      } catch {
+        // keep seeded products
+      }
+    };
+    loadCmsProducts();
+    return () => {
+      mounted = false;
+    };
+  }, [language]);
 
   // Helper функция для перевода названий цветов
   const getColorName = (colorId: string): string => {
@@ -223,7 +253,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
         uz: '10 litr tutumli an\'anaviy to\'qish uslubidagi klassik katta guldon'
       },
       '4': { 
-        ru: 'Объёмное ка��по "Пухляш" на 10 литров с округлыми формами и мягким плетением',
+        ru: 'Объёмное кашпо "Пухляш" на 10 литров с округлыми формами и мягким плетением',
         uz: 'Yumshoq to\'qish va dumaloq shaklga ega 10 litr tutumli "Puffy" guldon'
       },
       '5': { 
@@ -244,7 +274,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
       'Профиль полусфера': { ru: 'Профиль полусфера', uz: 'Yarim shar profili' },
       'Различные цвета': { ru: 'Различные цвета', uz: 'Turli ranglar' },
       'Высокая прочность': { ru: 'Высокая прочность', uz: 'Yuqori mustahkamlik' },
-      'Для классического плетения': { ru: 'Для клас��ического плетения', uz: 'Klassik to\'qish uchun' },
+      'Для классического плетения': { ru: 'Для классического плетения', uz: 'Klassik to\'qish uchun' },
       'Профиль сфера': { ru: 'Профиль сфера', uz: 'Shar profili' },
       'Объёмное плетение': { ru: 'Объёмное плетение', uz: 'Hajmli to\'qish' },
       'Мягкая текстура': { ru: 'Мягкая текстура', uz: 'Yumshoq to\'qilma' },
@@ -381,7 +411,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
         kashpoTricolorPuhlyash
       ],
       color: '#C4A57B', // Запасной цвет
-      gradient: 'linear-gradient(120deg, #FFFFFF 0%, #FFFFFF 33%, #8B4513 33%, #8B4513 66%, #BC9973 66%, #BC9973 100%)' // ⚪|🟤|�� РЕЗКИЙ ГРАДИЕНТ - 3 ЧЁТКИЕ ПОЛОСЫ
+      gradient: 'linear-gradient(120deg, #FFFFFF 0%, #FFFFFF 33%, #8B4513 33%, #8B4513 66%, #BC9973 66%, #BC9973 100%)' // ⚪|🟤|🟫 РЕЗКИЙ ГРАДИЕНТ - 3 ЧЁТКИЕ ПОЛОСЫ
     }
   ], []);
 
@@ -864,7 +894,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
       name: getProductName('2'),
       description: getProductDescription('2'),
       image: colorVariantsWithHandle[0].images[0],
-      features: ['Объём 5 литров', 'Удобная ручка', 'Натуральный дизайн', 'Различные цвет��'].map(translateFeature),
+      features: ['Объём 5 литров', 'Удобная ручка', 'Натуральный дизайн', 'Различные цвета'].map(translateFeature),
       variants: colorVariantsWithHandle,
       category: 'kashpo',
       size: '5л',
@@ -938,6 +968,10 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
     console.log('🎨 [CatalogPage] Продукты созданы, всего:', productsList.length);
     return productsList;
   }, [colorVariantsWithHandle, colorVariantsClassic, colorVariantsPuhlyash, colorVariantsFlatRattan, colorVariantsSphere, colorVariantsCrescent, colorVariantsTube, language]);
+  const allProducts = useMemo(
+    () => (cmsProducts.length ? [...cmsProducts, ...products] : products),
+    [cmsProducts, products],
+  );
   
   // Проверка товаров Пухляш
   console.log('🏺 Товар "Кашпо 10л Пухляш":', products.find(p => p.id === '4'));
@@ -946,7 +980,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
   // Инициализация выбранных вариантов
   useEffect(() => {
     const initialVariants: {[key: string]: string} = {};
-    products.forEach(product => {
+    allProducts.forEach(product => {
       if (product.variants && product.variants.length > 0) {
         initialVariants[product.id] = product.variants[0].id;
         
@@ -963,10 +997,10 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
     });
     console.log('🔧 Инициализация selectedVariants:', initialVariants);
     setSelectedVariants(initialVariants);
-  }, [products]);
+  }, [allProducts]);
 
   // Фильтрация товаров с учетом активной категории
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = allProducts.filter(product => {
     // Фильтр по категории
     const matchesCategory = activeCategory === 'planters' 
       ? product.category !== 'materials' 
@@ -1023,7 +1057,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
   }, [sortedProducts.length]);
 
   const handleVariantChange = (productId: string, variantId: string) => {
-    console.log(`🎨 [CatalogPage] Измен��ние варианта для продукта ${productId} на ${variantId}`);
+    console.log(`🎨 [CatalogPage] Изменение варианта для продукта ${productId} на ${variantId}`);
     
     setSelectedVariants(prev => {
       const newVariants = {
@@ -1094,7 +1128,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
   // Получение уникальных значений для фильтров
   // Доступные цвета только для текущей категории
   const availableColors = useMemo(() => {
-    const categoryProducts = products.filter(p => 
+    const categoryProducts = allProducts.filter(p => 
       activeCategory === 'planters' 
         ? p.category !== 'materials' 
         : p.category === 'materials'
@@ -1109,11 +1143,11 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
     console.log(`🎨 [CatalogPage] Товаров в категории:`, categoryProducts.length);
     
     return colors;
-  }, [products, activeCategory, allColorVariants]);
+  }, [allProducts, activeCategory, allColorVariants]);
 
   // Доступные размеры только для текущей категории
   const availableSizes = useMemo(() => {
-    const categoryProducts = products.filter(p => 
+    const categoryProducts = allProducts.filter(p => 
       activeCategory === 'planters' 
         ? p.category !== 'materials' 
         : p.category === 'materials'
@@ -1122,11 +1156,11 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
     return Array.from(new Set(
       categoryProducts.map(p => p.size).filter(Boolean)
     ));
-  }, [products, activeCategory]);
+  }, [allProducts, activeCategory]);
 
   // Доступные стили только для текущей категории
   const availableStyles = useMemo(() => {
-    const categoryProducts = products.filter(p => 
+    const categoryProducts = allProducts.filter(p => 
       activeCategory === 'planters' 
         ? p.category !== 'materials' 
         : p.category === 'materials'
@@ -1135,11 +1169,11 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
     return Array.from(new Set(
       categoryProducts.map(p => p.style).filter(Boolean)
     ));
-  }, [products, activeCategory]);
+  }, [allProducts, activeCategory]);
 
   // Счетчики товаров по категориям
-  const plantersCount = products.filter(p => p.category !== 'materials').length;
-  const materialsCount = products.filter(p => p.category === 'materials').length;
+  const plantersCount = allProducts.filter(p => p.category !== 'materials').length;
+  const materialsCount = allProducts.filter(p => p.category === 'materials').length;
   const seoClusterContent = useMemo(() => {
     if (language === 'uz') {
       return activeCategory === 'materials'
@@ -1397,7 +1431,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="mb-12 glass-effect p-8 rounded-3xl hover-lift border border-primary/10"
+          className="mb-12 glass-effect p-6 md:p-8 rounded-3xl border border-primary/10"
         >
           {/* Поиск */}
           <div className="relative max-w-md mx-auto">
@@ -1415,7 +1449,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
             <div className="flex justify-center mt-4">
               <Badge variant="secondary" className="glass-card border-primary/20 text-primary px-4 py-2 rounded-full neon-glow">
                 {t.search}: {searchTerm}
-                <button 
+                <button
+                  type="button"
+                  aria-label={language === 'uz' ? 'Qidiruvni tozalash' : 'Очистить поиск'}
                   onClick={() => setSearchTerm('')}
                   className="ml-3 text-primary/60 hover:text-primary micro-interaction font-bold"
                 >
@@ -1430,7 +1466,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
         {isLoading ? (
           <ProductGridSkeleton count={8} />
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedProducts.slice(0, visibleCount).map((product, index) => (
               <motion.div
                 key={product.id}
@@ -1440,7 +1476,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                 whileHover={reduceListAnimations ? undefined : { y: -10, scale: 1.02 }}
                 className="group"
               >
-                <Card className="overflow-hidden glass-card border-primary/10 hover:border-primary/30 transition-all duration-500 flex flex-col hover-lift rounded-3xl backdrop-blur-20">
+                <Card className="overflow-hidden glass-card border-primary/10 hover:border-primary/30 transition-all duration-300 flex flex-col rounded-3xl">
                   <CardHeader className="p-0 relative overflow-hidden">
                     <div className="aspect-square overflow-hidden relative">
                       {/* Изображение товара */}
@@ -1459,9 +1495,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6 flex flex-col">
+                  <CardContent className="p-5 flex flex-col">
                     <div className="flex items-start justify-between mb-3">
-                      <CardTitle className="group-hover:text-primary transition-colors font-grotesk">
+                      <CardTitle className="group-hover:text-primary transition-colors font-grotesk text-xl leading-tight">
                         {product.name}
                       </CardTitle>
                       <div className="flex gap-1 ml-2 flex-wrap">
@@ -1473,7 +1509,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                       </div>
                     </div>
                     
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="text-muted-foreground leading-relaxed text-sm md:text-[15px]">
                       {getProductDescription(product.id)}
                     </p>
 
@@ -1483,7 +1519,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                         initial={reduceListAnimations ? { opacity: 1 } : { opacity: 0, y: 10 }}
                         animate={reduceListAnimations ? { opacity: 1 } : (inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 })}
                         transition={{ duration: reduceListAnimations ? 0 : 0.4, delay: reduceListAnimations ? 0 : index * 0.05 + 0.2 }}
-                        className="mt-4 mb-4 p-4 glass-card rounded-xl border border-primary/10 hover:border-primary/20 transition-all duration-300"
+                        className="mt-4 mb-4 p-4 glass-card rounded-xl border border-primary/10 hover:border-primary/20 transition-all duration-200"
                       >
                         {/* Размеры кашпо */}
                         {product.dimensions && (
@@ -1568,7 +1604,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                     )}
                     
                     {product.features && (
-                      <motion.ul className="text-muted-foreground space-y-1 mb-4">
+                      <motion.ul className="text-muted-foreground space-y-1 mb-4 text-sm">
                         {product.features.slice(0, 3).map((feature, featureIndex) => (
                           <motion.li
                             key={featureIndex}
@@ -1590,7 +1626,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                     )}
                   </CardContent>
                   
-                  <CardFooter className="p-6 pt-0 flex flex-col gap-3">
+                  <CardFooter className="p-5 pt-0 flex flex-col gap-3">
                     {/* Цена товара */}
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -1632,7 +1668,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                       className="w-full"
                     >
                       <Button 
-                        className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 neon-glow micro-interaction rounded-xl font-grotesk font-medium shadow-lg"
+                        className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 micro-interaction rounded-xl font-grotesk font-medium shadow-md"
                         onClick={() => handleAddToCart(product)}
                       >
                         <motion.span
@@ -1658,7 +1694,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
           <div ref={loadMoreRef} className="h-8 w-full mt-6" aria-hidden="true" />
         )}
 
-        {/* ообщение об отсутствии результатов */}
+        {/* Сообщение об отсутствии результатов */}
         {!isLoading && sortedProducts.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1666,7 +1702,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
             transition={{ duration: 0.6 }}
             className="text-center py-16"
           >
-            <div className="glass-effect rounded-3xl p-16 hover-lift border border-primary/10">
+            <div className="glass-effect rounded-3xl p-10 md:p-16 border border-primary/10">
               <motion.div 
                 className="w-20 h-20 glass-card rounded-full flex items-center justify-center mx-auto mb-8 neon-glow"
                 animate={{ 

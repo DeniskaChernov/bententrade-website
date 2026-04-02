@@ -7,6 +7,7 @@ import { ShoppingCart, ChevronRight, Sparkles, Star } from '../utils/lucide-stub
 import { useLanguage } from '../utils/language-context';
 import { useMemo, useState, useEffect } from 'react';
 import { Badge } from './ui/badge';
+import { API_BASE_URL } from '../utils/env';
 
 // Импорт изображений кашпо 5л с ручкой
 import kashpo5lBeigeWithHandle from '@/assets/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.webp';
@@ -72,6 +73,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
   });
 
   const [selectedVariants, setSelectedVariants] = useState<{[key: string]: string}>({});
+  const [cmsProducts, setCmsProducts] = useState<Product[]>([]);
 
   // Цветовые варианты мемоизированы для стабильности ссылок (ОБНОВЛЕНО: Бежевый → Жёлтый для 5л)
   const colorVariants5lWithHandle: ColorVariant[] = useMemo(() => [
@@ -338,18 +340,50 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
     t.kashpo16lPuffy, t.kashpo16lPuffyDesc, t.volume16l, t.softRoundedForms, t.forBigPlants,
     colorVariants5lWithHandle, colorVariantsClassic, colorVariantsPuhlyash, colorVariantsRattan
   ]);
+  const displayProducts = useMemo(
+    () => (cmsProducts.length ? [...cmsProducts, ...popularProducts].slice(0, 4) : popularProducts),
+    [cmsProducts, popularProducts],
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    const loadCmsProducts = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/public/products`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted || !Array.isArray(data.products) || data.products.length === 0) return;
+        const mapped: Product[] = data.products.map((p: any) => ({
+          id: p.id,
+          name: typeof p.title === 'object' ? p.title[language] || p.title.ru || p.slug : p.title || p.slug || p.id,
+          description: typeof p.description === 'object' ? p.description[language] || p.description.ru || '' : p.description || '',
+          image: p.image || '',
+          category: p.category || 'kashpo',
+          variants: [],
+          features: [],
+        }));
+        setCmsProducts(mapped);
+      } catch {
+        // fallback to static products
+      }
+    };
+    loadCmsProducts();
+    return () => {
+      mounted = false;
+    };
+  }, [language]);
 
   // Инициализация выбранных вариантов
   useEffect(() => {
     const initialVariants: {[key: string]: string} = {};
-    popularProducts.forEach(product => {
+    displayProducts.forEach(product => {
       if (product.variants && product.variants.length > 0) {
         initialVariants[product.id] = product.variants[0].id;
         
       }
     });
     setSelectedVariants(initialVariants);
-  }, [popularProducts]);
+  }, [displayProducts]);
   
   const handleVariantChange = (productId: string, variantId: string) => {
     setSelectedVariants(prev => {
@@ -401,7 +435,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-{language === 'uz' ? 'Toshkentda ishlab chiqarilgan sun\'iy rattandan eng mashhur mahsulotlarimiz' : 'Наши самые востребованные плетёные изделия из искусственного ротанга производства Ташкента'}
+{language === 'uz' ? 'Toshkentda ishlab chiqarilgan sun\'iy rattandan eng mashhur mahsulotlarimiz' : 'Наши самые востребованные плетёные изделия из искусственного ротанга, произведённые в Ташкенте'}
           </motion.p>
           
           <motion.div
@@ -413,8 +447,8 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
         </div>
         
         {/* Товары */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12">
-          {popularProducts.map((product, index) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6 max-w-7xl mx-auto mb-12">
+          {displayProducts.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -423,7 +457,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
               whileHover={{ y: -10, scale: 1.02 }}
               className="group"
             >
-              <Card className="card-elevated overflow-hidden transition-all duration-500 h-full">
+              <Card className="card-elevated overflow-hidden transition-all duration-300 h-full border border-primary/10">
                 <CardHeader className="p-0 m-0 relative overflow-hidden aspect-square">
                   <ImageWithFallback
                     key={`${product.id}-${selectedVariants[product.id] || 'default'}`}
@@ -442,9 +476,9 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                   )}
                 </CardHeader>
                 
-                <CardContent className="p-4 flex-1 flex flex-col">
+                <CardContent className="p-4 md:p-5 flex-1 flex flex-col">
                   <div className="flex items-start justify-between mb-3">
-                    <CardTitle className="group-hover:text-brand-light transition-colors text-lg">
+                    <CardTitle className="group-hover:text-primary transition-colors text-lg leading-tight">
                       {product.name}
                     </CardTitle>
                     <div className="flex gap-1 ml-2">
@@ -498,7 +532,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                       transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
                       className="mb-4"
                     >
-                      <p className="text-sm font-medium mb-2 text-amber-700">{t.color}:</p>
+                      <p className="text-sm font-medium mb-2 text-primary">{t.color}:</p>
                       <div className="flex gap-2 flex-wrap">
                         {product.variants.slice(0, 3).map((variant) => (
                           <motion.button
@@ -509,6 +543,8 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleVariantChange(product.id, variant.id)}
+                            aria-label={`${t.color}: ${variant.name}`}
+                            title={variant.name}
                             className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs border transition-all duration-300 ${
                               selectedVariants[product.id] === variant.id
                                 ? 'border-amber-700 bg-amber-50 text-amber-700 shadow-md'
@@ -544,7 +580,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                   )}
                 </CardContent>
                 
-                <CardFooter className="p-4 pt-0 flex flex-col gap-3">
+                <CardFooter className="p-4 md:p-5 pt-0 flex flex-col gap-3">
                   {/* Цена товара */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -592,13 +628,11 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                     className="w-full"
                   >
                     <Button 
-                      className="w-full text-base font-medium px-4 py-2 h-auto rounded-xl hover-glass-nav micro-interaction group bg-primary/10 border border-primary/20 hover:border-primary/40"
+                      className="w-full h-11 text-sm font-medium rounded-xl micro-interaction group bg-primary text-primary-foreground hover:bg-primary/90"
                       onClick={() => handleAddToCart(product)}
                     >
-                      <ShoppingCart className="w-4 h-4 mr-2 group-hover:text-primary transition-all duration-300" />
-                      <span className="group-hover:text-gradient transition-all duration-300">
-                        {t.order}
-                      </span>
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      <span>{t.order}</span>
                     </Button>
                   </motion.div>
                 </CardFooter>
@@ -607,7 +641,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
           ))}
         </div>
 
-        {/* Кнопа просмотра всего каталога */}
+        {/* Кнопка просмотра всего каталога */}
         <motion.div
           className="text-center"
           initial={{ opacity: 0, y: 30 }}
@@ -617,7 +651,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
           <Button
             onClick={onViewFullCatalog}
             size="lg"
-            className="bg-brand-light hover:bg-brand-cream text-brand-dark px-8 py-6 text-lg rounded-xl shadow-brand-lg hover:shadow-2xl transition-all duration-300 group font-bold"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-xl transition-all duration-200 group font-bold shadow-md"
           >
             <motion.div
               className="flex items-center gap-3"

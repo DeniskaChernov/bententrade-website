@@ -100,7 +100,7 @@ function buildRuKeywords(): string[] {
 
 export const SEO_KEYWORDS_RU = buildRuKeywords();
 
-export function getPageKeywords(page: 'home' | 'catalog' | 'legal', language: 'ru' | 'uz'): string[] {
+export function getPageKeywords(page: 'home' | 'catalog' | 'legal' | 'blog', language: 'ru' | 'uz'): string[] {
   if (language === 'uz') {
     // Для uz оставляем компактный релевантный набор.
     return [
@@ -135,6 +135,16 @@ export function getPageKeywords(page: 'home' | 'catalog' | 'legal', language: 'r
       'правовая информация bententrade',
       'обработка персональных данных bententrade',
     ];
+  }
+
+  if (page === 'blog') {
+    return SEO_KEYWORDS_RU.filter(
+      (k) =>
+        k.includes('ротанг') ||
+        k.includes('кашпо') ||
+        k.includes('каталог') ||
+        k.includes('плетеные')
+    ).slice(0, 400);
   }
 
   return SEO_KEYWORDS_RU.slice(0, 1000);

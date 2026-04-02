@@ -11,7 +11,7 @@ import logoImage from '@/assets/fae59665fd1772cdd61f6a4d1c95ed996e1502f5.webp';
 interface HeaderProps {
   cartItems: number;
   onCartClick: () => void;
-  currentPage: 'home' | 'catalog' | 'admin';
+  currentPage: 'home' | 'catalog' | 'admin' | 'legal' | 'blog';
   onNavigate: (page: 'home' | 'catalog' | 'admin') => void;
   onLogoSecretAccess?: (e: React.MouseEvent | React.TouchEvent) => void;
   onLogoLongPress?: () => void;
@@ -98,9 +98,10 @@ export const Header = memo(function Header({
 
   const secondaryMenuItems = [
     { name: t.whyUsTitle, id: 'why-us' },
-    { name: 'Проекты', id: 'gallery' },
+    { name: t.projectGallery, id: 'gallery' },
+    { name: language === 'uz' ? 'Blog va yangiliklar' : 'Блог и новости', id: 'blog' },
     { name: 'FAQ', id: 'faq' },
-    { name: 'Отзывы', id: 'reviews' }
+    { name: language === 'uz' ? 'Sharhlar' : 'Отзывы', id: 'reviews' }
   ];
 
   return (
@@ -115,7 +116,7 @@ export const Header = memo(function Header({
         WebkitBackdropFilter: isScrolled ? 'blur(12px)' : 'none'
       }}
     >
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <motion.button
@@ -150,7 +151,7 @@ export const Header = memo(function Header({
             
             <div className="relative">
               <motion.div 
-                className="w-10 h-10 rounded-xl glass-card flex items-center justify-center overflow-hidden"
+                className="w-10 h-10 rounded-xl glass-card flex items-center justify-center overflow-hidden border border-primary/15"
                 whileHover={{ rotate: 5 }}
                 transition={{ duration: 0.2 }}
               >
@@ -224,7 +225,8 @@ export const Header = memo(function Header({
               onClick={onCartClick}
               variant="outline"
               size="sm"
-              className="relative h-11 px-4 rounded-xl glass-card border-primary/20 hover:border-primary/40 micro-interaction"
+              aria-label={language === 'uz' ? "Savatni ochish" : "Открыть корзину"}
+              className="relative h-10 px-4 rounded-xl glass-card border-primary/20 hover:border-primary/40 micro-interaction"
             >
               <ShoppingCart className="w-5 h-5" />
               {cartItems > 0 && (
@@ -249,14 +251,19 @@ export const Header = memo(function Header({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="lg:hidden h-11 px-3 rounded-xl glass-card border-primary/20 hover:border-primary/40"
+                  aria-label={language === 'uz' ? "Menyuni ochish" : "Открыть меню"}
+                  aria-expanded={isMobileMenuOpen}
+                  aria-controls="mobile-nav-sheet"
+                  className="lg:hidden h-10 px-3 rounded-xl glass-card border-primary/20 hover:border-primary/40"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
               
               <SheetContent 
+                id="mobile-nav-sheet"
                 side="right" 
+                aria-labelledby="mobile-nav-title"
                 className="w-80 glass-effect border-l border-primary/20 p-0"
               >
                 <motion.div
@@ -272,12 +279,15 @@ export const Header = memo(function Header({
                       <div className="w-8 h-8 rounded-lg glass-card flex items-center justify-center">
                         <Sparkles className="w-4 h-4 text-primary" />
                       </div>
-                      <span className="font-bold text-gradient">Меню</span>
+                      <span id="mobile-nav-title" className="font-bold text-gradient">
+                        {language === 'uz' ? 'Menyu' : 'Меню'}
+                      </span>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      aria-label={language === 'uz' ? "Menyuni yopish" : "Закрыть меню"}
                       className="h-8 w-8 p-0 rounded-lg"
                     >
                       <X className="w-4 h-4" />
@@ -288,7 +298,9 @@ export const Header = memo(function Header({
                   <div className="flex-1 p-6 space-y-6">
                     {/* Primary Menu */}
                     <div className="space-y-2">
-                      <h3 className="text-sm font-medium opacity-60 mb-3">Основное меню</h3>
+                      <h3 className="text-sm font-medium opacity-60 mb-3">
+                        {language === 'uz' ? 'Asosiy menyu' : 'Основное меню'}
+                      </h3>
                       {primaryMenuItems.map((item, index) => (
                         <motion.div
                           key={item.id}
@@ -299,7 +311,7 @@ export const Header = memo(function Header({
                           <Button
                             variant="ghost"
                             onClick={() => item.isPage ? handleNavigation(item.id as 'catalog') : scrollToSection(item.id)}
-                            className="w-full justify-start text-base p-4 h-auto rounded-xl hover:bg-primary/10 micro-interaction"
+                            className="w-full justify-start text-base p-4 h-auto rounded-xl hover:bg-primary/10 micro-interaction text-left"
                           >
                             {item.name}
                           </Button>
@@ -309,7 +321,9 @@ export const Header = memo(function Header({
 
                     {/* Secondary Menu */}
                     <div className="space-y-2">
-                      <h3 className="text-sm font-medium opacity-60 mb-3">Дополнительно</h3>
+                      <h3 className="text-sm font-medium opacity-60 mb-3">
+                        {language === 'uz' ? 'Qo‘shimcha' : 'Дополнительно'}
+                      </h3>
                       {secondaryMenuItems.map((item, index) => (
                         <motion.div
                           key={item.id}
@@ -320,7 +334,7 @@ export const Header = memo(function Header({
                           <Button
                             variant="ghost"
                             onClick={() => scrollToSection(item.id)}
-                            className="w-full justify-start text-base p-4 h-auto rounded-xl hover:bg-primary/10 micro-interaction"
+                            className="w-full justify-start text-base p-4 h-auto rounded-xl hover:bg-primary/10 micro-interaction text-left"
                           >
                             {item.name}
                           </Button>
@@ -332,7 +346,7 @@ export const Header = memo(function Header({
                   {/* Footer */}
                   <div className="p-6 border-t border-primary/10">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm opacity-60">Язык</span>
+                      <span className="text-sm opacity-60">{language === 'uz' ? 'Til' : 'Язык'}</span>
                       <LanguageToggle />
                     </div>
                   </div>

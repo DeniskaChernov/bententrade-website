@@ -4,6 +4,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import handler from 'serve-handler';
 import { Pool } from 'pg';
+import { ensureCmsSchema, handleCmsApi } from './cms-api.js';
 
 const port = Number(process.env.PORT || 3000);
 const apiPrefix = '/api';
@@ -12,11 +13,15 @@ const API_TOKEN = process.env.API_TOKEN || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
+const DB_RETRY_DELAY_MS = Number(process.env.DB_RETRY_DELAY_MS || 10000);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false },
 });
+
+let dbReady = false;
+let dbInitError = null;
 
 async function initializeDatabase() {
   if (!process.env.DATABASE_URL) {
@@ -59,6 +64,7 @@ async function initializeDatabase() {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
   `);
+  await ensureCmsSchema(pool);
 }
 
 function normalizeHtmlPathname(p) {
@@ -213,15 +219,39 @@ async function handleApi(req, res, pathname) {
     return true;
   }
 
+  const method = req.method || 'GET';
+  const path = pathname.replace(apiPrefix, '') || '/';
+
+  if (method === 'GET' && path === '/health') {
+    sendJson(res, 200, {
+      success: true,
+      status: 'ok',
+      db: dbReady ? 'ready' : 'initializing',
+      dbError: dbInitError ? String(dbInitError.message || dbInitError) : null,
+      uptimeSec: Math.round(process.uptime()),
+      timestamp: new Date().toISOString(),
+    });
+    return true;
+  }
+
   if (!isAuthorized(req)) {
     sendJson(res, 401, { success: false, error: 'Unauthorized' });
     return true;
   }
 
-  const method = req.method || 'GET';
-  const path = pathname.replace(apiPrefix, '') || '/';
-
   try {
+    const cmsHandled = await handleCmsApi({
+      req,
+      res,
+      method,
+      path,
+      pool,
+      readBody,
+      sendJson,
+      isAdminAuthorized,
+    });
+    if (cmsHandled) return true;
+
     if (method === 'POST' && path === '/admin/login') {
       const body = await readBody(req);
       const ok = isAdminAuthorized(req, body);
@@ -593,14 +623,30 @@ const server = http.createServer(async (request, response) => {
   });
 });
 
-initializeDatabase()
-  .then(() => {
+async function initializeDatabaseWithRetry() {
+  try {
+    await initializeDatabase();
+    dbReady = true;
+    dbInitError = null;
     console.log('PostgreSQL initialized');
-    server.listen(port, '0.0.0.0', () => {
-      console.log(`Server started on port ${port}`);
-    });
-  })
-  .catch((error) => {
-    console.error('Failed to initialize PostgreSQL:', error.message);
-    process.exit(1);
-  });
+  } catch (error) {
+    dbReady = false;
+    dbInitError = error;
+    console.error(`Failed to initialize PostgreSQL: ${error.message}`);
+    console.log(`Retrying PostgreSQL initialization in ${DB_RETRY_DELAY_MS}ms...`);
+    setTimeout(() => {
+      initializeDatabaseWithRetry().catch((retryError) => {
+        console.error('Unexpected retry initializer error:', retryError.message);
+      });
+    }, DB_RETRY_DELAY_MS);
+  }
+}
+
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Server started on port ${port}`);
+});
+
+initializeDatabaseWithRetry().catch((error) => {
+  dbInitError = error;
+  console.error('Unexpected PostgreSQL bootstrap error:', error.message);
+});

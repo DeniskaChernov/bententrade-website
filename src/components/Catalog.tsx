@@ -237,7 +237,8 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                                 ? selectedImages[product.id] - 1 
                                 : getImageGallery(product).length - 1
                             )}
-                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Предыдущее фото"
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                           >
                             <ChevronLeft className="w-4 h-4 text-amber-700" />
                           </button>
@@ -249,7 +250,8 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                                 ? selectedImages[product.id] + 1 
                                 : 0
                             )}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Следующее фото"
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                           >
                             <ChevronRight className="w-4 h-4 text-amber-700" />
                           </button>
@@ -260,6 +262,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                               <button
                                 key={imgIndex}
                                 onClick={() => handleImageChange(product.id, imgIndex)}
+                                aria-label={`Перейти к фото ${imgIndex + 1}`}
                                 className={`w-2 h-2 rounded-full transition-all ${
                                   selectedImages[product.id] === imgIndex 
                                     ? 'bg-amber-600' 

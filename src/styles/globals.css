@@ -35,6 +35,15 @@
   --chart-4: #8B5A36;
   --chart-5: #7A4D2F;
   --radius: 1rem;
+  --glass-surface: rgba(10, 9, 8, 0.84);
+  --glass-card: rgba(245, 243, 240, 0.04);
+  --glass-border-strong: rgba(245, 243, 240, 0.14);
+  --glass-border-soft: rgba(245, 243, 240, 0.08);
+  --glass-shadow-1: 0 8px 26px rgba(0, 0, 0, 0.26);
+  --glass-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --motion-fast: 180ms;
+  --motion-base: 280ms;
+  --motion-slow: 420ms;
   --sidebar: rgba(245, 243, 240, 0.05);
   --sidebar-foreground: #F5F3F0;
   --sidebar-primary: #D4A574;
@@ -135,18 +144,11 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Оптимизация производительности */
-    will-change: scroll-position;
     overflow-x: hidden;
   }
 
   html {
     scroll-behavior: smooth;
-  }
-  
-  /* Оптимизация изображений */
-  img {
-    content-visibility: auto;
   }
   
   /* Оптимизация для анимаций - только для элементов с анимациями */
@@ -191,22 +193,22 @@
     text-wrap: pretty;
   }
   .glass-effect {
-    background: rgba(10, 9, 8, 0.85);
+    background: var(--glass-surface);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(245, 243, 240, 0.1);
+    border: 1px solid var(--glass-border-strong);
     box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.3),
+      var(--glass-shadow-1),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
   
   .glass-card {
-    background: rgba(245, 243, 240, 0.03);
+    background: var(--glass-card);
     -webkit-backdrop-filter: blur(16px);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(245, 243, 240, 0.08);
+    border: 1px solid var(--glass-border-soft);
     box-shadow: 
-      0 4px 24px rgba(0, 0, 0, 0.2),
+      var(--glass-shadow-2),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
   
@@ -240,7 +242,7 @@
   }
   
   .hover-glass-nav {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+    transition: all var(--motion-base) cubic-bezier(0.4, 0, 0.6, 1);
     position: relative;
   }
   
@@ -262,7 +264,7 @@
   }
   
   .hover-lift {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform var(--motion-base) cubic-bezier(0.4, 0, 0.2, 1), box-shadow var(--motion-base) cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .hover-lift:hover {
@@ -273,7 +275,7 @@
   }
   
   .micro-interaction {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform var(--motion-fast) cubic-bezier(0.4, 0, 0.2, 1), box-shadow var(--motion-fast) cubic-bezier(0.4, 0, 0.2, 1), background-color var(--motion-fast) ease;
   }
   
   .micro-interaction:hover {
@@ -336,8 +338,8 @@
   @media (max-width: 640px) {
     .glass-effect,
     .glass-card {
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
   }
 
@@ -354,6 +356,10 @@
     }
     .glass-card {
       background: rgba(22, 20, 18, 0.94);
+    }
+    .hover-lift:hover,
+    .micro-interaction:hover {
+      transform: none;
     }
   }
   

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -45,6 +45,7 @@ interface CartProps {
 
 export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }: CartProps) {
   const { t, language } = useLanguage();
+  const prefersReducedMotion = useReducedMotion();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -55,6 +56,33 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [agreeToDataProcessing, setAgreeToDataProcessing] = useState(false);
   const [agreeToMarketing, setAgreeToMarketing] = useState(false);
+
+  const normalizePhoneInput = (raw: string) => {
+    const sanitized = raw.replace(/[^\d+]/g, '');
+    const plusCount = (sanitized.match(/\+/g) || []).length;
+    if (plusCount > 1) return `+${sanitized.replace(/\+/g, '')}`.slice(0, 20);
+    if (sanitized.includes('+') && !sanitized.startsWith('+')) {
+      return `+${sanitized.replace(/\+/g, '')}`.slice(0, 20);
+    }
+    return sanitized.slice(0, 20);
+  };
+
+  const formatUzbekPhone = (value: string) => {
+    const raw = normalizePhoneInput(value);
+    if (!raw) return '';
+    let digits = raw.replace(/\D/g, '');
+    if (raw.startsWith('+')) {
+      if (!digits.startsWith('998')) digits = `998${digits}`;
+      digits = digits.slice(0, 12);
+      const cc = digits.slice(0, 3);
+      const p1 = digits.slice(3, 5);
+      const p2 = digits.slice(5, 8);
+      const p3 = digits.slice(8, 10);
+      const p4 = digits.slice(10, 12);
+      return `+${cc}${p1 ? ` ${p1}` : ''}${p2 ? ` ${p2}` : ''}${p3 ? ` ${p3}` : ''}${p4 ? ` ${p4}` : ''}`;
+    }
+    return raw;
+  };
   
   // Функция перевода названий цветов
   const getColorName = (colorId: string): string => {
@@ -439,7 +467,8 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
       : item.id;
   };
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+  const totalPrice = useMemo(() => calculateTotal(), [items]);
 
   return (
     <AnimatePresence>
@@ -458,7 +487,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
             exit={{ opacity: 0, scale: 0.8, y: 50 }}
             transition={{ duration: 0.4, type: "spring", damping: 25 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden"
+            className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden"
           >
             <Card className="glass-effect shadow-2xl border-primary/20 rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between glass-card border-b border-primary/10 rounded-t-2xl">
@@ -482,14 +511,21 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                     whileTap={{ scale: 0.9 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-primary/10 rounded-xl micro-interaction">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onClose}
+                      aria-label={language === 'uz' ? 'Savatni yopish' : 'Закрыть корзину'}
+                      title={language === 'uz' ? 'Savatni yopish' : 'Закрыть корзину'}
+                      className="hover:bg-primary/10 rounded-xl micro-interaction"
+                    >
                       <X className="w-4 h-4" />
                     </Button>
                   </motion.div>
                 </div>
               </CardHeader>
               
-              <CardContent className="overflow-y-auto max-h-[70vh] p-8 relative">
+              <CardContent className="overflow-y-auto max-h-[70vh] p-5 sm:p-8 relative">
                 {items.length === 0 ? (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -498,7 +534,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                     className="text-center py-16"
                   >
                     <motion.div
-                      animate={{ 
+                      animate={prefersReducedMotion ? undefined : {
                         scale: [1, 1.1, 1],
                         opacity: [0.5, 1, 0.5]
                       }}
@@ -517,7 +553,16 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                   </motion.div>
                 ) : (
                   <>
-                    <div className="space-y-6 mb-12">
+                    <div className="md:hidden sticky top-0 z-10 mb-4 -mx-2 px-2 py-2 bg-gradient-to-b from-background via-background/95 to-transparent">
+                      <div className="glass-card rounded-xl border border-primary/15 px-3 py-2 flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {language === 'uz' ? `Mahsulotlar: ${totalItems}` : `Товаров: ${totalItems}`}
+                        </span>
+                        <span className="font-semibold text-primary">{formatPrice(totalPrice, t.currency)}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 sm:space-y-6 mb-10 sm:mb-12">
                       <AnimatePresence>
                         {items.map((item, index) => {
                           const itemId = getItemId(item);
@@ -528,12 +573,12 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                               animate={{ opacity: 1, x: 0, scale: 1 }}
                               exit={{ opacity: 0, x: 50, scale: 0.9 }}
                               transition={{ duration: 0.4, delay: index * 0.1 }}
-                              whileHover={{ scale: 1.02 }}
-                              className="flex items-center justify-between p-6 glass-card rounded-2xl hover-lift micro-interaction"
+                              whileHover={prefersReducedMotion ? undefined : { scale: 1.01 }}
+                              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 glass-card rounded-2xl border border-primary/10 bg-gradient-to-b from-white/5 to-transparent micro-interaction"
                             >
-                              <div className="flex items-center flex-1">
+                              <div className="flex items-start sm:items-center flex-1 w-full">
                                 {/* Изображение товара */}
-                                <div className="w-20 h-20 rounded-xl overflow-hidden mr-6 flex-shrink-0 glass-effect">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden mr-4 sm:mr-6 flex-shrink-0 glass-effect">
                                   <img 
                                     src={item.image} 
                                     alt={item.name}
@@ -568,7 +613,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                   <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{item.description}</p>
                                   
                                   {/* Цена за единицу и итоговая сумма */}
-                                  <div className="mt-3 flex flex-col gap-1.5">
+                                  <div className="mt-3 flex flex-col gap-1.5" aria-live="polite">
                                     <div className="flex items-center gap-2 text-sm">
                                       <span className="text-muted-foreground">
                                         {item.category === 'materials' ? t.pricePerKg : t.price}
@@ -587,7 +632,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                 </div>
                               </div>
                               
-                              <div className="flex items-center space-x-3 ml-6">
+                              <div className="flex items-center justify-between sm:justify-start space-x-3 mt-4 sm:mt-0 sm:ml-6 w-full sm:w-auto">
                                 {(() => {
                                   // Для ротанга (materials) минимум 5кг, шаг 5кг
                                   // Для кашпо минимум 1шт, шаг 1шт
@@ -605,20 +650,21 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                           variant="outline"
                                           size="sm"
                                           onClick={() => onUpdateQuantity(itemId, Math.max(minQuantity, item.quantity - step))}
-                                          className="glass-card border-primary/20 hover:border-primary/40 hover:bg-primary/10 rounded-xl w-10 h-10"
+                                          aria-label={language === 'uz' ? 'Miqdorni kamaytirish' : 'Уменьшить количество'}
+                                          className="glass-card border-primary/20 hover:border-primary/40 hover:bg-primary/10 rounded-xl w-9 h-9 sm:w-10 sm:h-10"
                                         >
                                           <Minus className="w-4 h-4" />
                                         </Button>
                                       </motion.div>
                                       
                                       <motion.span 
-                                        className="w-12 text-center font-semibold text-primary text-lg"
+                                        className="w-12 text-center font-semibold text-primary text-base sm:text-lg"
                                         key={item.quantity}
                                         initial={{ scale: 1.3 }}
                                         animate={{ scale: 1 }}
                                         transition={{ duration: 0.2 }}
                                       >
-                                        {item.quantity}{isRattan ? 'кг' : ''}
+                                        {item.quantity}{isRattan ? ' кг' : ''}
                                       </motion.span>
                                       
                                       <motion.div
@@ -629,7 +675,8 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                           variant="outline"
                                           size="sm"
                                           onClick={() => onUpdateQuantity(itemId, item.quantity + step)}
-                                          className="glass-card border-primary/20 hover:border-primary/40 hover:bg-primary/10 rounded-xl w-10 h-10"
+                                          aria-label={language === 'uz' ? 'Miqdorni oshirish' : 'Увеличить количество'}
+                                          className="glass-card border-primary/20 hover:border-primary/40 hover:bg-primary/10 rounded-xl w-9 h-9 sm:w-10 sm:h-10"
                                         >
                                           <Plus className="w-4 h-4" />
                                         </Button>
@@ -646,7 +693,8 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => onRemoveItem(itemId)}
-                                    className="ml-2 hover:text-destructive hover:bg-destructive/10 rounded-xl w-10 h-10"
+                                    aria-label={language === 'uz' ? 'Mahsulotni olib tashlash' : 'Удалить товар'}
+                                    className="ml-1 sm:ml-2 hover:text-destructive hover:bg-destructive/10 rounded-xl w-9 h-9 sm:w-10 sm:h-10"
                                   >
                                     <X className="w-4 h-4" />
                                   </Button>
@@ -663,7 +711,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="mb-8 p-6 glass-card rounded-2xl border-2 border-primary/20 neon-glow"
+                      className="mb-8 p-5 sm:p-6 glass-card rounded-2xl border-2 border-primary/20"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -673,13 +721,13 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                           </span>
                         </div>
                         <motion.div
-                          key={calculateTotal()}
+                          key={totalPrice}
                           initial={{ scale: 1.2 }}
                           animate={{ scale: 1 }}
                           transition={{ duration: 0.3, type: "spring" }}
                           className="text-2xl font-bold text-gradient"
                         >
-                          {formatPrice(calculateTotal(), t.currency)}
+                          {formatPrice(totalPrice, t.currency)}
                         </motion.div>
                       </div>
                       <div className="mt-3 text-xs text-muted-foreground text-center">
@@ -709,6 +757,8 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
+                            autoComplete="name"
+                            disabled={isSubmitting}
                             className="glass-card border-primary/20 focus:border-primary/40 focus:ring-primary/20 rounded-xl h-12 text-base"
                             placeholder={language === 'uz' ? 'Ismingizni kiriting' : 'Ваше имя'}
                           />
@@ -725,8 +775,21 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                             id="phone"
                             type="tel"
                             value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, phone: normalizePhoneInput(e.target.value) })}
+                            onFocus={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                phone: prev.phone.trim() ? prev.phone : '+998 ',
+                              }));
+                            }}
+                            onBlur={(e) => setFormData({ ...formData, phone: formatUzbekPhone(e.target.value).trim() })}
                             required
+                            autoComplete="tel"
+                            inputMode="tel"
+                            pattern="^\+?[0-9\s\-()]{9,20}$"
+                            minLength={9}
+                            title={language === 'uz' ? 'To\'g\'ri telefon raqamini kiriting' : 'Введите корректный номер телефона'}
+                            disabled={isSubmitting}
                             className="glass-card border-primary/20 focus:border-primary/40 focus:ring-primary/20 rounded-xl h-12 text-base"
                             placeholder={language === 'uz' ? '+998 77 104 44 22' : '+998 77 104 44 22'}
                           />
@@ -746,6 +809,8 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                           id="address"
                           value={formData.address}
                           onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                          autoComplete="street-address"
+                          disabled={isSubmitting}
                           className="glass-card border-primary/20 focus:border-primary/40 focus:ring-primary/20 rounded-xl h-12 text-base"
                           placeholder={language === 'uz' ? 'Shahar, ko\'cha, uy, xonadon' : 'Город, улица, дом, квартира'}
                         />
@@ -763,6 +828,8 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                           value={formData.message}
                           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                           rows={4}
+                          autoComplete="off"
+                          disabled={isSubmitting}
                           className="glass-card border-primary/20 focus:border-primary/40 focus:ring-primary/20 rounded-xl text-base resize-none"
                           placeholder={language === 'uz' ? 'Maxsus istaklar, yetkazib berish vaqti...' : 'Особые пожелания, время доставки...'}
                         />
@@ -840,7 +907,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                         transition={{ duration: 0.4, delay: 0.9 }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="pt-4"
+                        className="sticky bottom-0 z-10 pt-4 pb-2 bg-gradient-to-t from-background via-background/95 to-transparent"
                       >
                         <Button 
                           type="submit" 
@@ -863,7 +930,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                 {language === 'uz' ? 'Buyurtma berish' : 'Оформить заказ'}
                               </span>
                               <span className="px-3 py-1 bg-primary-foreground/20 rounded-lg font-bold">
-                                {formatPrice(calculateTotal(), t.currency)}
+                                {formatPrice(totalPrice, t.currency)}
                               </span>
                             </div>
                           )}

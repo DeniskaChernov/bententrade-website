@@ -3,11 +3,12 @@ import { useLanguage } from '../utils/language-context';
 import { getPageKeywords } from '../utils/seo-keywords';
 
 interface SEOHeadProps {
-  page: 'home' | 'catalog' | 'legal';
+  page: 'home' | 'catalog' | 'legal' | 'blog';
   title?: string;
   description?: string;
   keywords?: string;
   image?: string;
+  canonicalUrl?: string;
   // ❌ УДАЛЕНО: noindex больше не используется - ВСЕГДА index!
 }
 
@@ -16,7 +17,8 @@ export const SEOHead = memo(function SEOHead({
   title: customTitle, 
   description: customDescription,
   keywords: customKeywords,
-  image: customImage
+  image: customImage,
+  canonicalUrl: customCanonicalUrl,
   // ❌ УДАЛЕНО: noindex = false
 }: SEOHeadProps) {
   const { language } = useLanguage();
@@ -37,6 +39,11 @@ export const SEOHead = memo(function SEOHead({
       title: 'Юридическая информация | Bententrade',
       description: 'Политика конфиденциальности, условия использования и политика возврата - Bententrade',
       keywords: 'политика конфиденциальности, условия использования, возврат товара'
+    },
+    blog: {
+      title: 'Блог и новости Bententrade',
+      description: 'Новости компании, обновления коллекций и полезные материалы по уходу за изделиями из ротанга.',
+      keywords: 'блог bententrade, новости ротанг, статьи о кашпо, уход за ротангом'
     }
   };
 
@@ -56,6 +63,11 @@ export const SEOHead = memo(function SEOHead({
       title: 'Yuridik ma\'lumot | Bententrade',
       description: 'Maxfiylik siyosati, foydalanish shartlari va qaytarish siyosati - Bententrade',
       keywords: 'maxfiylik siyosati, foydalanish shartlari, mahsulot qaytarish'
+    },
+    blog: {
+      title: 'Bententrade blog va yangiliklar',
+      description: 'Kompaniya yangiliklari, yangi kolleksiyalar va rattan mahsulotlari parvarishi bo`yicha foydali maqolalar.',
+      keywords: 'bententrade blog, rattan yangiliklar, guldon maqolalari, rattan parvarishi'
     }
   };
 
@@ -67,12 +79,15 @@ export const SEOHead = memo(function SEOHead({
   const generatedKeywords = getPageKeywords(page, language);
   const keywords = customKeywords || generatedKeywords.join(', ');
   const image = customImage || 'https://bententrade.uz/og-image.png';
-  const canonicalUrl =
+  const canonicalUrl = customCanonicalUrl || (
     page === 'catalog'
       ? 'https://bententrade.uz/catalog'
       : page === 'legal'
         ? 'https://bententrade.uz/legal'
-        : 'https://bententrade.uz/';
+        : page === 'blog'
+          ? 'https://bententrade.uz/blog'
+          : 'https://bententrade.uz/'
+  );
 
   useEffect(() => {
     const upsertMeta = (
