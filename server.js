@@ -10,6 +10,10 @@ import { signAdminJwt, verifyAdminJwt } from './admin-auth.js';
 const port = Number(process.env.PORT || 3000);
 const apiPrefix = '/api';
 
+console.log(
+  `[Bententrade] boot node=${process.version} NODE_ENV=${process.env.NODE_ENV || '(unset)'} PORT=${process.env.PORT ?? '(unset)'} cwd=${process.cwd()}`,
+);
+
 /** Шаг продакшен-чеклиста: в production без секретов сервер не поднимается (открытый API и т.д.). */
 const PROD_SECRETS_REQUIRED =
   process.env.NODE_ENV === 'production' || process.env.REQUIRE_PROD_SECRETS === 'true';
@@ -101,6 +105,7 @@ function assertProductionSecretsOrExit() {
 }
 
 assertProductionSecretsOrExit();
+console.log('[Bententrade] production checks passed, creating server…');
 
 const API_TOKEN = process.env.API_TOKEN || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
