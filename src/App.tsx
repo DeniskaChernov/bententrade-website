@@ -1,15 +1,32 @@
-import { useState, useEffect, Suspense, lazy, useCallback, useMemo, startTransition, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  Suspense,
+  lazy,
+  useCallback,
+  useMemo,
+  startTransition,
+  useRef,
+  type ComponentProps,
+} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from './components/ui/sonner';
 import { LoadingSpinner } from './components/ui/loading-spinner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ScrollToTop } from './components/ScrollToTop';
-import { LanguageProvider } from './utils/language-context';
+import { LanguageProvider, pickLang, type Language } from './utils/language-context';
 import { SEOHead } from './components/SEOHead';
 import { StructuredData } from './components/StructuredData';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
+import { AudiencePathsSection } from './components/AudiencePathsSection';
+import { RattanQuizSection } from './components/RattanQuizSection';
+import { WholesalePage, ExportPage } from './components/B2BTradePages';
+import { trackEvent } from './utils/analytics';
+import { defaultQuantity, unitPriceUzs } from './utils/pricing';
 import { Cart } from './components/Cart';
+import { CartFeedbackToast } from './components/CartFeedbackToast';
+import { OneClickCheckoutSheet, type OneClickLine } from './components/OneClickCheckoutSheet';
 import { Footer } from './components/Footer';
 import { CookieBanner } from './components/CookieBanner';
 import { LegalDocuments, LegalDocumentType } from './components/LegalDocuments';
@@ -53,6 +70,9 @@ const BlogPostPage = lazy(() => import('./components/BlogPostPage').then(module 
 const BlogListPage = lazy(() => import('./components/BlogListPage').then(module => ({ default: module.BlogListPage })));
 const SEOContent = lazy(() => import('./components/SEOContent').then(module => ({ default: module.SEOContent })));
 const HomeSEOClusters = lazy(() => import('./components/HomeSEOClusters').then(module => ({ default: module.HomeSEOClusters })));
+const UserProfilePage = lazy(() =>
+  import('./components/UserProfilePage').then((m) => ({ default: m.UserProfilePage })),
+);
 
 /** Ключ sessionStorage для JWT после входа в админку (не localStorage — закрытие вкладки = выход). */
 const ADMIN_JWT_STORAGE_KEY = 'benten-admin-jwt';
@@ -74,10 +94,40 @@ interface Product {
   size?: string;
   style?: string;
   category?: string; // 'materials' для ротанга, иначе кашпо
+  lineMeta?: string;
 }
 
 interface CartItem extends Product {
   quantity: number;
+}
+
+function readUiLanguage(): Language {
+  try {
+    const s = localStorage.getItem('bententrade-language');
+    if (s === 'uz' || s === 'ru' || s === 'en') return s;
+  } catch {
+    /* private mode */
+  }
+  return 'ru';
+}
+
+function cartLineId(p: Pick<Product, 'id' | 'selectedVariant' | 'selectedImageIndex' | 'lineMeta'>): string {
+  const base = p.selectedVariant
+    ? `${p.id}-${p.selectedVariant.id}-${p.selectedImageIndex ?? 0}`
+    : p.id;
+  return p.lineMeta ? `${base}::${p.lineMeta}` : base;
+}
+
+function AppCartBlock({
+  feedback,
+  ...cartProps
+}: ComponentProps<typeof Cart> & { feedback: string | null }) {
+  return (
+    <>
+      <Cart {...cartProps} />
+      <CartFeedbackToast message={feedback} />
+    </>
+  );
 }
 
 // Современный компонент для админ-логина
@@ -313,7 +363,12 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
 export default function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'home' | 'catalog' | 'admin' | 'legal' | 'blog'>('home');
+  const [currentPage, setCurrentPage] = useState<
+    'home' | 'catalog' | 'profile' | 'admin' | 'legal' | 'blog' | 'wholesale' | 'export'
+  >('home');
+  const [catalogProductSlug, setCatalogProductSlug] = useState<string | null>(null);
+  const [oneClickOpen, setOneClickOpen] = useState(false);
+  const [oneClickLines, setOneClickLines] = useState<OneClickLine[]>([]);
   const [currentBlogSlug, setCurrentBlogSlug] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -324,6 +379,7 @@ export default function App() {
   const [telegramError, setTelegramError] = useState<any>(null);
   const [shouldRenderTrend, setShouldRenderTrend] = useState(false);
   const [cartFeedback, setCartFeedback] = useState<string | null>(null);
+  const [cartBump, setCartBump] = useState(0);
   const trendTriggerRef = useRef<HTMLDivElement | null>(null);
 
   const legalFromPath = useCallback((path: string): LegalDocumentType | null => {
@@ -362,7 +418,24 @@ export default function App() {
     const path = window.location.pathname;
     
     if (path === '/catalog') {
-      startTransition(() => setCurrentPage('catalog'));
+      startTransition(() => {
+        setCurrentPage('catalog');
+        setCatalogProductSlug(null);
+      });
+    } else if (path.startsWith('/product/')) {
+      const slug = path.slice('/product/'.length).replace(/\/+$/, '').split('/')[0];
+      if (slug) {
+        startTransition(() => {
+          setCurrentPage('catalog');
+          setCatalogProductSlug(slug);
+        });
+      }
+    } else if (path === '/profile') {
+      startTransition(() => setCurrentPage('profile'));
+    } else if (path === '/wholesale') {
+      startTransition(() => setCurrentPage('wholesale'));
+    } else if (path === '/export') {
+      startTransition(() => setCurrentPage('export'));
     } else if (path === '/admin') {
       startTransition(() => {
         setCurrentPage('admin');
@@ -411,7 +484,37 @@ export default function App() {
       const path = window.location.pathname;
       if (path === '/catalog') {
         setCurrentPage('catalog');
+        setCatalogProductSlug(null);
         setCurrentLegalDocument(null);
+        return;
+      }
+      if (path.startsWith('/product/')) {
+        const slug = path.slice('/product/'.length).replace(/\/+$/, '').split('/')[0];
+        if (slug) {
+          setCurrentPage('catalog');
+          setCatalogProductSlug(slug);
+          setCurrentLegalDocument(null);
+          setCurrentBlogSlug(null);
+          return;
+        }
+      }
+      if (path === '/profile') {
+        setCurrentPage('profile');
+        setCurrentLegalDocument(null);
+        setCurrentBlogSlug(null);
+        setCatalogProductSlug(null);
+        return;
+      }
+      if (path === '/wholesale') {
+        setCurrentPage('wholesale');
+        setCurrentLegalDocument(null);
+        setCurrentBlogSlug(null);
+        return;
+      }
+      if (path === '/export') {
+        setCurrentPage('export');
+        setCurrentLegalDocument(null);
+        setCurrentBlogSlug(null);
         return;
       }
       if (path === '/admin') {
@@ -455,6 +558,7 @@ export default function App() {
       setCurrentPage('home');
       setCurrentLegalDocument(null);
       setCurrentBlogSlug(null);
+      setCatalogProductSlug(null);
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -532,66 +636,113 @@ export default function App() {
   );
 
   const addToCart = useCallback((product: Product) => {
+    const isRattan = product.category === 'materials';
+    const incrementStep = isRattan ? 5 : 1;
+    const lineId = cartLineId(product);
+    trackEvent('add_to_cart', {
+      currency: 'UZS',
+      items: [
+        {
+          item_id: lineId,
+          item_name: product.name,
+          item_category: isRattan ? 'materials' : 'planter',
+          quantity: incrementStep,
+        },
+      ],
+    });
+
     setCartItems(prev => {
-      const itemId = product.selectedVariant 
-        ? `${product.id}-${product.selectedVariant.id}-${product.selectedImageIndex || 0}` 
-        : product.id;
-      
-      const existingItem = prev.find(item => {
-        const existingItemId = item.selectedVariant 
-          ? `${item.id}-${item.selectedVariant.id}-${item.selectedImageIndex || 0}` 
-          : item.id;
-        return existingItemId === itemId;
-      });
+      const itemId = cartLineId(product);
+
+      const existingItem = prev.find((item) => cartLineId(item) === itemId);
 
       // Для ротанга (materials) шаг увеличения 5кг, для кашпо - 1шт
-      const isRattan = product.category === 'materials';
-      const incrementStep = isRattan ? 5 : 1;
       const initialQuantity = isRattan ? 5 : 1;
 
       if (existingItem) {
-        return prev.map(item => {
-          const existingItemId = item.selectedVariant 
-            ? `${item.id}-${item.selectedVariant.id}-${item.selectedImageIndex || 0}` 
-            : item.id;
-          return existingItemId === itemId
-            ? { ...item, quantity: item.quantity + incrementStep }
-            : item;
-        });
+        return prev.map((item) =>
+          cartLineId(item) === itemId ? { ...item, quantity: item.quantity + incrementStep } : item,
+        );
       }
       return [...prev, { ...product, quantity: initialQuantity }];
     });
     setIsCartOpen(true);
     setCartFeedback(product.name);
-    window.setTimeout(() => setCartFeedback(null), 1800);
+    setCartBump((n) => n + 1);
+    window.setTimeout(() => setCartFeedback(null), 2200);
   }, []);
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    setCartItems(prev =>
-      prev.map(item => {
-        const itemId = item.selectedVariant 
-          ? `${item.id}-${item.selectedVariant.id}-${item.selectedImageIndex || 0}` 
-          : item.id;
-        return itemId === id ? { ...item, quantity } : item;
-      })
+    setCartItems((prev) =>
+      prev.map((item) => (cartLineId(item) === id ? { ...item, quantity } : item)),
     );
   }, []);
 
   const removeFromCart = useCallback((id: string) => {
-    setCartItems(prev => prev.filter(item => {
-      const itemId = item.selectedVariant 
-        ? `${item.id}-${item.selectedVariant.id}-${item.selectedImageIndex || 0}` 
-        : item.id;
-      return itemId !== id;
-    }));
+    setCartItems((prev) => prev.filter((item) => cartLineId(item) !== id));
   }, []);
 
-  const handleNavigate = useCallback((page: 'home' | 'catalog' | 'admin' | 'blog') => {
+  const handleExpressCheckout = useCallback(
+    (args: { product: Product; selectedVariant: Product['selectedVariant']; widthMm: number | null }) => {
+      const { product, selectedVariant, widthMm } = args;
+      const lang = readUiLanguage();
+      const qty = defaultQuantity({ category: product.category, size: product.size });
+      const price = unitPriceUzs({ category: product.category, size: product.size });
+      const lineMeta =
+        widthMm != null
+          ? pickLang(lang, {
+              ru: `Ширина нити: ${widthMm} мм`,
+              uz: `Ip kengligi: ${widthMm} mm`,
+              en: `Thread width: ${widthMm} mm`,
+            })
+          : undefined;
+      const name = selectedVariant ? `${product.name} (${selectedVariant.name})` : product.name;
+      setOneClickLines([
+        {
+          name,
+          quantity: qty,
+          price,
+          total: price * qty,
+          variant: selectedVariant?.name,
+          size: product.size,
+          style: product.style,
+          lineMeta,
+        },
+      ]);
+      setOneClickOpen(true);
+    },
+    [],
+  );
+
+  const handleProductSlugChange = useCallback(
+    (slug: string | null) => {
+      setCatalogProductSlug(slug);
+      if (slug) updateUrl(`/product/${slug}`);
+      else updateUrl('/catalog');
+    },
+    [updateUrl],
+  );
+
+  const handleNavigateToContacts = useCallback(() => {
+    startTransition(() => {
+      setCurrentPage('home');
+      setCurrentBlogSlug(null);
+      setCurrentLegalDocument(null);
+    });
+    updateUrl('/');
+    window.setTimeout(() => {
+      document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }, [updateUrl]);
+
+  const handleNavigate = useCallback(
+    (page: 'home' | 'catalog' | 'profile' | 'admin' | 'blog' | 'wholesale' | 'export') => {
     if (page === 'blog') {
       startTransition(() => {
         setCurrentPage('blog');
         setCurrentBlogSlug(null);
         setCurrentLegalDocument(null);
+        setCatalogProductSlug(null);
       });
       updateUrl('/blog');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -608,6 +759,7 @@ export default function App() {
         setCurrentPage('admin');
         setCurrentBlogSlug(null);
         setCurrentLegalDocument(null);
+        setCatalogProductSlug(null);
         if (stored) {
           setAdminToken(stored);
           setIsAuthenticated(true);
@@ -620,14 +772,36 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    if (page === 'profile') {
+      startTransition(() => {
+        setCurrentPage('profile');
+        setCurrentBlogSlug(null);
+        setCurrentLegalDocument(null);
+        setCatalogProductSlug(null);
+      });
+      updateUrl('/profile');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     startTransition(() => {
       setCurrentPage(page);
       setCurrentBlogSlug(null);
       setCurrentLegalDocument(null);
+      setCatalogProductSlug(null);
     });
-    updateUrl(page === 'catalog' ? '/catalog' : '/');
+    const path =
+      page === 'catalog'
+        ? '/catalog'
+        : page === 'wholesale'
+          ? '/wholesale'
+          : page === 'export'
+            ? '/export'
+            : '/';
+    updateUrl(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [updateUrl]);
+  },
+  [updateUrl],
+);
 
   const handleLogoSecretAccess = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if ('shiftKey' in e && e.shiftKey) {
@@ -758,7 +932,8 @@ export default function App() {
       <LanguageProvider>
         <ErrorBoundary>
           <Header 
-            cartItems={cartItemsCount} 
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
             onCartClick={handleCartClick}
             currentPage={currentPage}
             onNavigate={handleNavigate}
@@ -806,11 +981,19 @@ export default function App() {
     return (
       <LanguageProvider>
         <ErrorBoundary>
-          <SEOHead page="catalog" />
+          <SEOHead
+            page={catalogProductSlug ? 'product' : 'catalog'}
+            canonicalUrl={
+              catalogProductSlug
+                ? `https://bententrade.uz/product/${catalogProductSlug}`
+                : 'https://bententrade.uz/catalog'
+            }
+          />
           <StructuredData type="catalog" />
           
           <Header 
-            cartItems={cartItemsCount} 
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
             onCartClick={handleCartClick}
             currentPage={currentPage}
             onNavigate={handleNavigate}
@@ -830,15 +1013,29 @@ export default function App() {
                 </div>
               }>
                 <ErrorBoundary fallback={<LazyLoadError />}>
-                  <CatalogPage 
+                  <CatalogPage
                     onAddToCart={addToCart}
                     onBackToHome={() => handleNavigate('home')}
+                    onOpenCart={() => setIsCartOpen(true)}
+                    productSlug={catalogProductSlug}
+                    onProductSlugChange={handleProductSlugChange}
+                    onExpressCheckout={handleExpressCheckout}
+                    onOpenConsult={() => {
+                      handleNavigate('home');
+                      requestAnimationFrame(() => {
+                        document.getElementById('rattan-quiz')?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        });
+                      });
+                    }}
                   />
                 </ErrorBoundary>
               </Suspense>
             </main>
 
-            <Cart
+            <AppCartBlock
+              feedback={cartFeedback}
               isOpen={isCartOpen}
               onClose={handleCartClose}
               items={cartItems}
@@ -846,6 +1043,143 @@ export default function App() {
               onRemoveItem={removeFromCart}
             />
 
+            <OneClickCheckoutSheet
+              open={oneClickOpen}
+              onClose={() => setOneClickOpen(false)}
+              lines={oneClickLines}
+              onSuccess={() => setOneClickLines([])}
+            />
+
+            <ScrollToTop />
+            <Toaster />
+          </div>
+        </ErrorBoundary>
+      </LanguageProvider>
+    );
+  }
+
+  if (currentPage === 'profile') {
+    return (
+      <LanguageProvider>
+        <ErrorBoundary>
+          <SEOHead page="profile" />
+          <StructuredData type="home" />
+
+          <Header
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
+            onCartClick={handleCartClick}
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            onLogoSecretAccess={handleLogoSecretAccess}
+            onLogoLongPress={handleLogoLongPress}
+            isAdminMode={isAdminMode}
+          />
+
+          <div className="min-h-screen">
+            <ModernBackground />
+
+            <main className="relative z-10">
+              <Suspense
+                fallback={
+                  <div className="container mx-auto px-4 py-24">
+                    <LoadingSpinner size="lg" text="Загрузка профиля…" />
+                  </div>
+                }
+              >
+                <ErrorBoundary fallback={<LazyLoadError />}>
+                  <UserProfilePage onBack={() => handleNavigate('home')} />
+                </ErrorBoundary>
+              </Suspense>
+            </main>
+
+            <AppCartBlock
+              feedback={cartFeedback}
+              isOpen={isCartOpen}
+              onClose={handleCartClose}
+              items={cartItems}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+            />
+
+            <ScrollToTop />
+            <Toaster />
+          </div>
+        </ErrorBoundary>
+      </LanguageProvider>
+    );
+  }
+
+  if (currentPage === 'wholesale') {
+    return (
+      <LanguageProvider>
+        <ErrorBoundary>
+          <SEOHead page="wholesale" />
+          <StructuredData type="home" />
+          <Header
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
+            onCartClick={handleCartClick}
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            onLogoSecretAccess={handleLogoSecretAccess}
+            onLogoLongPress={handleLogoLongPress}
+            isAdminMode={isAdminMode}
+          />
+          <div className="min-h-screen">
+            <ModernBackground />
+            <main className="relative z-10">
+              <h1 className="sr-only">Опт ротанга и кашпо Bententrade</h1>
+              <WholesalePage onHome={() => handleNavigate('home')} onContacts={handleNavigateToContacts} />
+            </main>
+            <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
+            <AppCartBlock
+              feedback={cartFeedback}
+              isOpen={isCartOpen}
+              onClose={handleCartClose}
+              items={cartItems}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+            />
+            <ScrollToTop />
+            <Toaster />
+          </div>
+        </ErrorBoundary>
+      </LanguageProvider>
+    );
+  }
+
+  if (currentPage === 'export') {
+    return (
+      <LanguageProvider>
+        <ErrorBoundary>
+          <SEOHead page="export" />
+          <StructuredData type="home" />
+          <Header
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
+            onCartClick={handleCartClick}
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+            onLogoSecretAccess={handleLogoSecretAccess}
+            onLogoLongPress={handleLogoLongPress}
+            isAdminMode={isAdminMode}
+          />
+          <div className="min-h-screen">
+            <ModernBackground />
+            <main className="relative z-10">
+              <h1 className="sr-only">Экспорт ротанга и кашпо Bententrade</h1>
+              <ExportPage onHome={() => handleNavigate('home')} onContacts={handleNavigateToContacts} />
+            </main>
+            <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
+            <AppCartBlock
+              feedback={cartFeedback}
+              isOpen={isCartOpen}
+              onClose={handleCartClose}
+              items={cartItems}
+              onUpdateQuantity={updateQuantity}
+              onRemoveItem={removeFromCart}
+            />
             <ScrollToTop />
             <Toaster />
           </div>
@@ -863,7 +1197,8 @@ export default function App() {
           <StructuredData type="home" />
           
           <Header 
-            cartItems={cartItemsCount} 
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
             onCartClick={handleCartClick}
             currentPage={currentPage}
             onNavigate={handleNavigate}
@@ -883,7 +1218,8 @@ export default function App() {
               />
             </main>
 
-            <Cart
+            <AppCartBlock
+              feedback={cartFeedback}
               isOpen={isCartOpen}
               onClose={handleCartClose}
               items={cartItems}
@@ -917,7 +1253,8 @@ export default function App() {
           />
           <StructuredData type="home" />
           <Header 
-            cartItems={cartItemsCount} 
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
             onCartClick={handleCartClick}
             currentPage={currentPage}
             onNavigate={handleNavigate}
@@ -933,7 +1270,8 @@ export default function App() {
               </Suspense>
             </main>
             <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
-            <Cart
+            <AppCartBlock
+              feedback={cartFeedback}
               isOpen={isCartOpen}
               onClose={handleCartClose}
               items={cartItems}
@@ -955,7 +1293,8 @@ export default function App() {
           <SEOHead page="blog" canonicalUrl="https://bententrade.uz/blog" />
           <StructuredData type="home" />
           <Header 
-            cartItems={cartItemsCount} 
+            cartItems={cartItemsCount}
+            cartBump={cartBump}
             onCartClick={handleCartClick}
             currentPage={currentPage}
             onNavigate={handleNavigate}
@@ -971,7 +1310,8 @@ export default function App() {
               </Suspense>
             </main>
             <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
-            <Cart
+            <AppCartBlock
+              feedback={cartFeedback}
               isOpen={isCartOpen}
               onClose={handleCartClose}
               items={cartItems}
@@ -993,8 +1333,9 @@ export default function App() {
         <SEOHead page="home" />
         <StructuredData type="home" />
         
-        <Header 
-          cartItems={cartItemsCount} 
+        <Header
+          cartItems={cartItemsCount}
+          cartBump={cartBump}
           onCartClick={handleCartClick}
           currentPage={currentPage}
           onNavigate={handleNavigate}
@@ -1008,6 +1349,21 @@ export default function App() {
           
           <main className="relative z-10">
             <Hero onViewCatalog={() => handleNavigate('catalog')} />
+            <AudiencePathsSection
+              onOpenFullCatalog={() => handleNavigate('catalog')}
+              onScrollToHits={() => {
+                document.getElementById('catalog')?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start',
+                });
+              }}
+              onScrollToQuote={() => {
+                document.getElementById('contacts')?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start',
+                });
+              }}
+            />
             <Suspense fallback={<section className="py-10" aria-hidden="true" />}>
               <About />
             </Suspense>
@@ -1035,6 +1391,23 @@ export default function App() {
                 onViewFullCatalog={() => handleNavigate('catalog')}
               />
             </Suspense>
+
+            <RattanQuizSection
+              onOpenCatalog={() => handleNavigate('catalog')}
+              onScrollToHits={() => {
+                document.getElementById('catalog')?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start',
+                });
+              }}
+              onScrollToContacts={() => {
+                document.getElementById('contacts')?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start',
+                });
+              }}
+              onOpenCart={handleCartClick}
+            />
             
             {/* SEO-оптимизированные секции грузятся отложенно */}
             <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
@@ -1082,7 +1455,8 @@ export default function App() {
 
           <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
 
-          <Cart
+          <AppCartBlock
+            feedback={cartFeedback}
             isOpen={isCartOpen}
             onClose={handleCartClose}
             items={cartItems}
@@ -1106,21 +1480,6 @@ export default function App() {
 
           <ScrollToTop />
           <Toaster />
-          <AnimatePresence>
-            {cartFeedback && (
-              <motion.div
-                initial={{ opacity: 0, y: 16, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-                className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[120] px-4 py-2 rounded-xl glass-effect border border-primary/30 text-sm shadow-lg"
-                role="status"
-                aria-live="polite"
-              >
-                Товар добавлен в корзину: {cartFeedback}
-              </motion.div>
-            )}
-          </AnimatePresence>
           
           {isAdminMode && (
             <motion.div 

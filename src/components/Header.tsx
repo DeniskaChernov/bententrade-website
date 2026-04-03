@@ -3,23 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
-import { Menu, ShoppingCart, Globe, X, Sparkles } from '../utils/lucide-stub';
-import { useLanguage } from '../utils/language-context';
+import { Menu, ShoppingCart, Globe, X, Sparkles, User } from '../utils/lucide-stub';
+import { pickLang, useLanguage } from '../utils/language-context';
 import { LanguageToggle } from './LanguageToggle';
 import logoImage from '@/assets/fae59665fd1772cdd61f6a4d1c95ed996e1502f5.webp';
 
 interface HeaderProps {
   cartItems: number;
+  /** Инкремент при добавлении в корзину — микро-анимация бейджа */
+  cartBump?: number;
   onCartClick: () => void;
-  currentPage: 'home' | 'catalog' | 'admin' | 'legal' | 'blog';
-  onNavigate: (page: 'home' | 'catalog' | 'admin' | 'blog') => void;
+  currentPage: 'home' | 'catalog' | 'profile' | 'admin' | 'legal' | 'blog' | 'wholesale' | 'export';
+  onNavigate: (page: 'home' | 'catalog' | 'profile' | 'admin' | 'blog' | 'wholesale' | 'export') => void;
   onLogoSecretAccess?: (e: React.MouseEvent | React.TouchEvent) => void;
   onLogoLongPress?: () => void;
   isAdminMode?: boolean;
 }
 
 export const Header = memo(function Header({ 
-  cartItems, 
+  cartItems,
+  cartBump = 0,
   onCartClick, 
   currentPage, 
   onNavigate, 
@@ -46,7 +49,7 @@ export const Header = memo(function Header({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavigation = (page: 'home' | 'catalog' | 'admin' | 'blog') => {
+  const handleNavigation = (page: 'home' | 'catalog' | 'profile' | 'admin' | 'blog' | 'wholesale' | 'export') => {
     onNavigate(page);
     setIsMobileMenuOpen(false);
   };
@@ -89,14 +92,20 @@ export const Header = memo(function Header({
     }
   };
 
-  const blogNavLabel = language === 'uz' ? 'Blog va yangiliklar' : 'Блог и новости';
+  const blogNavLabel = pickLang(language, {
+    uz: 'Blog va yangiliklar',
+    ru: 'Блог и новости',
+    en: 'Blog & news',
+  });
 
   const primaryMenuItems: Array<
     | { name: string; id: string; navPage?: undefined }
-    | { name: string; id: string; navPage: 'catalog' | 'blog' }
+    | { name: string; id: string; navPage: 'catalog' | 'blog' | 'wholesale' | 'export' }
   > = [
     { name: t.about, id: 'about' },
     { name: t.catalog, id: 'catalog', navPage: 'catalog' },
+    { name: t.navWholesale, id: 'wholesale', navPage: 'wholesale' },
+    { name: t.navExport, id: 'export', navPage: 'export' },
     { name: t.projectGallery, id: 'gallery' },
     { name: blogNavLabel, id: 'blog-list', navPage: 'blog' },
     { name: t.contacts, id: 'contacts' },
@@ -105,9 +114,19 @@ export const Header = memo(function Header({
   const secondaryMenuItems = [
     { name: t.whyUsTitle, id: 'why-us' },
     { name: t.projectGallery, id: 'gallery' },
-    { name: language === 'uz' ? 'Blog (bosh sahifa)' : 'Блог на главной', id: 'blog' },
+    {
+      name: pickLang(language, {
+        uz: 'Blog (bosh sahifa)',
+        ru: 'Блог на главной',
+        en: 'Blog on home',
+      }),
+      id: 'blog',
+    },
     { name: 'FAQ', id: 'faq' },
-    { name: language === 'uz' ? 'Sharhlar' : 'Отзывы', id: 'reviews' },
+    {
+      name: pickLang(language, { uz: 'Sharhlar', ru: 'Отзывы', en: 'Reviews' }),
+      id: 'reviews',
+    },
   ];
 
   return (
@@ -185,7 +204,11 @@ export const Header = memo(function Header({
                 Bententrade
               </span>
               <span className="text-xs opacity-60">
-                {language === 'uz' ? 'Premium sifat' : 'Премиум качество'}
+                {pickLang(language, {
+                  uz: 'Premium sifat',
+                  ru: 'Премиум качество',
+                  en: 'Premium quality',
+                })}
               </span>
             </div>
           </motion.button>
@@ -204,7 +227,13 @@ export const Header = memo(function Header({
                   }
                 }}
                 className={`text-base font-medium px-4 py-2 h-auto rounded-xl hover-glass-nav micro-interaction group ${
-                  currentPage === 'blog' && 'navPage' in item && item.navPage === 'blog'
+                  'navPage' in item &&
+                  item.navPage &&
+                  (currentPage === 'blog' ||
+                    currentPage === 'catalog' ||
+                    currentPage === 'wholesale' ||
+                    currentPage === 'export') &&
+                  item.navPage === currentPage
                     ? 'text-primary bg-primary/10'
                     : ''
                 }`}
@@ -223,24 +252,44 @@ export const Header = memo(function Header({
               <LanguageToggle />
             </div>
 
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleNavigation('profile')}
+              aria-label={t.navProfile}
+              className={`hidden sm:inline-flex h-10 rounded-xl px-3 micro-interaction ${
+                currentPage === 'profile' ? 'bg-primary/10 text-primary' : ''
+              }`}
+            >
+              <User className="h-4 w-4 sm:mr-2" />
+              <span className="hidden md:inline">{t.navProfile}</span>
+            </Button>
+
             {/* Cart Button */}
             <Button
               onClick={onCartClick}
               variant="outline"
               size="sm"
-              aria-label={language === 'uz' ? "Savatni ochish" : "Открыть корзину"}
+              aria-label={pickLang(language, {
+                uz: 'Savatni ochish',
+                ru: 'Открыть корзину',
+                en: 'Open cart',
+              })}
               className="relative h-10 px-4 rounded-xl glass-card border-primary/20 hover:border-primary/40 micro-interaction"
             >
               <ShoppingCart className="w-5 h-5" />
               {cartItems > 0 && (
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                  key={cartBump}
+                  initial={{ scale: 0.65, opacity: 0.85 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 22 }}
                   className="absolute -top-2 -right-2"
                 >
-                  <Badge 
-                    variant="destructive" 
-                    className="min-w-6 h-6 text-xs rounded-full bg-primary text-primary-foreground px-2"
+                  <Badge
+                    variant="destructive"
+                    className="min-w-6 h-6 text-xs rounded-full bg-primary text-primary-foreground px-2 shadow-[0_0_12px_rgba(212,165,116,0.45)]"
                   >
                     {cartItems}
                   </Badge>
@@ -254,7 +303,11 @@ export const Header = memo(function Header({
                 <Button
                   variant="outline"
                   size="sm"
-                  aria-label={language === 'uz' ? "Menyuni ochish" : "Открыть меню"}
+                  aria-label={pickLang(language, {
+                    uz: 'Menyuni ochish',
+                    ru: 'Открыть меню',
+                    en: 'Open menu',
+                  })}
                   aria-expanded={isMobileMenuOpen}
                   aria-controls="mobile-nav-sheet"
                   className="lg:hidden h-10 px-3 rounded-xl glass-card border-primary/20 hover:border-primary/40"
@@ -283,14 +336,18 @@ export const Header = memo(function Header({
                         <Sparkles className="w-4 h-4 text-primary" />
                       </div>
                       <span id="mobile-nav-title" className="font-bold text-gradient">
-                        {language === 'uz' ? 'Menyu' : 'Меню'}
+                        {pickLang(language, { uz: 'Menyu', ru: 'Меню', en: 'Menu' })}
                       </span>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      aria-label={language === 'uz' ? "Menyuni yopish" : "Закрыть меню"}
+                      aria-label={pickLang(language, {
+                        uz: 'Menyuni yopish',
+                        ru: 'Закрыть меню',
+                        en: 'Close menu',
+                      })}
                       className="h-8 w-8 p-0 rounded-lg"
                     >
                       <X className="w-4 h-4" />
@@ -302,7 +359,11 @@ export const Header = memo(function Header({
                     {/* Primary Menu */}
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium opacity-60 mb-3">
-                        {language === 'uz' ? 'Asosiy menyu' : 'Основное меню'}
+                        {pickLang(language, {
+                          uz: 'Asosiy menyu',
+                          ru: 'Основное меню',
+                          en: 'Main menu',
+                        })}
                       </h3>
                       {primaryMenuItems.map((item, index) => (
                         <motion.div
@@ -324,12 +385,23 @@ export const Header = memo(function Header({
                           </Button>
                         </motion.div>
                       ))}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => handleNavigation('profile')}
+                        className={`w-full justify-start gap-2 text-base p-4 h-auto rounded-xl hover:bg-primary/10 micro-interaction text-left ${
+                          currentPage === 'profile' ? 'bg-primary/10 text-primary' : ''
+                        }`}
+                      >
+                        <User className="h-4 w-4 shrink-0 opacity-80" />
+                        {t.navProfile}
+                      </Button>
                     </div>
 
                     {/* Secondary Menu */}
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium opacity-60 mb-3">
-                        {language === 'uz' ? 'Qo‘shimcha' : 'Дополнительно'}
+                        {pickLang(language, { uz: 'Qo‘shimcha', ru: 'Дополнительно', en: 'More' })}
                       </h3>
                       {secondaryMenuItems.map((item, index) => (
                         <motion.div
@@ -353,7 +425,9 @@ export const Header = memo(function Header({
                   {/* Footer */}
                   <div className="p-6 border-t border-primary/10">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm opacity-60">{language === 'uz' ? 'Til' : 'Язык'}</span>
+                      <span className="text-sm opacity-60">
+                        {pickLang(language, { uz: 'Til', ru: 'Язык', en: 'Language' })}
+                      </span>
                       <LanguageToggle />
                     </div>
                   </div>

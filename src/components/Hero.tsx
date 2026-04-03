@@ -4,8 +4,8 @@ import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { ShoppingBag, Phone, ArrowDown, Sparkles, Star, ChevronDown } from '../utils/lucide-stub';
-import { useLanguage } from '../utils/language-context';
+import { ShoppingBag, Phone, ArrowDown, Sparkles, Star, ChevronDown, Sun, Droplets, MapPin } from '../utils/lucide-stub';
+import { pickLang, useLanguage } from '../utils/language-context';
 import { sendQuickConsultationRequest } from '../utils/telegram';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -71,7 +71,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
   };
 
   const scrollToProducts = () => {
-    const element = document.getElementById('mini-catalog');
+    const element = document.getElementById('catalog');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -92,7 +92,13 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
       const success = await sendQuickConsultationRequest({
         name: formData.name,
         phone: formData.phone,
-        message: formData.message || 'Запрос быстрой консультации'
+        message:
+          formData.message ||
+          pickLang(language, {
+            uz: 'Tezkor maslahat so‘rovi',
+            ru: 'Запрос быстрой консультации',
+            en: 'Quick consultation request',
+          })
       });
 
       if (success) {
@@ -101,9 +107,11 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
         notification.className = 'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] transition-all duration-500 max-w-sm glass-effect border-green-400/20 text-green-400';
         notification.setAttribute('role', 'status');
         notification.setAttribute('aria-live', 'polite');
-        notification.textContent = language === 'uz' 
-          ? 'Xabar yuborildi! Tez orada bog\'lanamiz.'
-          : 'Заявка отправлена! Скоро свяжемся с вами.';
+        notification.textContent = pickLang(language, {
+          uz: 'Xabar yuborildi! Tez orada bog\'lanamiz.',
+          ru: 'Заявка отправлена! Скоро свяжемся с вами.',
+          en: 'Sent! We will contact you shortly.',
+        });
         document.body.appendChild(notification);
         
         setTimeout(() => {
@@ -126,9 +134,11 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
       notification.className = 'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] transition-all duration-500 max-w-sm glass-effect border-red-400/20 text-red-400';
       notification.setAttribute('role', 'alert');
       notification.setAttribute('aria-live', 'assertive');
-      notification.textContent = language === 'uz' 
-        ? 'Xatolik yuz berdi. Qayta urinib ko\'ring.'
-        : 'Произошла ошибка. Попробуйте еще раз.';
+      notification.textContent = pickLang(language, {
+        uz: 'Xatolik yuz berdi. Qayta urinib ko\'ring.',
+        ru: 'Произошла ошибка. Попробуйте еще раз.',
+        en: 'Something went wrong. Please try again.',
+      });
       document.body.appendChild(notification);
       
       setTimeout(() => {
@@ -219,18 +229,15 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                {language === 'uz' ? 'Handmade Luxury Collection' : 'Handmade Luxury Collection'}
+                {t.heroBadge}
               </motion.div>
               
-              <h1 className="text-shadow-modern font-grotesk">
-                <span className="block text-gradient mb-2 text-lg md:text-xl">
-                  {language === 'uz' ? 'Ekskluziv' : 'Эксклюзивные'}
+              <h1 className="text-shadow-modern font-grotesk max-w-4xl mx-auto">
+                <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-balance">
+                  {t.heroTitle}
                 </span>
-                <span className="block text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-none">
-                  {language === 'uz' ? 'RATTAN' : 'РОТАНГ'}
-                </span>
-                <span className="block text-lg md:text-xl font-light mt-3 opacity-75">
-                  {language === 'uz' ? 'kashpo va aksessuarlar' : 'кашпо и аксессуары'}
+                <span className="block text-lg md:text-xl font-normal mt-4 opacity-85 text-balance">
+                  {t.heroSubtitle}
                 </span>
               </h1>
             </motion.div>
@@ -242,31 +249,55 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="max-w-2xl mx-auto text-center mb-5"
             >
-              <p className="text-base md:text-lg leading-relaxed mb-5 text-balance opacity-80">
-                {language === 'uz' 
-                  ? 'Zamonaviy dizayn va an\'anaviy hunarmandchilik uyg\'unligi. Har bir mahsulot – bu sizning makoning uchun san\'at asari.'
-                  : 'Слияние современного дизайна и традиционного мастерства. Каждое изделие — произведение искусства для вашего пространства.'
-                }
+              <p className="text-base md:text-lg leading-relaxed mb-5 text-balance opacity-80 max-w-2xl mx-auto">
+                {t.heroLead}
               </p>
               
               <motion.div 
-                className="flex flex-wrap justify-center gap-4 md:gap-6 text-xs text-muted-foreground"
+                className="flex flex-wrap justify-center gap-6 md:gap-10 text-xs md:text-sm text-muted-foreground"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
               >
-                <span className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-primary"></div>
-                  {language === 'uz' ? 'Qo\'lda tayyorlangan' : 'Ручная работа'}
-                </span>
-                <span className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-primary"></div>
-                  {language === 'uz' ? 'Premium materiallar' : 'Премиум материалы'}
-                </span>
-                <span className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-primary"></div>
-                  {language === 'uz' ? '24/7 qo\'llab-quvvatlash' : 'Поддержка 24/7'}
-                </span>
+                <motion.span
+                  whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
+                  whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
+                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full px-3 py-1.5 border border-primary/15 bg-background/50 backdrop-blur-sm"
+                  title={pickLang(language, {
+                    uz: 'UV barqarorligi — rang uzoq vaqt ochilmaydi',
+                    ru: 'Устойчивость к ультрафиолету — цвет держится дольше',
+                    en: 'UV-stable pigments for longer-lasting colour',
+                  })}
+                >
+                  <Sun className="w-4 h-4 text-primary shrink-0" aria-hidden />
+                  {t.heroTrustSun}
+                </motion.span>
+                <motion.span
+                  whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
+                  whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
+                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full px-3 py-1.5 border border-primary/15 bg-background/50 backdrop-blur-sm"
+                  title={pickLang(language, {
+                    uz: 'Nam va yomg‘irga chidamli — tashqi muhit uchun mos',
+                    ru: 'Не боится влаги и дождя — подходит для улицы и террасы',
+                    en: 'Moisture-resistant — fine for terraces and outdoor use',
+                  })}
+                >
+                  <Droplets className="w-4 h-4 text-primary shrink-0" aria-hidden />
+                  {t.heroTrustWater}
+                </motion.span>
+                <motion.span
+                  whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
+                  whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
+                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full px-3 py-1.5 border border-primary/15 bg-background/50 backdrop-blur-sm"
+                  title={pickLang(language, {
+                    uz: 'Ko‘cha, bog‘ va ochiq maydonlar uchun',
+                    ru: 'Для улицы, сада и открытых площадок',
+                    en: 'Made for streets, gardens and open spaces',
+                  })}
+                >
+                  <MapPin className="w-4 h-4 text-primary shrink-0" aria-hidden />
+                  {t.heroTrustOutdoor}
+                </motion.span>
               </motion.div>
             </motion.div>
 
@@ -280,10 +311,10 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               <Button
                 onClick={onViewCatalog}
                 size="lg"
-                className="h-11 min-w-[220px] px-6 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 micro-interaction"
+                className="agency-cta-primary h-11 min-w-[220px] px-6 text-sm rounded-lg text-primary-foreground hover:bg-primary/95 micro-interaction shadow-md"
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
-                {language === 'uz' ? 'Mahsulotlarni ko\'rish' : 'Смотреть товары'}
+                {t.heroCtaBuy}
               </Button>
               
               <Button
@@ -293,7 +324,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 className="h-11 min-w-[220px] px-6 text-sm rounded-lg glass-effect border-primary/30 hover:border-primary/50 hover:bg-primary/10 micro-interaction"
               >
                 <Phone className="w-4 h-4 mr-2" />
-                {language === 'uz' ? 'Tezkor maslahat' : 'Быстрая консультация'}
+                {t.getConsultation}
               </Button>
             </motion.div>
 
@@ -307,15 +338,27 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               {[
                 { 
                   number: '500+', 
-                  label: language === 'uz' ? 'Mamnun mijozlar' : 'Довольных клиентов' 
+                  label: pickLang(language, {
+                    uz: 'Mamnun mijozlar',
+                    ru: 'Довольных клиентов',
+                    en: 'Happy customers',
+                  }),
                 },
                 { 
                   number: '3+', 
-                  label: language === 'uz' ? 'Yillik tajriba' : 'Года опыта' 
+                  label: pickLang(language, {
+                    uz: 'Yillik tajriba',
+                    ru: 'Года опыта',
+                    en: 'Years of craft',
+                  }),
                 },
                 { 
                   number: '100%', 
-                  label: language === 'uz' ? 'Sifat kafolati' : 'Гарантия качества' 
+                  label: pickLang(language, {
+                    uz: 'Sifat kafolati',
+                    ru: 'Гарантия качества',
+                    en: 'Quality focus',
+                  }),
                 }
               ].map((stat, index) => (
                 <motion.div
@@ -365,7 +408,11 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.2 }}
           onClick={scrollToNext}
-          aria-label={language === 'uz' ? 'Keyingi bo\'limga o\'tish' : 'Прокрутить к следующему разделу'}
+          aria-label={pickLang(language, {
+            uz: 'Keyingi bo\'limga o\'tish',
+            ru: 'Прокрутить к следующему разделу',
+            en: 'Scroll to next section',
+          })}
           className="absolute left-1/2 transform -translate-x-1/2 p-3 rounded-full glass-effect border border-primary/20 hover:border-primary/40 micro-interaction group cursor-pointer"
           style={{ bottom: '17px' }}
           whileHover={{ y: -4, scale: 1.1 }}
@@ -420,14 +467,19 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
             <DialogHeader className="space-y-4">
               <DialogTitle className="text-2xl text-center">
                 <span className="text-gradient">
-                  {language === 'uz' ? 'Tezkor maslahat' : 'Быстрая консультация'}
+                  {pickLang(language, {
+                    uz: 'Tezkor maslahat',
+                    ru: 'Быстрая консультация',
+                    en: 'Quick help',
+                  })}
                 </span>
               </DialogTitle>
               <DialogDescription className="text-center text-base opacity-80">
-                {language === 'uz' 
-                  ? 'Ma\'lumotlaringizni qoldiring, biz siz bilan bog\'lanamiz'
-                  : 'Оставьте свои данные, и мы свяжемся с вами'
-                }
+                {pickLang(language, {
+                  uz: 'Ma\'lumotlaringizni qoldiring, biz siz bilan bog\'lanamiz',
+                  ru: 'Оставьте свои данные, и мы свяжемся с вами',
+                  en: 'Leave your details and we will get back to you',
+                })}
               </DialogDescription>
             </DialogHeader>
 
@@ -435,12 +487,12 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="consultation-name" className="sr-only">
-                    {language === 'uz' ? 'Ismingiz' : 'Ваше имя'}
+                    {pickLang(language, { uz: 'Ismingiz', ru: 'Ваше имя', en: 'Your name' })}
                   </label>
                   <Input
                     id="consultation-name"
                     type="text"
-                    placeholder={language === 'uz' ? 'Ismingiz' : 'Ваше имя'}
+                    placeholder={pickLang(language, { uz: 'Ismingiz', ru: 'Ваше имя', en: 'Your name' })}
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
@@ -452,12 +504,12 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 
                 <div>
                   <label htmlFor="consultation-phone" className="sr-only">
-                    {language === 'uz' ? 'Telefon raqami' : 'Номер телефона'}
+                    {pickLang(language, { uz: 'Telefon raqami', ru: 'Номер телефона', en: 'Phone number' })}
                   </label>
                   <Input
                     id="consultation-phone"
                     type="tel"
-                    placeholder={language === 'uz' ? 'Telefon raqami' : 'Номер телефона'}
+                    placeholder={pickLang(language, { uz: 'Telefon raqami', ru: 'Номер телефона', en: 'Phone number' })}
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: normalizePhoneInput(e.target.value) }))}
                     onFocus={() => {
@@ -472,7 +524,11 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                     inputMode="tel"
                     pattern="^\+?[0-9\s\-()]{9,20}$"
                     minLength={9}
-                    title={language === 'uz' ? 'To\'g\'ri telefon raqamini kiriting' : 'Введите корректный номер телефона'}
+                    title={pickLang(language, {
+                      uz: 'To\'g\'ri telefon raqamini kiriting',
+                      ru: 'Введите корректный номер телефона',
+                      en: 'Enter a valid phone number',
+                    })}
                     disabled={isSubmitting}
                     className="glass-card border-primary/20 h-12 rounded-xl"
                   />
@@ -480,11 +536,19 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 
                 <div>
                   <label htmlFor="consultation-message" className="sr-only">
-                    {language === 'uz' ? 'Qo\'shimcha xabar' : 'Дополнительное сообщение'}
+                    {pickLang(language, {
+                      uz: 'Qo\'shimcha xabar',
+                      ru: 'Дополнительное сообщение',
+                      en: 'Optional message',
+                    })}
                   </label>
                   <Textarea
                     id="consultation-message"
-                    placeholder={language === 'uz' ? 'Qo\'shimcha xabar (ixtiyoriy)' : 'Дополнительное сообщение (необязательно)'}
+                    placeholder={pickLang(language, {
+                      uz: 'Qo\'shimcha xabar (ixtiyoriy)',
+                      ru: 'Дополнительное сообщение (необязательно)',
+                      en: 'Optional message',
+                    })}
                     value={formData.message}
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                     autoComplete="off"
@@ -503,7 +567,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                   disabled={isSubmitting}
                   className="flex-1 h-12 rounded-xl glass-card border-primary/20 hover:border-primary/40 micro-interaction"
                 >
-                  {language === 'uz' ? 'Bekor qilish' : 'Отмена'}
+                  {pickLang(language, { uz: 'Bekor qilish', ru: 'Отмена', en: 'Cancel' })}
                 </Button>
                 <Button
                   type="submit"
@@ -517,12 +581,14 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       />
-                      <span className="sr-only">{language === 'uz' ? 'Yuborilmoqda...' : 'Отправка...'}</span>
+                      <span className="sr-only">
+                        {pickLang(language, { uz: 'Yuborilmoqda...', ru: 'Отправка...', en: 'Sending...' })}
+                      </span>
                     </div>
                   ) : (
                     <>
                       <Phone className="w-4 h-4 mr-2" />
-                      {language === 'uz' ? 'Yuborish' : 'Отправить'}
+                      {t.send}
                     </>
                   )}
                 </Button>

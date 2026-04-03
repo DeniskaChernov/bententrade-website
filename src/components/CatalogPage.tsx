@@ -11,7 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ProductGridSkeleton } from './ProductCardSkeleton';
 import { Breadcrumbs } from './Breadcrumbs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { useLanguage } from '../utils/language-context';
+import { pickLang, useLanguage } from '../utils/language-context';
+import { formatPrice } from '../utils/translations';
+import { trackEvent } from '../utils/analytics';
+import { getProductIdForSlug, getSlugForProductId } from '../data/productSlugs';
+import { MarketplacePDP } from './MarketplacePDP';
 import { API_BASE_URL } from '../utils/env';
 
 // Импорт изображений кашпо 5л с ручкой
@@ -112,11 +116,29 @@ interface Product {
 }
 
 interface CatalogPageProps {
-  onAddToCart: (product: Product & { selectedVariant?: ColorVariant; selectedImageIndex?: number }) => void;
+  onAddToCart: (product: Product & { selectedVariant?: ColorVariant; selectedImageIndex?: number; lineMeta?: string }) => void;
   onBackToHome: () => void;
+  onOpenConsult?: () => void;
+  onOpenCart?: () => void;
+  /** ЧПУ товара — открыта отдельная страница маркетплейса */
+  productSlug?: string | null;
+  onProductSlugChange?: (slug: string | null) => void;
+  onExpressCheckout?: (args: {
+    product: Product;
+    selectedVariant: ColorVariant | undefined;
+    widthMm: number | null;
+  }) => void;
 }
 
-export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
+export function CatalogPage({
+  onAddToCart,
+  onBackToHome,
+  onOpenConsult,
+  onOpenCart,
+  productSlug = null,
+  onProductSlugChange,
+  onExpressCheckout,
+}: CatalogPageProps) {
   // Используем систему переводов
   const { language, t } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
@@ -138,6 +160,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
   const [colorFilter, setColorFilter] = useState<string>('all');
   const [sizeFilter, setSizeFilter] = useState<string>('all');
   const [styleFilter, setStyleFilter] = useState<string>('all');
+  const [whereFilter, setWhereFilter] = useState<'all' | 'street' | 'home'>('all');
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'order'>('all');
+  const [shapeFilter, setShapeFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('name');
   const [isLoading, setIsLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<'planters' | 'materials'>('planters');
@@ -999,23 +1024,69 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
     setSelectedVariants(initialVariants);
   }, [allProducts]);
 
+  const shapeIds: Record<string, string[]> = {
+    hemi: ['1'],
+    sphere: ['1-sphere'],
+    flat: ['1-flat'],
+    crescent: ['1-crescent'],
+    tube: ['1-tube'],
+  };
+
+  const matchesShapeFor = (product: Product) => {
+    if (shapeFilter === 'all') return true;
+    if (product.category !== 'materials') return true;
+    return shapeIds[shapeFilter]?.includes(product.id) ?? true;
+  };
+
   // Фильтрация товаров с учетом активной категории
-  const filteredProducts = allProducts.filter(product => {
+  const filteredProducts = allProducts.filter((product) => {
     // Фильтр по категории
-    const matchesCategory = activeCategory === 'planters' 
-      ? product.category !== 'materials' 
-      : product.category === 'materials';
-    
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesColor = colorFilter === 'all' || 
-                        (product.variants && product.variants.some(v => v.id === colorFilter));
-    
+    const matchesCategory =
+      activeCategory === 'planters'
+        ? product.category !== 'materials'
+        : product.category === 'materials';
+
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesColor =
+      colorFilter === 'all' ||
+      (product.variants && product.variants.some((v) => v.id === colorFilter));
+
     const matchesSize = sizeFilter === 'all' || product.size === sizeFilter;
     const matchesStyle = styleFilter === 'all' || product.style === styleFilter;
-    
-    return matchesCategory && matchesSearch && matchesColor && matchesSize && matchesStyle;
+
+    const isPlanter = product.category !== 'materials';
+    const matchesWhere =
+      whereFilter === 'all' ||
+      (whereFilter === 'street' &&
+        (product.category === 'materials' ||
+          product.size === '10л' ||
+          product.size === '16л')) ||
+      (whereFilter === 'home' &&
+        (product.category === 'materials' ||
+          product.size === '5л' ||
+          product.size === '10л' ||
+          (isPlanter && product.size !== '16л')));
+
+    const matchesStock =
+      stockFilter === 'all' ||
+      (stockFilter === 'in_stock' && product.category !== 'materials') ||
+      (stockFilter === 'order' && product.category === 'materials');
+
+    const matchesShape = matchesShapeFor(product);
+
+    return (
+      matchesCategory &&
+      matchesSearch &&
+      matchesColor &&
+      matchesSize &&
+      matchesStyle &&
+      matchesWhere &&
+      matchesStock &&
+      matchesShape
+    );
   });
 
   // Сортировка товаров
@@ -1038,7 +1109,17 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
 
   useEffect(() => {
     setVisibleCount(8);
-  }, [activeCategory, searchTerm, colorFilter, sizeFilter, styleFilter, sortBy]);
+  }, [
+    activeCategory,
+    searchTerm,
+    colorFilter,
+    sizeFilter,
+    styleFilter,
+    whereFilter,
+    stockFilter,
+    shapeFilter,
+    sortBy,
+  ]);
 
   useEffect(() => {
     const node = loadMoreRef.current;
@@ -1234,6 +1315,69 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
     };
   }, [seoClusterContent]);
 
+  const focusedProductId = productSlug ? getProductIdForSlug(productSlug) : null;
+  const focusedProduct = focusedProductId ? allProducts.find((p) => p.id === focusedProductId) : null;
+
+  useEffect(() => {
+    if (!productSlug || !focusedProduct) return;
+    trackEvent('view_item', {
+      item_id: focusedProduct.id,
+      item_name: focusedProduct.name,
+      item_category: focusedProduct.category,
+    });
+  }, [productSlug, focusedProduct?.id, focusedProduct?.name, focusedProduct?.category]);
+
+  if (productSlug && onProductSlugChange) {
+    if (!focusedProduct) {
+      return (
+        <div className="min-h-screen bg-background px-4 py-24 text-center">
+          <p className="mb-4 text-muted-foreground">
+            {pickLang(language, { ru: 'Товар не найден', uz: 'Mahsulot topilmadi', en: 'Product not found' })}
+          </p>
+          <Button type="button" onClick={() => onProductSlugChange(null)}>
+            {t.catalog}
+          </Button>
+        </div>
+      );
+    }
+    const pid = focusedProduct.id;
+    const vid = selectedVariants[pid] || focusedProduct.variants?.[0]?.id || '';
+    return (
+      <MarketplacePDP
+        product={focusedProduct}
+        selectedVariantId={vid}
+        onVariantChange={(variantId) => handleVariantChange(pid, variantId)}
+        getColorName={getColorName}
+        onBack={() => onProductSlugChange(null)}
+        onAddToCart={({ widthMm }) => {
+          const sv = focusedProduct.variants?.find((v) => v.id === selectedVariants[pid]);
+          const lineMeta =
+            widthMm != null
+              ? pickLang(language, {
+                  ru: `Ширина нити: ${widthMm} мм`,
+                  uz: `Ip kengligi: ${widthMm} mm`,
+                  en: `Thread width: ${widthMm} mm`,
+                })
+              : undefined;
+          onAddToCart({
+            ...focusedProduct,
+            selectedVariant: sv,
+            selectedImageIndex: 0,
+            image: sv?.images[0] || focusedProduct.image,
+            lineMeta,
+          });
+        }}
+        onOneClick={({ widthMm }) => {
+          const sv = focusedProduct.variants?.find((v) => v.id === selectedVariants[pid]);
+          onExpressCheckout?.({ product: focusedProduct, selectedVariant: sv, widthMm });
+        }}
+        language={language}
+        t={t}
+        homeLabel={pickLang(language, { ru: 'Главная', uz: 'Bosh sahifa', en: 'Home' })}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Современные декоративные элементы с glassmorphism */}
@@ -1360,6 +1504,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
               setColorFilter('all');
               setSizeFilter('all');
               setStyleFilter('all');
+              setWhereFilter('all');
+              setStockFilter('all');
+              setShapeFilter('all');
               setSearchTerm('');
             }}
             className="w-full"
@@ -1460,6 +1607,121 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
               </Badge>
             </div>
           )}
+
+          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t.filterWhere}</p>
+              <Select value={whereFilter} onValueChange={(v) => setWhereFilter(v as typeof whereFilter)}>
+                <SelectTrigger className="glass-card border-primary/20 rounded-xl h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.filterWhereAll}</SelectItem>
+                  <SelectItem value="street">{t.filterWhereStreet}</SelectItem>
+                  <SelectItem value="home">{t.filterWhereHome}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t.filterStock}</p>
+              <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as typeof stockFilter)}>
+                <SelectTrigger className="glass-card border-primary/20 rounded-xl h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.filterStockAll}</SelectItem>
+                  <SelectItem value="in_stock">{t.filterStockIn}</SelectItem>
+                  <SelectItem value="order">{t.filterStockOrder}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 sm:col-span-2 lg:col-span-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t.filterShape}</p>
+              <Select value={shapeFilter} onValueChange={setShapeFilter} disabled={activeCategory !== 'materials'}>
+                <SelectTrigger className="glass-card border-primary/20 rounded-xl h-11">
+                  <SelectValue placeholder={t.filterShapeAll} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.filterShapeAll}</SelectItem>
+                  <SelectItem value="hemi">{t.filterShapeHemi}</SelectItem>
+                  <SelectItem value="sphere">{t.filterShapeSphere}</SelectItem>
+                  <SelectItem value="flat">{t.filterShapeFlat}</SelectItem>
+                  <SelectItem value="crescent">{t.filterShapeCrescent}</SelectItem>
+                  <SelectItem value="tube">{t.filterShapeTube}</SelectItem>
+                </SelectContent>
+              </Select>
+              {activeCategory !== 'materials' && (
+                <p className="text-xs text-muted-foreground">{pickLang(language, { uz: 'Rattan bo‘limida ishlaydi', ru: 'Для раздела ротанга', en: 'Works in rattan tab' })}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center gap-3 border-t border-primary/10 pt-6">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/60">
+              {t.filterQuickPick}
+            </span>
+            <div className="flex flex-wrap justify-center gap-2 max-w-2xl">
+              <Button
+                type="button"
+                variant={whereFilter === 'all' && stockFilter === 'all' && shapeFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                className="h-9 rounded-full px-4 text-xs"
+                onClick={() => {
+                  setWhereFilter('all');
+                  setStockFilter('all');
+                  setShapeFilter('all');
+                }}
+              >
+                {t.filterStockAll}
+              </Button>
+              <Button
+                type="button"
+                variant={whereFilter === 'street' ? 'default' : 'outline'}
+                size="sm"
+                className="h-9 rounded-full px-4 text-xs"
+                onClick={() => setWhereFilter('street')}
+              >
+                {t.filterWhereStreet}
+              </Button>
+              <Button
+                type="button"
+                variant={whereFilter === 'home' ? 'default' : 'outline'}
+                size="sm"
+                className="h-9 rounded-full px-4 text-xs"
+                onClick={() => setWhereFilter('home')}
+              >
+                {t.filterWhereHome}
+              </Button>
+              <Button
+                type="button"
+                variant={activeCategory === 'planters' && stockFilter === 'in_stock' ? 'default' : 'outline'}
+                size="sm"
+                className="h-9 rounded-full px-4 text-xs"
+                onClick={() => {
+                  setActiveCategory('planters');
+                  setStockFilter('in_stock');
+                  setWhereFilter('all');
+                  setShapeFilter('all');
+                }}
+              >
+                {t.filterStockIn}
+              </Button>
+              <Button
+                type="button"
+                variant={activeCategory === 'materials' && stockFilter === 'order' ? 'default' : 'outline'}
+                size="sm"
+                className="h-9 rounded-full px-4 text-xs"
+                onClick={() => {
+                  setActiveCategory('materials');
+                  setStockFilter('order');
+                  setWhereFilter('all');
+                  setShapeFilter('all');
+                }}
+              >
+                {t.filterStockOrder}
+              </Button>
+            </div>
+          </div>
         </motion.div>
         
         {/* Товары */}
@@ -1476,7 +1738,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                 whileHover={reduceListAnimations ? undefined : { y: -10, scale: 1.02 }}
                 className="group"
               >
-                <Card className="overflow-hidden glass-card border-primary/10 hover:border-primary/30 transition-all duration-300 flex flex-col rounded-3xl">
+                <Card className="group/card flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/90 shadow-sm transition-all duration-300 hover:border-primary/25 hover:shadow-md">
                   <CardHeader className="p-0 relative overflow-hidden">
                     <div className="aspect-square overflow-hidden relative">
                       {/* Изображение товара */}
@@ -1643,15 +1905,29 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                         let priceText = '';
                         
                         if (isRattan) {
-                          priceText = language === 'uz'
-                            ? `36 000 so'm/kg (min. 5kg = 180 000 so'm)`
-                            : `36 000 сум/кг (мин. 5кг = 180 000 сум)`;
+                          priceText = pickLang(language, {
+                            uz: `36 000 so'm/kg (min. 5kg = 180 000 so'm)`,
+                            ru: `36 000 сум/кг (мин. 5кг = 180 000 сум)`,
+                            en: `36,000 UZS/kg (min. 5 kg = 180,000 UZS)`,
+                          });
                         } else if (is5l) {
-                          priceText = language === 'uz' ? '120 000 so\'m' : '120 000 сум';
+                          priceText = pickLang(language, {
+                            uz: '120 000 so\'m',
+                            ru: '120 000 сум',
+                            en: '120,000 UZS',
+                          });
                         } else if (is10l) {
-                          priceText = language === 'uz' ? '187 000 so\'m' : '187 000 сум';
+                          priceText = pickLang(language, {
+                            uz: '187 000 so\'m',
+                            ru: '187 000 сум',
+                            en: '187,000 UZS',
+                          });
                         } else if (is16l) {
-                          priceText = language === 'uz' ? '245 000 so\'m' : '245 000 сум';
+                          priceText = pickLang(language, {
+                            uz: '245 000 so\'m',
+                            ru: '245 000 сум',
+                            en: '245,000 UZS',
+                          });
                         }
                         
                         return priceText ? (
@@ -1662,28 +1938,43 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                       })()}
                     </motion.div>
                     
-                    <motion.div
-                      whileHover={reduceListAnimations ? undefined : { scale: 1.02 }}
-                      whileTap={reduceListAnimations ? undefined : { scale: 0.98 }}
-                      className="w-full"
-                    >
-                      <Button 
-                        className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 micro-interaction rounded-xl font-grotesk font-medium shadow-md"
-                        onClick={() => handleAddToCart(product)}
-                      >
-                        <motion.span
-                          whileHover={reduceListAnimations ? undefined : { scale: 1.05 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex items-center gap-2"
+                    <div className="flex flex-col gap-2 w-full">
+                      {onProductSlugChange && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full h-10 rounded-xl border-primary/30"
+                          onClick={() => onProductSlugChange(getSlugForProductId(product.id))}
                         >
-                          {product.category === 'materials' 
-                            ? (language === 'uz' ? '5kg dan buyurtma' : 'Заказать от 5кг')
-                            : t.order
-                          }
-                          <Star className="w-4 h-4" />
-                        </motion.span>
-                      </Button>
-                    </motion.div>
+                          {t.pdpOpen}
+                        </Button>
+                      )}
+                      <motion.div
+                        whileHover={reduceListAnimations ? undefined : { scale: 1.02 }}
+                        whileTap={reduceListAnimations ? undefined : { scale: 0.98 }}
+                        className="w-full"
+                      >
+                        <Button
+                          className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 micro-interaction rounded-xl font-grotesk font-medium shadow-md"
+                          onClick={() => handleAddToCart(product)}
+                        >
+                          <motion.span
+                            whileHover={reduceListAnimations ? undefined : { scale: 1.05 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center gap-2"
+                          >
+                            {product.category === 'materials'
+                              ? pickLang(language, {
+                                  uz: '5kg dan buyurtma',
+                                  ru: 'Заказать от 5кг',
+                                  en: 'Order from 5 kg',
+                                })
+                              : t.order}
+                            <Star className="w-4 h-4" />
+                          </motion.span>
+                        </Button>
+                      </motion.div>
+                    </div>
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -1729,6 +2020,9 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
                   setColorFilter('all');
                   setSizeFilter('all');
                   setStyleFilter('all');
+                  setWhereFilter('all');
+                  setStockFilter('all');
+                  setShapeFilter('all');
                 }}
                 variant="outline"
                 className="glass-card border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 micro-interaction h-12 px-8 rounded-xl font-grotesk"
@@ -1782,6 +2076,7 @@ export function CatalogPage({ onAddToCart, onBackToHome }: CatalogPageProps) {
             dangerouslySetInnerHTML={{ __html: JSON.stringify(clusterFaqJsonLd) }}
           />
         )}
+
       </div>
     </div>
   );

@@ -491,6 +491,60 @@
     background-size: 200% 200%;
     animation: gradient-shift 5s ease infinite;
   }
+
+  /* Премиальный слой микровзаимодействий (agency / component-gallery стиль) */
+  @keyframes agency-border-flow {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%;
+    }
+  }
+
+  .agency-cta-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, #c49560 45%, var(--primary) 100%);
+    background-size: 200% auto;
+    transition:
+      transform var(--motion-fast) cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow var(--motion-base) ease;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .agency-cta-primary:hover {
+      animation: agency-border-flow 2.8s ease infinite;
+      box-shadow: 0 14px 42px rgba(212, 165, 116, 0.28);
+    }
+  }
+
+  .trust-pill-interactive {
+    transition:
+      border-color var(--motion-fast) ease,
+      transform var(--motion-fast) ease,
+      background-color var(--motion-fast) ease;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .trust-pill-interactive:hover {
+      transform: translateY(-2px);
+      border-color: rgba(212, 165, 116, 0.4);
+      background-color: rgba(212, 165, 116, 0.1);
+    }
+  }
+
+  .card-spotlight-hover {
+    transition:
+      border-color var(--motion-base) ease,
+      box-shadow var(--motion-base) ease,
+      transform var(--motion-base) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .card-spotlight-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.38);
+    }
+  }
 }
 
 /**

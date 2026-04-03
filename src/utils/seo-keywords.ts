@@ -100,9 +100,63 @@ function buildRuKeywords(): string[] {
 
 export const SEO_KEYWORDS_RU = buildRuKeywords();
 
-export function getPageKeywords(page: 'home' | 'catalog' | 'legal' | 'blog', language: 'ru' | 'uz'): string[] {
+export function getPageKeywords(
+  page: 'home' | 'catalog' | 'product' | 'profile' | 'legal' | 'blog' | 'wholesale' | 'export',
+  language: 'ru' | 'uz' | 'en',
+): string[] {
+  if (language === 'en') {
+    if (page === 'wholesale') {
+      return [
+        'wholesale artificial rattan uzbekistan',
+        'b2b planters tashkent',
+        'bententrade wholesale',
+        'hoReCa rattan supplier',
+      ];
+    }
+    if (page === 'export') {
+      return [
+        'export rattan uzbekistan',
+        'bententrade export',
+        'commercial invoice planters',
+        'usd rattan supplier',
+      ];
+    }
+    if (page === 'product') {
+      return [
+        'bententrade product',
+        'artificial rattan tashkent',
+        'planters buy uzbekistan',
+        'rattan thread price',
+      ];
+    }
+    if (page === 'profile') {
+      return ['bententrade profile', 'guest checkout', 'fast order uzbekistan'];
+    }
+    return [
+      'artificial rattan uzbekistan',
+      'rattan thread tashkent',
+      'woven planters uzbekistan',
+      'synthetic rattan wholesale',
+      'bententrade',
+      'planters manufacturer tashkent',
+      'buy rattan uzbekistan',
+      'uv resistant rattan',
+    ];
+  }
+
   if (language === 'uz') {
-    // Для uz оставляем компактный релевантный набор.
+    if (page === 'wholesale') {
+      return ['rattan opt', 'kashpo ulgurji', 'bententrade opt', 'hoReCa rattan'];
+    }
+    if (page === 'export') {
+      return ['rattan eksport', 'kashpo eksport', 'bententrade eksport', 'usd yetkazib berish'];
+    }
+    if (page === 'product') {
+      return ['bententrade mahsulot', 'rattan sotib olish', 'kashpo narxi', 'tez buyurtma'];
+    }
+    if (page === 'profile') {
+      return ['bententrade profil', 'tez buyurtma', 'mehmon profili'];
+    }
     return [
       'rattan ip',
       'suniy rattan',
@@ -117,7 +171,20 @@ export function getPageKeywords(page: 'home' | 'catalog' | 'legal' | 'blog', lan
     ];
   }
 
-  if (page === 'catalog') {
+  if (page === 'wholesale') {
+    return SEO_KEYWORDS_RU.filter((k) => k.includes('опт')).slice(0, 400);
+  }
+
+  if (page === 'export') {
+    return [
+      'экспорт ротанга узбекистан',
+      'ротанг оптом экспорт',
+      'кашпо экспорт bententrade',
+      'коммерческое предложение ротанг',
+    ];
+  }
+
+  if (page === 'catalog' || page === 'product') {
     return SEO_KEYWORDS_RU.filter(
       (k) =>
         k.includes('купить') ||
@@ -125,6 +192,15 @@ export function getPageKeywords(page: 'home' | 'catalog' | 'legal' | 'blog', lan
         k.includes('каталог') ||
         k.includes('оптом')
     ).slice(0, 1000);
+  }
+
+  if (page === 'profile') {
+    return [
+      'профиль bententrade',
+      'быстрый заказ bententrade',
+      'оформление в один клик',
+      'гостевой профиль заказ',
+    ];
   }
 
   if (page === 'legal') {

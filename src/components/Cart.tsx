@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -8,7 +8,8 @@ import { Checkbox } from './ui/checkbox';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { X, Minus, Plus, ShoppingBag, CheckCircle, Shield, Mail, Wallet } from '../utils/lucide-stub';
-import { useLanguage } from '../utils/language-context';
+import { pickLang, useLanguage } from '../utils/language-context';
+import { trackEvent } from '../utils/analytics';
 import { API_BASE_URL, API_TOKEN } from '../utils/env';
 import { formatPrice } from '../utils/translations';
 
@@ -33,6 +34,8 @@ interface Product {
 
 interface CartItem extends Product {
   quantity: number;
+  /** Доп. строка в заказе (например ширина нити) */
+  lineMeta?: string;
 }
 
 interface CartProps {
@@ -56,6 +59,33 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [agreeToDataProcessing, setAgreeToDataProcessing] = useState(false);
   const [agreeToMarketing, setAgreeToMarketing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'uzcard' | 'humo' | 'payme' | 'click' | ''>('');
+  const [rememberProfile, setRememberProfile] = useState(false);
+
+  const GUEST_PROFILE_KEY = 'bententrade-guest-profile';
+
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const raw = localStorage.getItem(GUEST_PROFILE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw) as {
+        name?: string;
+        phone?: string;
+        address?: string;
+        paymentMethod?: 'uzcard' | 'humo' | 'payme' | 'click';
+      };
+      setFormData((prev) => ({
+        ...prev,
+        name: p.name || prev.name,
+        phone: p.phone || prev.phone,
+        address: p.address || prev.address,
+      }));
+      if (p.paymentMethod) setPaymentMethod(p.paymentMethod);
+    } catch {
+      /* ignore */
+    }
+  }, [isOpen]);
 
   const normalizePhoneInput = (raw: string) => {
     const sanitized = raw.replace(/[^\d+]/g, '');
@@ -145,16 +175,26 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.phone || items.length === 0 || !agreeToDataProcessing) {
+    if (!formData.name || !formData.phone || items.length === 0 || !agreeToDataProcessing || !paymentMethod) {
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-lg z-[9999] max-w-sm';
-      notification.textContent = language === 'uz' 
-        ? (!agreeToDataProcessing 
-          ? 'Shaxsiy ma\'lumotlarni qayta ishlashga rozilik bering' 
-          : 'Iltimos, barcha majburiy maydonlarni to\'ldiring')
-        : (!agreeToDataProcessing 
-          ? 'Необходимо согласие на обработку персональных данных' 
-          : 'Пожалуйста, заполните обязательные поля');
+      notification.textContent = !agreeToDataProcessing
+        ? pickLang(language, {
+            uz: 'Shaxsiy ma\'lumotlarni qayta ishlashga rozilik bering',
+            ru: 'Необходимо согласие на обработку персональных данных',
+            en: 'Please accept data processing',
+          })
+        : !paymentMethod
+          ? pickLang(language, {
+              uz: 'To‘lov usulini tanlang',
+              ru: 'Выберите способ оплаты',
+              en: 'Choose a payment method',
+            })
+          : pickLang(language, {
+              uz: 'Iltimos, barcha majburiy maydonlarni to\'ldiring',
+              ru: 'Пожалуйста, заполните обязательные поля',
+              en: 'Please fill required fields',
+            });
       document.body.appendChild(notification);
       
       setTimeout(() => {
@@ -167,6 +207,17 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
 
     setIsSubmitting(true);
 
+    const orderSkus = items.map((item) =>
+      item.selectedVariant
+        ? `${item.id}-${item.selectedVariant.id}-${item.selectedImageIndex || 0}`
+        : item.id,
+    );
+    trackEvent('start_checkout', {
+      currency: 'UZS',
+      value: calculateTotal(),
+      sku: orderSkus,
+    });
+
     try {
       const orderData = {
         items: items.map(item => ({
@@ -175,6 +226,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
           variant: item.selectedVariant?.name,
           size: item.size,
           style: item.style,
+          lineMeta: item.lineMeta,
           price: getItemPrice(item),
           total: getItemTotal(item)
         })),
@@ -182,7 +234,8 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
           name: formData.name,
           phone: formData.phone,
           address: formData.address,
-          notes: formData.message
+          notes: formData.message,
+          paymentMethod,
         },
         total: calculateTotal(),
         language
@@ -415,6 +468,28 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
       }
       
       if (telegramSuccess) {
+        trackEvent('purchase', {
+          value: calculateTotal(),
+          currency: 'UZS',
+          sku: orderSkus,
+        });
+
+        if (rememberProfile) {
+          try {
+            localStorage.setItem(
+              GUEST_PROFILE_KEY,
+              JSON.stringify({
+                name: formData.name,
+                phone: formData.phone,
+                address: formData.address,
+                paymentMethod,
+              }),
+            );
+          } catch {
+            /* private mode */
+          }
+        }
+
         // Показываем современное уведомление об успехе
         const notification = document.createElement('div');
         notification.className = 'fixed top-6 right-6 p-5 rounded-2xl shadow-2xl z-[9999] max-w-md glass-effect border-green-400/30 animate-in';
@@ -487,9 +562,10 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
 
   // Создаем уникальный идентификатор для каждого элемента корзины
   const getItemId = (item: CartItem) => {
-    return item.selectedVariant 
-      ? `${item.id}-${item.selectedVariant.id}-${item.selectedImageIndex || 0}` 
+    const base = item.selectedVariant
+      ? `${item.id}-${item.selectedVariant.id}-${item.selectedImageIndex || 0}`
       : item.id;
+    return item.lineMeta ? `${base}::${item.lineMeta}` : base;
   };
 
   const totalItems = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
@@ -613,7 +689,12 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                 
                                 <div className="flex-1">
                                   <div className="flex items-center gap-3 mb-2">
-                                    <h4 className="font-semibold text-foreground font-grotesk text-lg">{item.name}</h4>
+                                    <h4 className="font-semibold text-foreground font-grotesk text-lg">
+                                      {item.name}
+                                      {item.lineMeta && (
+                                        <span className="ml-2 text-sm font-normal text-muted-foreground">({item.lineMeta})</span>
+                                      )}
+                                    </h4>
                                     {/* Бейдж для ротанга */}
                                     {item.category === 'materials' && (
                                       <Badge variant="outline" className="border-primary/30 text-primary text-xs">
@@ -860,6 +941,106 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                         />
                       </motion.div>
 
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: 0.82 }}
+                        className="space-y-3"
+                      >
+                        <Label className="text-base">{t.checkoutPayMethod} *</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {(
+                            [
+                              ['uzcard', t.payUzcard],
+                              ['humo', t.payHumo],
+                              ['payme', t.payPayme],
+                              ['click', t.payClick],
+                            ] as const
+                          ).map(([id, label]) => (
+                            <Button
+                              key={id}
+                              type="button"
+                              variant={paymentMethod === id ? 'default' : 'outline'}
+                              className="rounded-xl h-11 text-sm font-medium"
+                              onClick={() => setPaymentMethod(id)}
+                              disabled={isSubmitting}
+                            >
+                              {label}
+                            </Button>
+                          ))}
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: 0.84 }}
+                        className="flex flex-col sm:flex-row gap-2"
+                      >
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-xl h-11 flex-1"
+                          disabled={isSubmitting}
+                          onClick={() => {
+                            try {
+                              const raw = localStorage.getItem(GUEST_PROFILE_KEY);
+                              if (!raw) {
+                                const n = document.createElement('div');
+                                n.className =
+                                  'fixed top-4 right-4 z-[100] bg-destructive text-destructive-foreground px-4 py-3 rounded-xl shadow-lg text-sm max-w-xs';
+                                n.textContent = pickLang(language, {
+                                  uz: 'Avval bitta buyurtma bilan ma’lumotlarni saqlang',
+                                  ru: 'Сначала оформите заказ и сохраните данные',
+                                  en: 'Complete an order once and save your details',
+                                });
+                                document.body.appendChild(n);
+                                setTimeout(() => n.remove(), 4500);
+                                return;
+                              }
+                              const p = JSON.parse(raw) as {
+                                name?: string;
+                                phone?: string;
+                                address?: string;
+                                paymentMethod?: 'uzcard' | 'humo' | 'payme' | 'click';
+                              };
+                              setFormData((prev) => ({
+                                ...prev,
+                                name: p.name || prev.name,
+                                phone: p.phone || prev.phone,
+                                address: p.address || prev.address,
+                              }));
+                              if (p.paymentMethod) setPaymentMethod(p.paymentMethod);
+                              trackEvent('one_click_prefill', {});
+                            } catch {
+                              /* ignore */
+                            }
+                          }}
+                        >
+                          {t.cartOneClick}
+                        </Button>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.86 }}
+                        className="flex items-start gap-3 p-4 glass-card rounded-xl border border-border/30"
+                      >
+                        <Checkbox
+                          id="remember-profile"
+                          checked={rememberProfile}
+                          onCheckedChange={(c) => setRememberProfile(c as boolean)}
+                          className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                        />
+                        <div>
+                          <label htmlFor="remember-profile" className="text-sm font-medium cursor-pointer">
+                            {t.profileRememberTitle}
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">{t.profileRememberCta}</p>
+                        </div>
+                      </motion.div>
+
                       {/* Чекбоксы согласия */}
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -888,10 +1069,11 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                               {t.agreeToDataProcessing} *
                             </label>
                             <p className="text-xs text-muted-foreground leading-relaxed">
-                              {language === 'uz' 
-                                ? 'Majburiy rozilik. Buyurtmani qayta ishlash uchun zarur.'
-                                : 'Обязательное согласие. Необходимо для обработки заказа.'
-                              }
+                              {pickLang(language, {
+                                uz: 'Majburiy rozilik. Buyurtmani qayta ishlash uchun zarur.',
+                                ru: 'Обязательное согласие. Необходимо для обработки заказа.',
+                                en: 'Required to process your order.',
+                              })}
                             </p>
                           </div>
                         </motion.div>
@@ -937,7 +1119,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                         <Button 
                           type="submit" 
                           className="w-full bg-primary text-primary-foreground hover:bg-primary/90 micro-interaction neon-glow rounded-2xl h-14 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isSubmitting || !agreeToDataProcessing}
+                          disabled={isSubmitting || !agreeToDataProcessing || !paymentMethod}
                         >
                           {isSubmitting ? (
                             <div className="flex items-center">
@@ -946,13 +1128,21 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                 className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full mr-3"
                               />
-                              {language === 'uz' ? 'Buyurtma qayta ishlanmoqda...' : 'Обрабатываем заказ...'}
+                              {pickLang(language, {
+                                uz: 'Buyurtma qayta ishlanmoqda...',
+                                ru: 'Обрабатываем заказ...',
+                                en: 'Processing order...',
+                              })}
                             </div>
                           ) : (
                             <div className="flex items-center justify-center gap-3">
                               <CheckCircle className="w-5 h-5" />
                               <span>
-                                {language === 'uz' ? 'Buyurtma berish' : 'Оформить заказ'}
+                                {pickLang(language, {
+                                  uz: 'Buyurtma berish',
+                                  ru: 'Оформить заказ',
+                                  en: 'Place order',
+                                })}
                               </span>
                               <span className="px-3 py-1 bg-primary-foreground/20 rounded-lg font-bold">
                                 {formatPrice(totalPrice, t.currency)}

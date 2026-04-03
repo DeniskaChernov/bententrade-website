@@ -3,7 +3,7 @@ import { useLanguage } from '../utils/language-context';
 import { getPageKeywords } from '../utils/seo-keywords';
 
 interface SEOHeadProps {
-  page: 'home' | 'catalog' | 'legal' | 'blog';
+  page: 'home' | 'catalog' | 'product' | 'profile' | 'legal' | 'blog' | 'wholesale' | 'export';
   title?: string;
   description?: string;
   keywords?: string;
@@ -35,6 +35,16 @@ export const SEOHead = memo(function SEOHead({
       description: '✅ Полный каталог ротанговой нити (5 типов) и плетёных кашпо от производителя ✅ 18 цветов в наличии ✅ Цены: ротанг 36000 сум/кг, кашпо от 120000 сум ✅ Оптом и в розницу',
       keywords: 'каталог ротанга, купить ротанг ташкент цена, кашпо каталог цены, ротанг оптом цена, плетеные изделия каталог, кашпо настенные, подвесные кашпо, напольные кашпо, ротанг полусфера, ротанг сфера, ротанг плоский'
     },
+    product: {
+      title: 'Товар | Bententrade',
+      description: 'Карточка товара: ротанговая нить или кашпо — цена, варианты, быстрый заказ.',
+      keywords: 'ротанг купить, кашпо bententrade, карточка товара',
+    },
+    profile: {
+      title: 'Профиль | Bententrade',
+      description: 'Сохраните имя, телефон и способ оплаты для быстрого оформления заказа.',
+      keywords: 'профиль bententrade, быстрый заказ, гостевой профиль',
+    },
     legal: {
       title: 'Юридическая информация | Bententrade',
       description: 'Политика конфиденциальности, условия использования и политика возврата - Bententrade',
@@ -44,7 +54,17 @@ export const SEOHead = memo(function SEOHead({
       title: 'Блог и новости Bententrade',
       description: 'Новости компании, обновления коллекций и полезные материалы по уходу за изделиями из ротанга.',
       keywords: 'блог bententrade, новости ротанг, статьи о кашпо, уход за ротангом'
-    }
+    },
+    wholesale: {
+      title: 'Опт ротанга и кашпо от производителя | Bententrade Ташкент',
+      description: 'Оптовые партии искусственного ротанга и плетёных кашпо: стабильные цвета, счёт, доставка по Узбекистану. Запросите КП.',
+      keywords: 'ротанг оптом ташкент, кашпо опт, bententrade опт, hoReCa ротанг, опт ротанговая нить',
+    },
+    export: {
+      title: 'Экспорт ротанга и кашпо | Bententrade — расчёт доставки и КП',
+      description: 'Поставки искусственного ротанга и кашпо на экспорт: USD, документы, логистика. Коммерческое предложение по запросу.',
+      keywords: 'экспорт ротанг, artificial rattan export uzbekistan, bententrade export, wholesale planters CIS',
+    },
   };
 
   // SEO данные для разных страниц на узбекском
@@ -59,6 +79,16 @@ export const SEOHead = memo(function SEOHead({
       description: 'Ishlab chiqaruvchidan rattan ip va to\'qilgan guldonlarning to\'liq katalogi. Turli o\'lchamlar, ranglar va uslublar. Toshkentda sifatli mahsulotlar. Narxlar 35 000 so\'mdan.',
       keywords: 'rattan katalogi, rattan sotib olish toshkent, guldon katalogi, rattan narxlari, to\'qilgan mahsulotlar'
     },
+    product: {
+      title: 'Mahsulot | Bententrade',
+      description: 'Mahsulot kartochkasi: rattan ip yoki guldon — narx, variantlar, tez buyurtma.',
+      keywords: 'rattan sotib olish, kashpo bententrade, mahsulot',
+    },
+    profile: {
+      title: 'Profil | Bententrade',
+      description: 'Ism, telefon va to‘lov — keyingi buyurtmalar uchun tezroq.',
+      keywords: 'profil bententrade, tez buyurtma',
+    },
     legal: {
       title: 'Yuridik ma\'lumot | Bententrade',
       description: 'Maxfiylik siyosati, foydalanish shartlari va qaytarish siyosati - Bententrade',
@@ -68,10 +98,66 @@ export const SEOHead = memo(function SEOHead({
       title: 'Bententrade blog va yangiliklar',
       description: 'Kompaniya yangiliklari, yangi kolleksiyalar va rattan mahsulotlari parvarishi bo`yicha foydali maqolalar.',
       keywords: 'bententrade blog, rattan yangiliklar, guldon maqolalari, rattan parvarishi'
-    }
+    },
+    wholesale: {
+      title: 'Rattan va kashpo opt | Bententrade Toshkent',
+      description: 'Ishlab chiqaruvchidan opt partiyalar: barqaror ranglar, hisob-faktura, O‘zbekiston bo‘ylab yetkazib berish.',
+      keywords: 'rattan opt, kashpo opt, bententrade ulgurji, hoReCa rattan',
+    },
+    export: {
+      title: 'Rattan va kashpo eksporti | Bententrade',
+      description: 'Eksport: USD, hujjatlar, logistika. TK bo‘yicha hisob-kitob va TK.',
+      keywords: 'rattan eksport, bententrade export, suniy rattan export',
+    },
   };
 
-  const seoData = language === 'uz' ? seoDataUz : seoDataRu;
+  const seoDataEn = {
+    home: {
+      title: 'Artificial rattan & planters in Tashkent | Bententrade — pick & buy fast',
+      description:
+        'Manufacturer in Tashkent: artificial rattan thread and hand-woven planters. Guest checkout, Uzcard/Humo/Payme/Click. Delivery in Uzbekistan.',
+      keywords:
+        'artificial rattan tashkent, synthetic rattan thread, woven planters uzbekistan, bententrade, buy rattan uzbekistan, planters manufacturer',
+    },
+    catalog: {
+      title: 'Catalog: rattan thread & planters | Bententrade',
+      description: 'Full catalog from the manufacturer: profiles, colors, planters. Prices in UZS, wholesale and retail.',
+      keywords: 'rattan catalog, planters price tashkent, artificial rattan profiles, bententrade catalog',
+    },
+    product: {
+      title: 'Product | Bententrade',
+      description: 'Product page: artificial rattan or planters — pricing, options, quick checkout.',
+      keywords: 'bententrade product, buy rattan uzbekistan, planters',
+    },
+    profile: {
+      title: 'Profile | Bententrade',
+      description: 'Save your name, phone and payment for faster checkout.',
+      keywords: 'bententrade profile, guest checkout',
+    },
+    legal: {
+      title: 'Legal information | Bententrade',
+      description: 'Privacy policy, terms of use, and returns — Bententrade.',
+      keywords: 'bententrade privacy, terms of use, returns policy',
+    },
+    blog: {
+      title: 'Bententrade blog & news',
+      description: 'Company updates, new collections, and care tips for rattan products.',
+      keywords: 'bententrade blog, rattan news, planter care',
+    },
+    wholesale: {
+      title: 'Wholesale rattan & planters | Bententrade Tashkent',
+      description: 'B2B batches from the manufacturer: stable colours, invoicing, delivery across Uzbekistan.',
+      keywords: 'rattan wholesale uzbekistan, bententrade wholesale, planters b2b',
+    },
+    export: {
+      title: 'Export rattan & planters | Bententrade',
+      description: 'Export quotes in USD, shipping and customs support. Request a commercial offer.',
+      keywords: 'bententrade export, artificial rattan export, uzbekistan wholesale export',
+    },
+  };
+
+  const seoData =
+    language === 'uz' ? seoDataUz : language === 'en' ? seoDataEn : seoDataRu;
   const pageData = seoData[page];
 
   const title = customTitle || pageData.title;
@@ -82,11 +168,19 @@ export const SEOHead = memo(function SEOHead({
   const canonicalUrl = customCanonicalUrl || (
     page === 'catalog'
       ? 'https://bententrade.uz/catalog'
-      : page === 'legal'
-        ? 'https://bententrade.uz/legal'
-        : page === 'blog'
-          ? 'https://bententrade.uz/blog'
-          : 'https://bententrade.uz/'
+      : page === 'profile'
+        ? 'https://bententrade.uz/profile'
+        : page === 'legal'
+          ? 'https://bententrade.uz/legal'
+          : page === 'blog'
+            ? 'https://bententrade.uz/blog'
+            : page === 'wholesale'
+              ? 'https://bententrade.uz/wholesale'
+              : page === 'export'
+                ? 'https://bententrade.uz/export'
+                : page === 'product'
+                  ? 'https://bententrade.uz/catalog'
+                  : 'https://bententrade.uz/'
   );
 
   useEffect(() => {
@@ -133,7 +227,11 @@ export const SEOHead = memo(function SEOHead({
     upsertMeta('meta[name="author"]', { name: 'author' }, 'Bententrade');
 
     // Language & geo
-    upsertMeta('meta[http-equiv="content-language"]', { 'http-equiv': 'content-language' }, language === 'uz' ? 'uz-UZ' : 'ru-UZ');
+    upsertMeta(
+      'meta[http-equiv="content-language"]',
+      { 'http-equiv': 'content-language' },
+      language === 'uz' ? 'uz-UZ' : language === 'en' ? 'en-UZ' : 'ru-UZ'
+    );
     upsertMeta('meta[name="geo.region"]', { name: 'geo.region' }, 'UZ-TK');
     upsertMeta('meta[name="geo.placename"]', { name: 'geo.placename' }, 'Ташкент');
     upsertMeta('meta[name="geo.position"]', { name: 'geo.position' }, '41.2995;69.2401');
@@ -149,8 +247,16 @@ export const SEOHead = memo(function SEOHead({
     upsertMeta('meta[property="og:image:height"]', { property: 'og:image:height' }, '630');
     upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt' }, 'Bententrade - ротанговая нить и плетеные кашпо');
     upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name' }, 'Bententrade');
-    upsertMeta('meta[property="og:locale"]', { property: 'og:locale' }, language === 'uz' ? 'uz_UZ' : 'ru_UZ');
-    upsertMeta('meta[property="og:locale:alternate"]', { property: 'og:locale:alternate' }, language === 'uz' ? 'ru_UZ' : 'uz_UZ');
+    upsertMeta(
+      'meta[property="og:locale"]',
+      { property: 'og:locale' },
+      language === 'uz' ? 'uz_UZ' : language === 'en' ? 'en_US' : 'ru_UZ'
+    );
+    upsertMeta(
+      'meta[property="og:locale:alternate"]',
+      { property: 'og:locale:alternate' },
+      language === 'uz' ? 'ru_UZ' : language === 'en' ? 'ru_UZ' : 'uz_UZ'
+    );
 
     // Twitter
     upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card' }, 'summary_large_image');

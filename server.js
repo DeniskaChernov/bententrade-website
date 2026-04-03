@@ -599,6 +599,7 @@ function formatOrderMessage(orderData) {
     if (item.variant) parts.push(`цвет: ${item.variant}`);
     if (item.size) parts.push(`размер: ${item.size}`);
     if (item.style) parts.push(`стиль: ${item.style}`);
+    if (item.lineMeta) parts.push(String(item.lineMeta));
     lines.push(`• ${parts.join(' | ')}`);
   });
 
@@ -647,6 +648,59 @@ async function handleApi(req, res, pathname) {
     }
     sendJson(res, 200, payload);
     return true;
+  }
+
+  /** Публичный чат-ассистент (заглушка; подключите OPENAI_API_KEY для ИИ) */
+  if (method === 'POST' && path === '/public/assistant/chat') {
+    try {
+      const body = await readBody(req, 12_000);
+      const question = String(body?.question || '').slice(0, 4000);
+      const lang = String(body?.language || 'ru');
+      if (!question.trim()) {
+        sendJson(res, 400, { success: false, error: 'Empty question' });
+        return true;
+      }
+      const openaiKey = String(process.env.OPENAI_API_KEY || '').trim();
+      if (openaiKey) {
+        const sys =
+          'You are Bententrade shop assistant for artificial rattan and planters. Answer briefly in the user language. If unsure, suggest contacting the manager.';
+        const r = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${openaiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: sys },
+              {
+                role: 'user',
+                content: JSON.stringify({ question, context: body?.context || {} }),
+              },
+            ],
+            max_tokens: 600,
+          }),
+        });
+        const data = await r.json().catch(() => ({}));
+        const reply = data?.choices?.[0]?.message?.content;
+        if (reply) {
+          sendJson(res, 200, { success: true, reply: String(reply), source: 'openai' });
+          return true;
+        }
+      }
+      const stub =
+        lang === 'uz'
+          ? 'Hozircha avtomatik javob. OPENAI_API_KEY qo‘shing yoki savolingizni menejerga yuboring.'
+          : lang === 'en'
+            ? 'Auto-reply placeholder. Add OPENAI_API_KEY or contact the manager.'
+            : 'Пока шаблонный ответ. Добавьте OPENAI_API_KEY в окружение или напишите менеджеру.';
+      sendJson(res, 200, { success: true, reply: stub, source: 'stub' });
+      return true;
+    } catch (e) {
+      sendJson(res, 500, { success: false, error: 'assistant_failed' });
+      return true;
+    }
   }
 
   if (!isAuthorized(req)) {

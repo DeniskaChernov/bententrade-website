@@ -118,6 +118,7 @@ export const CreditCard = createIcon('CreditCard', 'M21 4H3a2 2 0 00-2 2v12a2 2 
 export const RotateCcw = createIcon('RotateCcw', 'M1 4v6h6M3.51 15a9 9 0 102.13-9.36L1 10');
 export const UserPlus = createIcon('UserPlus', 'M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M12.5 7a4 4 0 100-8 4 4 0 000 8zM20 8v6M23 11h-6');
 export const Sun = createIcon('Sun', 'M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 8a4 4 0 100 8 4 4 0 000-8z');
+export const Droplets = createIcon('Droplets', 'M12 2.69l5.66 8.36a6 6 0 11-11.32 0L12 2.69z');
 export const Moon = createIcon('Moon', 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z');
 export const Monitor = createIcon('Monitor', 'M20 3H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V5a2 2 0 00-2-2zM8 21h8M12 17v4');
 export const AlertTriangle = createIcon('AlertTriangle', 'M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01');

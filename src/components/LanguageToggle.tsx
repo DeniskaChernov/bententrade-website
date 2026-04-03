@@ -11,6 +11,7 @@ export function LanguageToggle() {
   const languages = [
     { code: 'uz' as const, name: 'O\'zbekcha', flag: '🇺🇿' },
     { code: 'ru' as const, name: 'Русский', flag: '🇷🇺' },
+    { code: 'en' as const, name: 'English', flag: '🇬🇧' },
   ];
 
   const currentLanguage = languages.find(lang => lang.code === language);

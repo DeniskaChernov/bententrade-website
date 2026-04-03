@@ -15,7 +15,123 @@ export interface Translations {
   heroSubtitle: string;
   popularProducts: string;
   getConsultation: string;
+  heroCtaBuy: string;
+  heroBadge: string;
+  heroMicroDelivery: string;
+  heroMicroNoSignup: string;
+  heroMicroStock: string;
+  heroLead: string;
   ourProducts: string;
+
+  // Audience paths (A/B/C) — главная воронка
+  audiencePathsTitle: string;
+  audiencePathsSubtitle: string;
+  audiencePathNewTitle: string;
+  audiencePathNewBody: string;
+  audiencePathNewCta: string;
+  audiencePathProTitle: string;
+  audiencePathProBody: string;
+  audiencePathProCta: string;
+  audiencePathB2BTitle: string;
+  audiencePathB2BBody: string;
+  audiencePathB2BCta: string;
+
+  // Квиз «Подбор 2 мин»
+  quizTitle: string;
+  quizSubtitle: string;
+  quizBegin: string;
+  quizNext: string;
+  quizBack: string;
+  quizStep: string;
+  quizOf: string;
+  quizQ1Title: string;
+  quizQ1A: string;
+  quizQ1B: string;
+  quizQ1C: string;
+  quizQ2Title: string;
+  quizQ2Rattan: string;
+  quizQ2Planter: string;
+  quizQ2Both: string;
+  quizQ3Title: string;
+  quizQ3Outdoor: string;
+  quizQ3Indoor: string;
+  quizQ3Both: string;
+  quizQ4Title: string;
+  quizQ412: string;
+  quizQ45: string;
+  quizQ410: string;
+  quizQ4Unsure: string;
+  quizQ5Title: string;
+  quizQ5Asap: string;
+  quizQ5Week: string;
+  quizQ5Flex: string;
+  quizResultAbTitle: string;
+  quizResultAbText: string;
+  quizResultQuoteTitle: string;
+  quizResultQuoteText: string;
+  quizCtaHits: string;
+  quizCtaCatalog: string;
+  quizCtaCart: string;
+  quizCtaQuote: string;
+  quizFinish: string;
+  quizRestart: string;
+
+  navWholesale: string;
+  navExport: string;
+  heroTrustSun: string;
+  heroTrustWater: string;
+  heroTrustOutdoor: string;
+  filterWhere: string;
+  filterWhereAll: string;
+  filterWhereStreet: string;
+  filterWhereHome: string;
+  filterStock: string;
+  filterStockAll: string;
+  filterStockIn: string;
+  filterStockOrder: string;
+  filterShape: string;
+  filterShapeAll: string;
+  filterShapeHemi: string;
+  filterShapeSphere: string;
+  filterShapeFlat: string;
+  filterShapeCrescent: string;
+  filterShapeTube: string;
+  pdpOpen: string;
+  pdpPriceLadder: string;
+  pdpTierSmall: string;
+  pdpTier5: string;
+  pdpTier10: string;
+  pdpCalcTitle: string;
+  pdpCalcHint: string;
+  pdpInStock: string;
+  pdpMadeToOrder: string;
+  pdpDeliveryBlock: string;
+  checkoutPayMethod: string;
+  payUzcard: string;
+  payHumo: string;
+  payPayme: string;
+  payClick: string;
+  profileRememberTitle: string;
+  profileRememberCta: string;
+  profilePageTitle: string;
+  profilePageLead: string;
+  profileSave: string;
+  profileSaved: string;
+  navProfile: string;
+  cartOneClick: string;
+  wholesalePageTitle: string;
+  wholesalePageLead: string;
+  wholesaleStepsTitle: string;
+  wholesaleStep1: string;
+  wholesaleStep2: string;
+  wholesaleStep3: string;
+  wholesaleFormNote: string;
+  exportPageTitle: string;
+  exportPageLead: string;
+  exportPoint1: string;
+  exportPoint2: string;
+  exportPoint3: string;
+  pageCtaContacts: string;
   
   // About section
   aboutTitle: string;
@@ -112,6 +228,8 @@ export interface Translations {
   
   // Cart
   cartTitle: string;
+  toastAddedToCart: string;
+  filterQuickPick: string;
   quantity: string;
   total: string;
   orderNow: string;
@@ -259,8 +377,7 @@ export interface Translations {
   readMore: string;
 }
 
-export const translations: Record<string, Translations> = {
-  uz: {
+const translationsUz: Translations = {
     // Header
     home: "Bosh sahifa",
     catalog: "Katalog",
@@ -273,11 +390,129 @@ export const translations: Record<string, Translations> = {
     projectGallery: "Loyihalar galereyasi",
     
     // Hero section
-    heroTitle: "Chiroyli to'qish — Bententrade bilan",
-    heroSubtitle: "Toshkentdan ishlab chiqaruvchi sun'iy rattan ip va zamonaviy to'qilgan guldonlar",
+    heroTitle: "Sun'iy rattan va kashpo",
+    heroSubtitle: "2 daqiqada tanlang va buyurtma qiling",
     popularProducts: "Mashhur mahsulotlar",
-    getConsultation: "Maslahat olish",
+    getConsultation: "Rattan tanlash",
+    heroCtaBuy: "Hozir sotib olish",
+    heroBadge: "Uzcard · Humo · Payme · Click",
+    heroMicroDelivery: "Yetkazib bilan yakuniy narx — to‘lovdan oldin",
+    heroMicroNoSignup: "Ro‘yxatdan o‘tmasdan",
+    heroMicroStock: "Omborda / buyurtma asosida",
+    heroLead: "Tez tanlash, ro‘yxatsiz buyurtma, mahalliy to‘lovlar.",
     ourProducts: "Bizning mahsulotlarimiz",
+
+    audiencePathsTitle: "Kim siz?",
+    audiencePathsSubtitle: "Segmentni tanlang — keyingi qadam aniq, chatlarsiz.",
+    audiencePathNewTitle: "Yangi mijoz",
+    audiencePathNewBody:
+      "IG → sayt → mahsulot kartasi → ro‘yxatsiz, bir marta bosishda xarid.",
+    audiencePathNewCta: "Tanlash va sotib olish",
+    audiencePathProTitle: "Usta",
+    audiencePathProBody: "Katalog → kartochka → profil va rang bo‘yicha qayta buyurtma.",
+    audiencePathProCta: "Katalogni ochish",
+    audiencePathB2BTitle: "Opt",
+    audiencePathB2BBody: "Opt / eksport → ariza → kommersiya taklifi va hisob-faktura.",
+    audiencePathB2BCta: "TK so‘rash",
+
+    quizTitle: "2 daqiqada tanlash",
+    quizSubtitle: "5 ta savol — keyingi qadam aniq, chatlarsiz.",
+    quizBegin: "Boshlash",
+    quizNext: "Keyingi",
+    quizBack: "Orqaga",
+    quizStep: "Qadam",
+    quizOf: "/",
+    quizQ1Title: "Kim siz?",
+    quizQ1A: "Yangi (1–2 kg)",
+    quizQ1B: "Usta / o‘z palitrangiz",
+    quizQ1C: "Opt, HoReCa, eksport",
+    quizQ2Title: "Nima kerak?",
+    quizQ2Rattan: "Rattan ip",
+    quizQ2Planter: "Kashpo",
+    quizQ2Both: "Ikkalasi",
+    quizQ3Title: "Qayerda ishlatasiz?",
+    quizQ3Outdoor: "Ko‘cha / ochiq terrasa",
+    quizQ3Indoor: "Uy / interyer",
+    quizQ3Both: "Har ikkala",
+    quizQ4Title: "Xarid hajmi",
+    quizQ412: "1–2 kg yoki dona",
+    quizQ45: "~5 kg / o‘rta buyurtma",
+    quizQ410: "10+ kg / partiya",
+    quizQ4Unsure: "Hali bilmayman",
+    quizQ5Title: "Qachon kerak?",
+    quizQ5Asap: "Imkon qadar tez",
+    quizQ5Week: "Bir hafta ichida",
+    quizQ5Flex: "Moslashuvchan",
+    quizResultAbTitle: "Keyingi qadam",
+    quizResultAbText:
+      "Hitlar yoki to‘liq katalogdan tanlang — ro‘yxatsiz savatga qo‘shing.",
+    quizResultQuoteTitle: "Hisob-kitob kerak",
+    quizResultQuoteText:
+      "Ariza qoldiring — TK, yetkazib berish yoki eksport bo‘yicha hisoblaymiz.",
+    quizCtaHits: "Hitlarga",
+    quizCtaCatalog: "To‘liq katalog",
+    quizCtaCart: "Savatni ochish",
+    quizCtaQuote: "TK so‘rash",
+    quizFinish: "Natijani ko‘rish",
+    quizRestart: "Qayta boshlash",
+
+    navWholesale: "Opt",
+    navExport: "Eksport",
+    heroTrustSun: "Quyoshga chidamli",
+    heroTrustWater: "Namdorlikka chidamli",
+    heroTrustOutdoor: "Ko‘cha va terassa uchun",
+    filterWhere: "Qo‘llanish",
+    filterWhereAll: "Hammasi",
+    filterWhereStreet: "Ko‘cha / terassa",
+    filterWhereHome: "Uy / interyer",
+    filterStock: "Holat",
+    filterStockAll: "Hammasi",
+    filterStockIn: "Omborda",
+    filterStockOrder: "Buyurtma bo‘yicha",
+    filterShape: "Rattan profili",
+    filterShapeAll: "Barcha profillar",
+    filterShapeHemi: "Yarim shar",
+    filterShapeSphere: "Shar",
+    filterShapeFlat: "Tekis",
+    filterShapeCrescent: "Yarim oy",
+    filterShapeTube: "Nay",
+    pdpOpen: "Batafsil",
+    pdpPriceLadder: "Optimal partiyalar",
+    pdpTierSmall: "5 kg dan (chakana min.)",
+    pdpTier5: "5 kg — standart partiya",
+    pdpTier10: "10+ kg — yaxshiroq narxdagi opt",
+    pdpCalcTitle: "Sarfi hisoblash",
+    pdpCalcHint: "kg kiriting (min. 5)",
+    pdpInStock: "Omborda",
+    pdpMadeToOrder: "Buyurtma asosida",
+    pdpDeliveryBlock: "Yetkazib berish: Toshkent 24–48 soat, O‘zbekiston bo‘ylab TK.",
+    checkoutPayMethod: "To‘lov usuli",
+    payUzcard: "Uzcard",
+    payHumo: "Humo",
+    payPayme: "Payme",
+    payClick: "Click",
+    profileRememberTitle: "Keyingi buyurtmalar uchun saqlash",
+    profileRememberCta: "Ma’lumotlarni ushbu qurilmada saqlash",
+    profilePageTitle: "Profil",
+    profilePageLead: "Buyurtma uchun ism, telefon va to‘lov — keyingi safar tezroq.",
+    profileSave: "Saqlash",
+    profileSaved: "Saqlandi",
+    navProfile: "Profil",
+    cartOneClick: "1 bosishda buyurtma",
+    wholesalePageTitle: "Opt va HoReCa",
+    wholesalePageLead:
+      "Partiya, barqaror ranglar, hisob-faktura. Ariza qoldiring — TK yuboramiz.",
+    wholesaleStepsTitle: "3 qadam",
+    wholesaleStep1: "Katalogdan profil va rangni tanlang",
+    wholesaleStep2: "Hajm va yetkazib berish manzilini yozing",
+    wholesaleStep3: "To‘lov: Uzcard / Humo / Payme / Click yoki hisob-faktura",
+    wholesaleFormNote: "Quyidagi tugma kontaktlarga yo‘naltiradi — ariza yoki Telegram orqali bog‘lanamiz.",
+    exportPageTitle: "Eksport",
+    exportPageLead: "USD, bojxona va logistika bo‘yicha maslahat. Avvalo hisob-kitob.",
+    exportPoint1: "Valyuta va yetkazib berish shartlari",
+    exportPoint2: "TK va bojxona uchun hujjatlar",
+    exportPoint3: "Partiya va sifat nazorati",
+    pageCtaContacts: "Aloqaga chiqish",
     
     // About section
     aboutTitle: "Biz haqimizda",
@@ -365,6 +600,8 @@ export const translations: Record<string, Translations> = {
     
     // Cart
     cartTitle: "Savatcha",
+    toastAddedToCart: "Savatga qo‘shildi",
+    filterQuickPick: "Tezkor",
     quantity: "Soni",
     total: "Jami",
     orderNow: "Buyurtma berish",
@@ -478,9 +715,9 @@ export const translations: Record<string, Translations> = {
     goBack: "Orqaga qaytish",
     close: "Yopish",
     readMore: "To'liq o'qish"
-  },
-  
-  ru: {
+};
+
+const translationsRu: Translations = {
     // Header
     home: "Главная",
     catalog: "Каталог",
@@ -493,11 +730,129 @@ export const translations: Record<string, Translations> = {
     projectGallery: "Галерея проектов",
     
     // Hero section
-    heroTitle: "Плети красиво — с Bententrade",
-    heroSubtitle: "Ротанговая нить и стильные плетёные кашпо от производителя в Ташкенте",
+    heroTitle: "Искусственный ротанг и кашпо",
+    heroSubtitle: "Выберите и закажите за 2 минуты",
     popularProducts: "Популярные товары",
-    getConsultation: "Получить консультацию",
+    getConsultation: "Подобрать ротанг",
+    heroCtaBuy: "Купить сейчас",
+    heroBadge: "Uzcard · Humo · Payme · Click",
+    heroMicroDelivery: "Итог с доставкой до оплаты",
+    heroMicroNoSignup: "Без регистрации",
+    heroMicroStock: "В наличии / под заказ",
+    heroLead: "Быстрый подбор, заказ без регистрации, оплата картой и Payme/Click.",
     ourProducts: "Наша продукция",
+
+    audiencePathsTitle: "Кто вы?",
+    audiencePathsSubtitle: "Выберите сегмент — дальше всё понятно, без лишних чатов.",
+    audiencePathNewTitle: "Новичок",
+    audiencePathNewBody:
+      "Instagram → сайт → карточка товара → гостевой заказ и покупка в один клик.",
+    audiencePathNewCta: "Подобрать и купить",
+    audiencePathProTitle: "Мастер",
+    audiencePathProBody: "Каталог → карточка → повторный заказ по профилю и цвету.",
+    audiencePathProCta: "Открыть каталог",
+    audiencePathB2BTitle: "Опт",
+    audiencePathB2BBody: "Опт / экспорт → заявка → коммерческое предложение и счёт.",
+    audiencePathB2BCta: "Запросить КП",
+
+    quizTitle: "Подбор за 2 минуты",
+    quizSubtitle: "5 вопросов — дальше всё ясно, без переписок в чате.",
+    quizBegin: "Начать подбор",
+    quizNext: "Далее",
+    quizBack: "Назад",
+    quizStep: "Шаг",
+    quizOf: "из",
+    quizQ1Title: "Кто вы?",
+    quizQ1A: "Новичок (1–2 кг)",
+    quizQ1B: "Мастер / своя палитра",
+    quizQ1C: "Опт, HoReCa, экспорт",
+    quizQ2Title: "Что нужно?",
+    quizQ2Rattan: "Ротанг (нить)",
+    quizQ2Planter: "Кашпо",
+    quizQ2Both: "И то, и другое",
+    quizQ3Title: "Где используете?",
+    quizQ3Outdoor: "Улица / терраса",
+    quizQ3Indoor: "Дом / интерьер",
+    quizQ3Both: "И улица, и дом",
+    quizQ4Title: "Объём закупки",
+    quizQ412: "1–2 кг или единицы",
+    quizQ45: "~5 кг / средний заказ",
+    quizQ410: "10+ кг / партия",
+    quizQ4Unsure: "Пока не знаю",
+    quizQ5Title: "Когда нужно?",
+    quizQ5Asap: "Как можно скорее",
+    quizQ5Week: "В течение недели",
+    quizQ5Flex: "Гибко по срокам",
+    quizResultAbTitle: "Ваш маршрут",
+    quizResultAbText:
+      "Загляните в хиты или полный каталог — добавьте в корзину без регистрации.",
+    quizResultQuoteTitle: "Нужен расчёт",
+    quizResultQuoteText:
+      "Оставьте заявку в контактах — подготовим КП, доставку или экспорт.",
+    quizCtaHits: "К хитам",
+    quizCtaCatalog: "Полный каталог",
+    quizCtaCart: "Открыть корзину",
+    quizCtaQuote: "Запросить КП",
+    quizFinish: "Показать результат",
+    quizRestart: "Пройти заново",
+
+    navWholesale: "Опт",
+    navExport: "Экспорт",
+    heroTrustSun: "Устойчив к солнцу",
+    heroTrustWater: "Не боится влаги",
+    heroTrustOutdoor: "Подходит для улицы и террасы",
+    filterWhere: "Применение",
+    filterWhereAll: "Везде",
+    filterWhereStreet: "Улица / терраса",
+    filterWhereHome: "Дом / интерьер",
+    filterStock: "Наличие",
+    filterStockAll: "Все",
+    filterStockIn: "В наличии",
+    filterStockOrder: "Под заказ",
+    filterShape: "Профиль ротанга",
+    filterShapeAll: "Все профили",
+    filterShapeHemi: "Полусфера",
+    filterShapeSphere: "Сфера",
+    filterShapeFlat: "Плоский",
+    filterShapeCrescent: "Полумесяц",
+    filterShapeTube: "Трубка",
+    pdpOpen: "Подробнее",
+    pdpPriceLadder: "Выгодные партии",
+    pdpTierSmall: "от 5 кг (минимум в розницу)",
+    pdpTier5: "5 кг — стандартная партия",
+    pdpTier10: "10+ кг — опт с лучшей ценой",
+    pdpCalcTitle: "Калькулятор расхода",
+    pdpCalcHint: "Введите кг (мин. 5)",
+    pdpInStock: "В наличии",
+    pdpMadeToOrder: "Под заказ",
+    pdpDeliveryBlock: "Доставка: Ташкент 24–48 ч, по Узбекистану через ТК.",
+    checkoutPayMethod: "Способ оплаты",
+    payUzcard: "Uzcard",
+    payHumo: "Humo",
+    payPayme: "Payme",
+    payClick: "Click",
+    profileRememberTitle: "Сохранить для следующих покупок",
+    profileRememberCta: "Сохранить на этом устройстве",
+    profilePageTitle: "Профиль",
+    profilePageLead: "Имя, телефон и способ оплаты — для быстрого заказа и «1 клик».",
+    profileSave: "Сохранить",
+    profileSaved: "Сохранено",
+    navProfile: "Профиль",
+    cartOneClick: "Купить в 1 клик",
+    wholesalePageTitle: "Опт и HoReCa",
+    wholesalePageLead:
+      "Партии, стабильные цвета, счёт для юрлиц. Оставьте заявку — пришлём КП.",
+    wholesaleStepsTitle: "3 шага",
+    wholesaleStep1: "Выберите профиль и цвет в каталоге",
+    wholesaleStep2: "Укажите объём и адрес доставки",
+    wholesaleStep3: "Оплата: Uzcard / Humo / Payme / Click или по счёту",
+    wholesaleFormNote: "Кнопка ведёт в контакты — оформим заявку в Telegram или по телефону.",
+    exportPageTitle: "Экспорт",
+    exportPageLead: "USD, доставка и таможня. Сначала расчёт и КП.",
+    exportPoint1: "Валюта и условия поставки",
+    exportPoint2: "Документы для ТК и таможни",
+    exportPoint3: "Партия и контроль качества",
+    pageCtaContacts: "Перейти к контактам",
     
     // About section
     aboutTitle: "О нас",
@@ -585,6 +940,8 @@ export const translations: Record<string, Translations> = {
     
     // Cart
     cartTitle: "Корзина",
+    toastAddedToCart: "В корзине",
+    filterQuickPick: "Быстрый выбор",
     quantity: "Количество",
     total: "Итого",
     orderNow: "Оформить заказ",
@@ -698,7 +1055,204 @@ export const translations: Record<string, Translations> = {
     goBack: "Вернуться назад",
     close: "Закрыть",
     readMore: "Читать полностью"
-  }
+};
+
+/** Английский: база RU + патч ключевого UI (остальное наследуется из RU до полного D6). */
+const enUiPatch: Partial<Translations> = {
+  home: "Home",
+  catalog: "Catalog",
+  catalogTitle: "Product catalog",
+  catalogDescription:
+    "Artificial rattan thread and hand-woven planters. Pick fast, checkout as a guest, pay with local methods.",
+  about: "About",
+  contacts: "Contacts",
+  cart: "Cart",
+  search: "Search",
+  projectGallery: "Project gallery",
+  heroTitle: "Artificial rattan & planters",
+  heroSubtitle: "Choose and order in 2 minutes",
+  popularProducts: "Featured",
+  getConsultation: "Find my rattan",
+  heroCtaBuy: "Buy now",
+  heroBadge: "Uzcard · Humo · Payme · Click",
+  heroMicroDelivery: "Total with delivery before you pay",
+  heroMicroNoSignup: "No sign-up",
+  heroMicroStock: "In stock / made to order",
+  heroLead: "Fast pick, guest checkout, cards and Payme/Click.",
+  ourProducts: "Our products",
+  audiencePathsTitle: "Who are you?",
+  audiencePathsSubtitle: "Pick your segment — next steps stay clear, fewer chats.",
+  audiencePathNewTitle: "Newbie",
+  audiencePathNewBody: "Social → site → product page → guest checkout and one-tap buy.",
+  audiencePathNewCta: "Pick & buy",
+  audiencePathProTitle: "Pro",
+  audiencePathProBody: "Catalog → PDP → reorder by profile and color.",
+  audiencePathProCta: "Open catalog",
+  audiencePathB2BTitle: "Wholesale",
+  audiencePathB2BBody: "Wholesale / export → request → quote (PDF) and invoice.",
+  audiencePathB2BCta: "Request a quote",
+  quizTitle: "2-minute picker",
+  quizSubtitle: "Five questions — a clear next step, fewer chats.",
+  quizBegin: "Start",
+  quizNext: "Next",
+  quizBack: "Back",
+  quizStep: "Step",
+  quizOf: "of",
+  quizQ1Title: "Who are you?",
+  quizQ1A: "New buyer (1–2 kg)",
+  quizQ1B: "Pro / own palette",
+  quizQ1C: "Wholesale, HoReCa, export",
+  quizQ2Title: "What do you need?",
+  quizQ2Rattan: "Rattan thread",
+  quizQ2Planter: "Planters",
+  quizQ2Both: "Both",
+  quizQ3Title: "Where will you use it?",
+  quizQ3Outdoor: "Outdoors / terrace",
+  quizQ3Indoor: "Indoors",
+  quizQ3Both: "Both",
+  quizQ4Title: "Order size",
+  quizQ412: "1–2 kg or a few units",
+  quizQ45: "~5 kg / medium order",
+  quizQ410: "10+ kg / batch",
+  quizQ4Unsure: "Not sure yet",
+  quizQ5Title: "When do you need it?",
+  quizQ5Asap: "As soon as possible",
+  quizQ5Week: "Within a week",
+  quizQ5Flex: "Flexible",
+  quizResultAbTitle: "Suggested next step",
+  quizResultAbText: "Browse hits or the full catalog — add to cart as a guest.",
+  quizResultQuoteTitle: "You need a quote",
+  quizResultQuoteText: "Contact us — we will prepare a quote, shipping or export terms.",
+  quizCtaHits: "To hits",
+  quizCtaCatalog: "Full catalog",
+  quizCtaCart: "Open cart",
+  quizCtaQuote: "Request quote",
+  quizFinish: "See result",
+  quizRestart: "Start over",
+  navWholesale: "Wholesale",
+  navExport: "Export",
+  heroTrustSun: "Sun / UV resistant",
+  heroTrustWater: "Moisture resistant",
+  heroTrustOutdoor: "Great for outdoors & terrace",
+  filterWhere: "Use case",
+  filterWhereAll: "All",
+  filterWhereStreet: "Street / terrace",
+  filterWhereHome: "Home / indoor",
+  filterStock: "Availability",
+  filterStockAll: "All",
+  filterStockIn: "In stock",
+  filterStockOrder: "Made to order",
+  filterShape: "Rattan profile",
+  filterShapeAll: "All profiles",
+  filterShapeHemi: "Hemisphere",
+  filterShapeSphere: "Sphere",
+  filterShapeFlat: "Flat",
+  filterShapeCrescent: "Crescent",
+  filterShapeTube: "Tube",
+  pdpOpen: "Details",
+  pdpPriceLadder: "Volume pricing",
+  pdpTierSmall: "From 5 kg (retail minimum)",
+  pdpTier5: "5 kg — standard batch",
+  pdpTier10: "10+ kg — better wholesale rate",
+  pdpCalcTitle: "Usage calculator",
+  pdpCalcHint: "Enter kg (min. 5)",
+  pdpInStock: "In stock",
+  pdpMadeToOrder: "Made to order",
+  pdpDeliveryBlock: "Delivery: Tashkent 24–48h, nationwide via carriers.",
+  checkoutPayMethod: "Payment method",
+  payUzcard: "Uzcard",
+  payHumo: "Humo",
+  payPayme: "Payme",
+  payClick: "Click",
+  profileRememberTitle: "Save for next orders",
+  profileRememberCta: "Save on this device",
+  profilePageTitle: "Profile",
+  profilePageLead: "Name, phone and payment — faster checkout next time.",
+  profileSave: "Save",
+  profileSaved: "Saved",
+  navProfile: "Profile",
+  cartOneClick: "One-tap checkout",
+  wholesalePageTitle: "Wholesale & HoReCa",
+  wholesalePageLead: "Batches, stable colours, invoicing. Request a quote.",
+  wholesaleStepsTitle: "3 steps",
+  wholesaleStep1: "Pick profile & colour in the catalog",
+  wholesaleStep2: "Share volume and delivery address",
+  wholesaleStep3: "Pay: Uzcard / Humo / Payme / Click or invoice",
+  wholesaleFormNote: "The button opens contacts — we finalize in Telegram or by phone.",
+  exportPageTitle: "Export",
+  exportPageLead: "USD, shipping & customs. Quote first.",
+  exportPoint1: "Currency & delivery terms",
+  exportPoint2: "Documents for logistics & customs",
+  exportPoint3: "Batch quality control",
+  pageCtaContacts: "Contact us",
+  aboutTitle: "About us",
+  aboutDescription:
+    "Bententrade produces artificial rattan thread and woven planters in Tashkent. Shipping across Uzbekistan and CIS.",
+  ourMission: "Our mission",
+  ourMissionText: "Help you choose the right material and buy without friction",
+  qualityTitle: "Quality",
+  qualityText: "Stable batches, UV-resistant materials",
+  experienceTitle: "Experience",
+  experienceText: "Manufacturing since 2023, hundreds of happy customers",
+  innovationTitle: "Innovation",
+  innovationText: "Modern production with craft attention to detail",
+  whyUsTitle: "Why Bententrade",
+  manufacturer: "Manufacturer",
+  manufacturerDesc: "Made in Tashkent, clear lead times",
+  quality: "Quality control",
+  qualityDesc: "Consistent colors and profiles batch to batch",
+  delivery: "Delivery",
+  deliveryDesc: "UZ and CIS shipping options",
+  support: "Support",
+  supportDesc: "Quick answers on selection and orders",
+  contactsTitle: "Contacts",
+  phone: "Phone",
+  messages: "Messengers",
+  address: "Address",
+  workingHours: "Hours",
+  writeToUs: "Write to us",
+  cartTitle: "Cart",
+  toastAddedToCart: "Added to cart",
+  filterQuickPick: "Quick",
+  quantity: "Qty",
+  total: "Total",
+  orderNow: "Checkout",
+  emptyCart: "Cart is empty",
+  emptyCartDesc: "Add products from the catalog",
+  continueShopping: "Continue shopping",
+  order: "Order",
+  popular: "Popular",
+  viewFullCatalog: "Full catalog",
+  moreProducts: "More products",
+  filters: "Filters",
+  resetFilters: "Reset",
+  backToMain: "Back to home",
+  noProductsFound: "Nothing found",
+  noProductsFoundDescription: "Try changing filters or search",
+  planters: "Planters",
+  materials: "Materials",
+  plantersDescription: "Hand-woven planters",
+  materialsDescription: "Rattan thread profiles",
+  cookieBannerText: "We use cookies to improve the site.",
+  cookieBannerAccept: "Accept",
+  cookieBannerDecline: "Decline",
+  cookieBannerLearnMore: "Learn more",
+  send: "Send",
+  accept: "Accept",
+  decline: "Decline",
+  learnMore: "Learn more",
+  contact: "Contact",
+  goBack: "Back",
+  close: "Close",
+  readMore: "Read more",
+};
+
+const translationsEn: Translations = { ...translationsRu, ...enUiPatch };
+
+export const translations: Record<"uz" | "ru" | "en", Translations> = {
+  uz: translationsUz,
+  ru: translationsRu,
+  en: translationsEn,
 };
 
 // Простые цены без внешних зависимостей
