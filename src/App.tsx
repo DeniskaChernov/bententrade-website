@@ -142,10 +142,10 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
 
   const showNotification = (message: string, type: 'success' | 'error' = 'error') => {
     const notification = document.createElement('div');
-    notification.className = `fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] transition-all duration-500 max-w-sm glass-effect ${
+    notification.className = `fixed top-6 right-6 p-4 rounded-xl shadow-lg z-[9999] transition-all duration-500 max-w-sm glass-effect ${
       type === 'success' 
-        ? 'border-green-400/20 text-green-400' 
-        : 'border-red-400/20 text-red-400'
+        ? 'border-emerald-500/30 text-emerald-400' 
+        : 'border-red-500/30 text-red-400'
     }`;
     notification.textContent = message;
     document.body.appendChild(notification);
@@ -258,13 +258,13 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
 
               <div className="space-y-6">
                 <motion.div 
-                  className="flex items-center gap-3 p-4 glass-card rounded-xl border-amber-400/20"
+                  className="flex items-center gap-3 p-4 glass-card rounded-xl border-primary/25"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
-                  <span className="text-sm text-amber-400/90">Доступ только для авторизованного персонала</span>
+                  <AlertCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span className="text-sm text-primary/90">Доступ только для авторизованного персонала</span>
                 </motion.div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -291,7 +291,7 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
 
                   {attempts > 0 && !isLocked && (
                     <motion.div 
-                      className="flex items-center gap-3 text-sm text-orange-400"
+                      className="flex items-center gap-3 text-sm text-orange-400/90"
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                     >
@@ -888,19 +888,30 @@ export default function App() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-background" />
       <div
-        className="absolute -top-32 right-0 h-[min(520px,80vw)] w-[min(520px,80vw)] rounded-full opacity-90"
+        className="absolute -top-40 right-[-10%] h-[min(560px,90vw)] w-[min(560px,90vw)] rounded-full opacity-80"
         style={{
-          background: 'radial-gradient(circle at center, rgba(180, 83, 9, 0.09), transparent 62%)',
+          background: 'radial-gradient(circle at center, rgba(212, 255, 74, 0.07), transparent 55%)',
         }}
       />
       <div
-        className="absolute top-1/3 -left-24 h-[420px] w-[420px] rounded-full opacity-90"
+        className="absolute top-1/4 -left-32 h-[380px] w-[380px] rounded-full opacity-70"
         style={{
-          background: 'radial-gradient(circle at center, rgba(77, 124, 15, 0.07), transparent 58%)',
+          background: 'radial-gradient(circle at center, rgba(34, 211, 238, 0.06), transparent 58%)',
         }}
       />
       <div
-        className="absolute bottom-0 left-1/2 h-px w-[min(100%,48rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-border to-transparent"
+        className="absolute bottom-[-20%] left-1/3 h-[320px] w-[320px] rounded-full opacity-60"
+        style={{
+          background: 'radial-gradient(circle at center, rgba(167, 139, 250, 0.05), transparent 60%)',
+        }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)`,
+          backgroundSize: '48px 48px',
+        }}
         aria-hidden
       />
     </div>
@@ -1439,7 +1450,7 @@ export default function App() {
               <Button
                 variant="outline"
                 onClick={handleOpenBlogList}
-                className="rounded-full border-border bg-card px-8 text-base shadow-sm hover:border-primary/40"
+                className="rounded-lg border-border bg-card px-8 text-base shadow-none hover:border-primary/40"
               >
                 Все статьи блога
               </Button>

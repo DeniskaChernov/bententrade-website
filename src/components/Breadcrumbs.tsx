@@ -31,14 +31,14 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
           transition={{ duration: 0.3, delay: index * 0.1 }}
           className="flex items-center space-x-2"
         >
-          <ChevronRight className="w-4 h-4 text-amber-300" />
+          <ChevronRight className="w-4 h-4 text-primary/50" />
           {item.onClick ? (
             <button
               onClick={item.onClick}
-              className={`hover:text-amber-700 transition-colors ${
+              className={`hover:text-primary transition-colors ${
                 index === items.length - 1 
                   ? "text-foreground font-medium" 
-                  : "hover:text-amber-600"
+                  : "hover:text-primary"
               }`}
             >
               {item.label}

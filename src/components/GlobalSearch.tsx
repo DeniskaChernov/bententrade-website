@@ -183,7 +183,7 @@ export function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSearchProps)
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'product': return 'bg-amber-100 text-amber-700';
+      case 'product': return 'bg-primary/15 text-primary';
       case 'blog': return 'bg-blue-100 text-blue-700';
       case 'faq': return 'bg-green-100 text-green-700';
       case 'review': return 'bg-purple-100 text-purple-700';
@@ -210,14 +210,14 @@ export function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSearchProps)
           className="relative"
         >
           {/* Header */}
-          <div className="relative border-b border-amber-100/50 bg-gradient-to-r from-amber-50/50 to-orange-50/30">
+          <div className="relative border-b border-border bg-gradient-to-r from-card to-muted/30">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="relative">
-                <Search className="w-5 h-5 text-amber-600" />
+                <Search className="w-5 h-5 text-primary" />
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute -inset-1 bg-amber-200/20 rounded-full blur-sm"
+                  className="absolute -inset-1 rounded-full bg-primary/20 blur-sm"
                 />
               </div>
               <input
@@ -254,7 +254,7 @@ export function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSearchProps)
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-8 h-8 border-2 border-amber-200 border-t-amber-600 rounded-full mx-auto mb-3"
+                    className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full mx-auto mb-3"
                   />
                   <p className="text-muted-foreground text-sm">Поиск...</p>
                 </motion.div>
@@ -295,7 +295,7 @@ export function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSearchProps)
                             transition={{ duration: 0.3, delay: index * 0.05 }}
                             whileHover={{ backgroundColor: 'rgba(251, 191, 36, 0.05)' }}
                             onClick={() => handleSelect(result)}
-                            className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-200 border-b border-gray-50 hover:border-amber-100"
+                            className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-200 border-b border-gray-50 hover:border-primary/20"
                           >
                             {result.image ? (
                               <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
@@ -327,7 +327,7 @@ export function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSearchProps)
                               
                               <div className="flex items-center gap-3 mt-1">
                                 {result.price && (
-                                  <span className="text-xs font-medium text-amber-700">
+                                  <span className="text-xs font-medium text-primary">
                                     ₽{result.price.toLocaleString()}
                                   </span>
                                 )}
@@ -366,8 +366,8 @@ export function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSearchProps)
                   animate={{ opacity: 1, y: 0 }}
                   className="p-8 text-center"
                 >
-                  <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="w-8 h-8 text-amber-600" />
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-emerald-500/10">
+                    <Search className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="font-medium mb-2">Начните поиск</h3>
                   <p className="text-muted-foreground text-sm max-w-sm mx-auto">
@@ -387,7 +387,7 @@ export function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSearchProps)
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                         onClick={() => setSearch(item.name.toLowerCase())}
-                        className="text-xs bg-gray-50 hover:bg-amber-50 border border-gray-100 hover:border-amber-200 rounded-lg px-3 py-2 transition-colors duration-200"
+                        className="text-xs bg-gray-50 hover:bg-primary/10 border border-gray-100 hover:border-primary/30 rounded-lg px-3 py-2 transition-colors duration-200"
                       >
                         <div className="font-medium">{item.name}</div>
                         <div className="text-muted-foreground">{item.count}</div>

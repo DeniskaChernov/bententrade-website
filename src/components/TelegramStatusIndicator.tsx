@@ -164,12 +164,12 @@ export function TelegramStatusIndicator({
             <div className={`p-2 rounded-full ${
               status === 'connected' ? 'bg-green-400/10' : 
               status === 'error' ? 'bg-red-400/10' : 
-              'bg-amber-400/10'
+              'bg-primary/10'
             }`}>
               <MessageCircle className={`w-5 h-5 ${
                 status === 'connected' ? 'text-green-400' : 
                 status === 'error' ? 'text-red-400' : 
-                'text-amber-400'
+                'text-primary'
               }`} />
             </div>
             <div>
@@ -259,12 +259,12 @@ export function TelegramStatusIndicator({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="p-4 bg-amber-400/5 border border-amber-400/20 rounded-xl"
+              className="p-4 bg-primary/5 border border-primary/30 rounded-xl"
             >
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <div className="font-semibold text-amber-400 mb-1">⚠️ Требуется настройка</div>
+                  <div className="font-semibold text-primary mb-1">⚠️ Требуется настройка</div>
                   <div className="text-sm text-muted-foreground mb-3">
                     Telegram бот не настроен. Заказы не будут отправляться.
                   </div>
@@ -273,7 +273,7 @@ export function TelegramStatusIndicator({
                       variant="outline"
                       size="sm"
                       onClick={onOpenSetup}
-                      className="rounded-xl border-amber-400/20 text-amber-400 hover:bg-amber-400/10"
+                      className="rounded-xl border-primary/30 text-primary hover:bg-primary/10"
                     >
                       Настроить сейчас
                     </Button>

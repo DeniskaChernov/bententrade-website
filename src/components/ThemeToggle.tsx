@@ -78,7 +78,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     <div className="relative group">
       <motion.button
         onClick={() => handleThemeChange(getNextTheme())}
-        className={`relative p-2 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-all duration-300 ${className}`}
+        className={`relative p-2 rounded-md hover:bg-primary/10 hover:text-primary transition-all duration-300 ${className}`}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         title={getThemeLabel()}
@@ -113,7 +113,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         
         {/* Фоновый эффект при hover */}
         <motion.div
-          className="absolute inset-0 rounded-md bg-gradient-to-r from-amber-100/0 to-orange-100/0"
+          className="absolute inset-0 rounded-md bg-gradient-to-r from-primary/0 to-cyan-500/0"
           whileHover={{
             background: [
               "linear-gradient(90deg, rgba(251,191,36,0) 0%, rgba(251,146,60,0) 100%)",

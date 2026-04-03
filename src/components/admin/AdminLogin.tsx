@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
@@ -123,7 +123,7 @@ export function AdminLogin({ isOpen, onClose, onLogin }: AdminLoginProps) {
 
         <div className="space-y-4">
           {/* Предупреждение о безопасности */}
-          <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/30 rounded-lg text-sm text-primary">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>Доступ только для авторизованного персонала</span>
           </div>

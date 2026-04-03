@@ -233,7 +233,7 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                     <Button
                       onClick={searchForChats}
                       disabled={isLoading}
-                      className="h-14 px-8 text-lg rounded-xl bg-gradient-to-r from-primary to-amber-500 hover:from-primary/90 hover:to-amber-500/90 neon-glow"
+                      className="h-14 px-8 text-lg rounded-xl bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90 neon-glow"
                       size="lg"
                     >
                       {isLoading ? (
@@ -264,9 +264,9 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
-                  <Alert className="border-amber-400/20 bg-amber-400/5">
-                    <AlertCircle className="w-5 h-5 text-amber-400" />
-                    <AlertDescription className="text-amber-400">
+                  <Alert className="border-primary/30 bg-primary/5">
+                    <AlertCircle className="w-5 h-5 text-primary" />
+                    <AlertDescription className="text-primary">
                       Чаты не найдены. Бот еще не получал сообщений. Следуйте инструкциям ниже:
                     </AlertDescription>
                   </Alert>
@@ -317,7 +317,7 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                           <div>
                             <div className="font-medium mb-1">Сделайте бота администратором</div>
                             <div className="text-xs text-muted-foreground">
-                              <strong className="text-amber-400">ВАЖНО:</strong> Включите право "Публикация сообщений"
+                              <strong className="text-primary">ВАЖНО:</strong> Включите право "Публикация сообщений"
                             </div>
                           </div>
                         </li>
@@ -403,7 +403,7 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                               isSelected
                                 ? 'border-green-400/40 bg-green-400/5'
                                 : isCurrentChat
-                                ? 'border-amber-400/40 bg-amber-400/5'
+                                ? 'border-primary/40 bg-primary/5'
                                 : 'border-primary/10 hover:border-primary/30'
                             }`}
                             onClick={() => setSelectedChatId(String(chat.id))}
@@ -416,7 +416,7 @@ export function TelegramQuickFixWizard({ isOpen, onClose, error }: TelegramQuick
                                     <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
                                   )}
                                   {isCurrentChat && (
-                                    <span className="text-xs px-2 py-0.5 bg-amber-400/20 text-amber-400 rounded flex-shrink-0">
+                                    <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded flex-shrink-0">
                                       Настроенный
                                     </span>
                                   )}

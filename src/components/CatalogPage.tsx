@@ -1383,7 +1383,7 @@ export function CatalogPage({
       {/* Современные декоративные элементы с glassmorphism */}
       <motion.div 
         className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-20"
-        style={{ background: 'radial-gradient(circle, rgba(180, 83, 9, 0.14) 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(212, 255, 74, 0.1) 0%, transparent 70%)' }}
         animate={prefersReducedMotion ? undefined : { 
           scale: [1, 1.2, 1],
           opacity: [0.2, 0.3, 0.2] 
@@ -1397,7 +1397,7 @@ export function CatalogPage({
       
       <motion.div 
         className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full opacity-15"
-        style={{ background: 'radial-gradient(circle, #F5F3F0 0%, transparent 60%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(34, 211, 238, 0.08) 0%, transparent 60%)' }}
         animate={prefersReducedMotion ? undefined : { 
           scale: [1.2, 1, 1.2],
           opacity: [0.15, 0.25, 0.15] 
@@ -1412,7 +1412,7 @@ export function CatalogPage({
       
       <motion.div 
         className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full opacity-10"
-        style={{ background: 'radial-gradient(circle, rgba(77, 124, 15, 0.1) 0%, transparent 50%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(167, 139, 250, 0.07) 0%, transparent 50%)' }}
         animate={prefersReducedMotion ? undefined : { 
           x: [0, 50, 0],
           y: [0, -30, 0],

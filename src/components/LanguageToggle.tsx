@@ -21,7 +21,7 @@ export function LanguageToggle() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-10 px-3 text-sm font-medium hover:bg-amber-50 hover:text-amber-700 transition-colors duration-200"
+        className="h-10 px-3 text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors duration-200"
         onClick={() => setIsOpen(!isOpen)}
       >
         <Globe className="w-4 h-4 mr-2" />
@@ -35,7 +35,7 @@ export function LanguageToggle() {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+          <div className="absolute right-0 top-full mt-1 w-48 rounded-md border border-border bg-popover shadow-lg z-50">
             <div className="py-1">
               {languages.map((lang) => (
                 <motion.button
@@ -44,10 +44,10 @@ export function LanguageToggle() {
                     setLanguage(lang.code);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-colors duration-200 text-left hover:bg-gray-100 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-colors duration-200 text-left hover:bg-muted ${
                     language === lang.code
-                      ? 'bg-amber-50 text-amber-900 font-medium'
-                      : 'text-gray-700'
+                      ? 'bg-primary/10 text-foreground font-medium'
+                      : 'text-muted-foreground'
                   }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -56,7 +56,7 @@ export function LanguageToggle() {
                   <span>{lang.name}</span>
                   {language === lang.code && (
                     <motion.div
-                      className="ml-auto w-2 h-2 bg-amber-600 rounded-full"
+                      className="ml-auto w-2 h-2 bg-primary rounded-full"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.2 }}

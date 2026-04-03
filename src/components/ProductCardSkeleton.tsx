@@ -9,7 +9,7 @@ export function ProductCardSkeleton() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="overflow-hidden border-amber-100/50">
+      <Card className="overflow-hidden border-border">
         <CardContent className="p-0">
           {/* Image skeleton */}
           <Skeleton className="h-48 w-full rounded-t-lg" />

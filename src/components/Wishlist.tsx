@@ -103,7 +103,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-lg">
-        <SheetHeader className="border-b border-amber-100/50 pb-4">
+        <SheetHeader className="border-b border-primary/20 pb-4">
           <div className="flex items-center justify-between">
             <SheetTitle className="flex items-center gap-2">
               <motion.div
@@ -151,7 +151,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                 <div className="text-xs text-muted-foreground">в наличии</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-amber-600">₽{totalValue.toLocaleString()}</div>
+                <div className="text-lg font-semibold text-primary">₽{totalValue.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">сумма</div>
               </div>
             </motion.div>
@@ -171,7 +171,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-8 h-8 border-2 border-amber-200 border-t-amber-600 rounded-full mx-auto mb-3"
+                    className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full mx-auto mb-3"
                   />
                   <p className="text-muted-foreground text-sm">Загрузка избранного...</p>
                 </div>
@@ -197,7 +197,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                   </p>
                   <Button 
                     onClick={onClose}
-                    className="bg-amber-700 hover:bg-amber-800"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     Перейти к покупкам
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -220,7 +220,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                     layout
                   >
-                    <Card className="overflow-hidden border-amber-100/50 hover:shadow-md transition-shadow duration-300">
+                    <Card className="overflow-hidden border-primary/20 hover:shadow-md transition-shadow duration-300">
                       <CardContent className="p-4">
                         <div className="flex gap-3">
                           {/* Изображение */}
@@ -257,7 +257,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                                 <h4 className="font-medium text-sm line-clamp-2 mb-1">
                                   {item.name}
                                 </h4>
-                                <Badge variant="outline" className="text-xs border-amber-200 text-amber-700">
+                                <Badge variant="outline" className="text-xs border-primary/30 text-primary">
                                   {item.category}
                                 </Badge>
                               </div>
@@ -281,7 +281,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                               <div className="flex items-center gap-2">
                                 {item.discount ? (
                                   <>
-                                    <span className="font-semibold text-sm text-amber-700">
+                                    <span className="font-semibold text-sm text-primary">
                                       ₽{Math.round(item.price * (1 - item.discount / 100)).toLocaleString()}
                                     </span>
                                     <span className="text-xs text-muted-foreground line-through">
@@ -302,7 +302,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                                   disabled={!item.inStock}
                                   className={`h-8 px-3 text-xs ${
                                     item.inStock 
-                                      ? 'bg-amber-700 hover:bg-amber-800' 
+                                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
                                       : 'bg-gray-400 cursor-not-allowed'
                                   }`}
                                 >
@@ -330,7 +330,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-amber-100/50 pt-4 mt-6"
+                    className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-primary/20 pt-4 mt-6"
                   >
                     <div className="space-y-3">
                       <Button
@@ -339,7 +339,7 @@ export function Wishlist({ isOpen, onClose, onAddToCart }: WishlistProps) {
                             .filter(item => item.inStock)
                             .forEach(item => addToCart(item));
                         }}
-                        className="w-full bg-amber-700 hover:bg-amber-800"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         Добавить все в корзину ({inStockItems})

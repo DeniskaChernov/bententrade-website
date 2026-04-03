@@ -163,15 +163,14 @@ export function Catalog({ onAddToCart }: CatalogProps) {
   );
 
   return (
-    <section id="catalog" className="py-20 bg-white relative overflow-hidden">
-      {/* Декоративные элементы */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-amber-100/30 to-orange-100/30 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-l from-amber-200/20 to-yellow-100/20 rounded-full blur-3xl"></div>
+    <section id="catalog" className="relative overflow-hidden bg-background py-20">
+      <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-gradient-to-r from-primary/8 to-cyan-500/5 blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-gradient-to-l from-violet-500/8 to-transparent blur-3xl" />
       
       <div className="container mx-auto px-4 relative z-10" ref={ref}>
         <div className="text-center mb-16">
           <motion.h2 
-            className="text-3xl md:text-4xl font-bold mb-8 bg-gradient-to-r from-amber-700 to-amber-900 bg-clip-text text-transparent"
+            className="text-3xl md:text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-emerald-800 bg-clip-text text-transparent"
             initial={{ opacity: 0, y: 50 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
             transition={{ duration: 0.6 }}
@@ -183,7 +182,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
             initial={{ opacity: 0, width: 0 }}
             animate={inView ? { opacity: 1, width: '100px' } : { opacity: 0, width: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="h-1 bg-gradient-to-r from-amber-600 to-amber-800 mx-auto rounded-full"
+            className="h-1 bg-gradient-to-r from-primary to-emerald-700 mx-auto rounded-full"
           />
         </div>
 
@@ -212,7 +211,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
               whileHover={{ y: -10, scale: 1.02 }}
               className="group"
             >
-              <Card className="overflow-hidden hover:shadow-2xl transition-all duration-500 border-amber-100/50 bg-gradient-to-b from-white to-amber-50/30">
+              <Card className="overflow-hidden border-border bg-card transition-all duration-500 hover:shadow-[0_0_0_1px_rgba(212,255,74,0.12)]">
                 <CardHeader className="p-0 relative overflow-hidden">
                   <div className="aspect-square overflow-hidden relative">
                     {/* Галерея изображений */}
@@ -240,7 +239,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                             aria-label="Предыдущее фото"
                             className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                           >
-                            <ChevronLeft className="w-4 h-4 text-amber-700" />
+                            <ChevronLeft className="w-4 h-4 text-primary" />
                           </button>
                           
                           <button
@@ -253,7 +252,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                             aria-label="Следующее фото"
                             className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                           >
-                            <ChevronRight className="w-4 h-4 text-amber-700" />
+                            <ChevronRight className="w-4 h-4 text-primary" />
                           </button>
 
                           {/* Индикаторы изображений */}
@@ -263,10 +262,10 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                                 key={imgIndex}
                                 onClick={() => handleImageChange(product.id, imgIndex)}
                                 aria-label={`Перейти к фото ${imgIndex + 1}`}
-                                className={`w-2 h-2 rounded-full transition-all ${
+                                className={`h-2 w-2 rounded-full transition-all ${
                                   selectedImages[product.id] === imgIndex 
-                                    ? 'bg-amber-600' 
-                                    : 'bg-white/60 hover:bg-white/80'
+                                    ? 'bg-primary' 
+                                    : 'bg-white/40 hover:bg-white/70'
                                 }`}
                               />
                             ))}
@@ -279,12 +278,12 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                 
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <CardTitle className="group-hover:text-amber-700 transition-colors">
+                    <CardTitle className="group-hover:text-primary transition-colors">
                       {product.name}
                     </CardTitle>
                     <div className="flex gap-1 ml-2">
                       {product.size && (
-                        <Badge variant="outline" className="border-amber-200 text-amber-700 text-xs">
+                        <Badge variant="outline" className="border-primary/30 text-primary text-xs">
                           {product.size}
                         </Badge>
                       )}
@@ -306,20 +305,20 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                       transition={{ duration: 0.4, delay: index * 0.1 + 0.2 }}
-                      className="mb-4 p-3 bg-amber-50/50 rounded-xl border border-amber-200/30"
+                      className="mb-4 rounded-xl border border-primary/25 bg-primary/10 p-3"
                     >
                       <div className="flex items-center justify-around text-xs">
                         <div className="text-center">
-                          <div className="text-amber-700 font-medium mb-1">
+                          <div className="text-primary font-medium mb-1">
                             Высота
                           </div>
                           <div className="text-foreground font-semibold">
                             {product.dimensions.height} мм
                           </div>
                         </div>
-                        <div className="w-px h-8 bg-amber-300" />
+                        <div className="h-8 w-px bg-border" />
                         <div className="text-center">
-                          <div className="text-amber-700 font-medium mb-1">
+                          <div className="text-primary font-medium mb-1">
                             Диаметр
                           </div>
                           <div className="text-foreground font-semibold">
@@ -338,7 +337,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                       transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
                       className="mb-4"
                     >
-                      <p className="text-sm font-medium mb-3 text-amber-700">Выберите цвет:</p>
+                      <p className="text-sm font-medium mb-3 text-primary">Выберите цвет:</p>
                       <div className="flex gap-2 flex-wrap">
                         {product.variants.map((variant, variantIndex) => (
                           <motion.button
@@ -349,10 +348,10 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleVariantChange(product.id, variant.id)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs border transition-all duration-300 ${
+                            className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs transition-all duration-300 ${
                               selectedVariants[product.id] === variant.id
-                                ? 'border-amber-700 bg-amber-50 text-amber-700 shadow-md'
-                                : 'border-gray-200 bg-white text-gray-600 hover:border-amber-300 hover:bg-amber-25'
+                                ? 'border-primary bg-primary/15 text-primary shadow-none ring-1 ring-primary/30'
+                                : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-muted/50'
                             }`}
                           >
                             <div
@@ -374,13 +373,13 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                           initial={{ opacity: 0, x: -20 }}
                           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                           transition={{ duration: 0.4, delay: (index * 0.1) + (featureIndex * 0.05) }}
-                          className="flex items-center group-hover:text-amber-700 transition-colors"
+                          className="flex items-center group-hover:text-primary transition-colors"
                         >
                           <motion.div
                             whileHover={{ scale: 1.2, rotate: 360 }}
                             transition={{ duration: 0.3 }}
                           >
-                            <Check className="w-4 h-4 text-amber-600 mr-2 flex-shrink-0" />
+                            <Check className="w-4 h-4 text-primary mr-2 flex-shrink-0" />
                           </motion.div>
                           {feature}
                         </motion.li>
@@ -396,7 +395,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                     className="w-full"
                   >
                     <Button 
-                      className="w-full bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-white transition-all duration-300 hover:shadow-lg"
+                      className="w-full bg-gradient-to-r from-primary to-emerald-600 text-primary-foreground transition-all duration-300 hover:from-primary/90 hover:to-emerald-600/90 hover:shadow-lg"
                       onClick={() => handleAddToCart(product)}
                     >
                       <motion.span
@@ -429,7 +428,7 @@ export function Catalog({ onAddToCart }: CatalogProps) {
                 setColorFilter('all');
                 setSizeFilter('all');
               }}
-              className="mt-4 border-amber-200 hover:bg-amber-50 text-amber-700"
+              className="mt-4 border-primary/30 hover:bg-primary/10 text-primary"
             >
               Сбросить фильтры
             </Button>

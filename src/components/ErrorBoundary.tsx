@@ -41,15 +41,15 @@ export class ErrorBoundary extends Component<Props, State> {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Card className="max-w-md mx-auto border-amber-200">
+            <Card className="max-w-md mx-auto border-primary/30">
               <CardContent className="p-8 text-center">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6"
+                  className="w-16 h-16 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-6"
                 >
-                  <AlertTriangle className="w-8 h-8 text-amber-600" />
+                  <AlertTriangle className="w-8 h-8 text-primary" />
                 </motion.div>
                 
                 <motion.h2 
@@ -78,7 +78,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 >
                   <Button
                     onClick={() => window.location.reload()}
-                    className="w-full bg-amber-700 hover:bg-amber-800"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Перезагрузить страницу
@@ -87,7 +87,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <Button
                     onClick={() => window.location.href = '/'}
                     variant="outline"
-                    className="w-full border-amber-200 text-amber-700 hover:bg-amber-50"
+                    className="w-full border-primary/30 text-primary hover:bg-primary/10"
                   >
                     <Home className="w-4 h-4 mr-2" />
                     На главную

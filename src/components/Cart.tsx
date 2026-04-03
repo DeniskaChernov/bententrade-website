@@ -340,10 +340,10 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
           const isGroupChat = errorData.chatType === 'group';
           
           notification.innerHTML = `
-            <div class="max-w-2xl w-full glass-effect rounded-3xl p-8 border-2 border-amber-400/40 shadow-2xl" style="animation: pulse 2s infinite;">
+            <div class="max-w-2xl w-full glass-effect rounded-3xl p-8 border-2 border-primary/40 shadow-2xl" style="animation: pulse 2s infinite;">
               <div class="text-center mb-6">
                 <div class="text-8xl mb-4 animate-bounce">🔧</div>
-                <h2 class="text-4xl font-bold text-amber-400 mb-3">Требуется настройка Telegram</h2>
+                <h2 class="text-4xl font-bold text-primary mb-3">Требуется настройка Telegram</h2>
                 <p class="text-xl text-white/80">
                   ${isGroupChat 
                     ? 'Бот не добавлен в группу или Chat ID устарел' 
@@ -436,7 +436,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
           const showOrderWarning = (msg: string) => {
             const n = document.createElement('div');
             n.className =
-              'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] max-w-sm glass-effect border-amber-400/30 text-amber-200 text-sm';
+              'fixed top-6 right-6 p-4 rounded-2xl shadow-lg z-[9999] max-w-sm glass-effect border-primary/30 text-primary/90 text-sm';
             n.textContent = msg;
             document.body.appendChild(n);
             setTimeout(() => n.remove(), 6000);
@@ -729,7 +729,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Wallet className="w-4 h-4 text-amber-500" />
+                                      <Wallet className="w-4 h-4 text-primary" />
                                       <span className="text-base font-semibold text-foreground">
                                         {formatPrice(getItemTotal(item), t.currency)}
                                       </span>

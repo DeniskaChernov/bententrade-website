@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer@9.13.1';
 import { Button } from './ui/button';
 import { Phone, MessageCircle, Send, MapPin, Clock, ExternalLink } from '../utils/lucide-stub';
@@ -68,7 +68,7 @@ export function Contacts() {
       icon: MapPin,
       title: language === 'uz' ? 'Manzil' : 'Адрес',
       description: language === 'uz' ? 'Toshkent, O\'zbekiston' : 'Ташкент, Узбекистан',
-      color: 'from-amber-500 to-amber-600',
+      color: 'from-primary to-emerald-600',
       type: 'info' as const,
       delay: 0.3
     },

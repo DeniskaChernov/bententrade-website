@@ -166,8 +166,8 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                           {CURRENT_CHAT_ID.startsWith('-100') ? '(Групповой чат)' : '(Личный чат)'}
                         </span>
                       </div>
-                      <div className="mt-3 p-3 bg-amber-400/10 border border-amber-400/20 rounded-lg">
-                        <div className="font-semibold text-amber-400 mb-2 flex items-center gap-2">
+                      <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                        <div className="font-semibold text-primary mb-2 flex items-center gap-2">
                           <Phone className="w-4 h-4" />
                           ⚠️ ВАЖНО: Chat ID может измениться!
                         </div>
@@ -189,7 +189,7 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                     <Button
                       onClick={checkTelegramStatus}
                       disabled={isLoading}
-                      className="w-full h-14 text-lg rounded-xl bg-gradient-to-r from-primary to-amber-500 hover:from-primary/90 hover:to-amber-500/90 neon-glow"
+                      className="w-full h-14 text-lg rounded-xl bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90 neon-glow"
                       size="lg"
                     >
                       {isLoading ? (
@@ -213,8 +213,8 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                 {CURRENT_CHAT_ID.startsWith('-100') ? (
                   // Инструкции для группового чата
                   <>
-                    <div className="p-4 glass-card rounded-xl border border-amber-400/20 bg-amber-400/5">
-                      <h3 className="font-semibold mb-3 flex items-center gap-2 text-amber-400">
+                    <div className="p-4 glass-card rounded-xl border border-primary/30 bg-primary/5">
+                      <h3 className="font-semibold mb-3 flex items-center gap-2 text-primary">
                         👥 Групповой чат: Инструкция
                       </h3>
                       <ol className="space-y-3 text-sm">
@@ -308,10 +308,10 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
 
               {/* No Chats Found Warning */}
               {!isLoading && availableChats.length === 0 && !error && (
-                <Alert className="mb-6 border-amber-400/20 bg-amber-400/5">
-                  <AlertCircle className="w-5 h-5 text-amber-400" />
+                <Alert className="mb-6 border-primary/30 bg-primary/5">
+                  <AlertCircle className="w-5 h-5 text-primary" />
                   <AlertDescription>
-                    <strong className="text-amber-400 text-base">
+                    <strong className="text-primary text-base">
                       😕 Доступные чаты не найдены
                     </strong>
                     <div className="mt-3 space-y-3 text-sm">
@@ -320,7 +320,7 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                       </p>
                       
                       <div className="p-3 bg-black/20 rounded-lg space-y-2">
-                        <div className="font-semibold text-amber-400">Для личного чата:</div>
+                        <div className="font-semibold text-primary">Для личного чата:</div>
                         <ol className="list-decimal list-inside space-y-1 text-xs opacity-90 ml-2">
                           <li>Откройте @zayavkassayta_bententrade_bot в Telegram</li>
                           <li>Нажмите кнопку START</li>
@@ -329,7 +329,7 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                       </div>
 
                       <div className="p-3 bg-black/20 rounded-lg space-y-2">
-                        <div className="font-semibold text-amber-400">Для группового чата:</div>
+                        <div className="font-semibold text-primary">Для группового чата:</div>
                         <ol className="list-decimal list-inside space-y-1 text-xs opacity-90 ml-2">
                           <li>Откройте вашу группу в Telegram</li>
                           <li>Добавьте @zayavkassayta_bententrade_bot</li>
@@ -377,7 +377,7 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                             isSelected
                               ? 'border-green-400/40 bg-green-400/5'
                               : isCurrentChat
-                              ? 'border-amber-400/40 bg-amber-400/5'
+                              ? 'border-primary/40 bg-primary/5'
                               : 'border-primary/10 hover:border-primary/30'
                           }`}
                         >
@@ -389,7 +389,7 @@ export function TelegramSetupHelper({ isOpen, onClose, error }: TelegramSetupHel
                                   <CheckCircle className="w-4 h-4 text-green-400" />
                                 )}
                                 {isCurrentChat && (
-                                  <span className="text-xs px-2 py-0.5 bg-amber-400/20 text-amber-400 rounded">
+                                  <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded">
                                     Текущий
                                   </span>
                                 )}

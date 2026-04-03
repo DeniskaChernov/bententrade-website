@@ -164,7 +164,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           {/* Большие плавающие градиентные сферы */}
           <motion.div
             className="absolute top-20 -left-20 h-96 w-96 rounded-full opacity-40 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(180, 83, 9, 0.22) 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(212, 255, 74, 0.12) 0%, transparent 70%)' }}
             animate={reduceHeavyMotion ? undefined : {
               x: [0, 100, 0],
               y: [0, 50, 0],
@@ -179,7 +179,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           
           <motion.div
             className="absolute bottom-10 right-0 h-80 w-80 rounded-full opacity-35 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(77, 124, 15, 0.14) 0%, transparent 60%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 60%)' }}
             animate={reduceHeavyMotion ? undefined : {
               x: [0, -80, 0],
               y: [0, -60, 0],
@@ -195,7 +195,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           
           <motion.div
             className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(234, 88, 12, 0.1) 0%, transparent 50%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, transparent 50%)' }}
             animate={reduceHeavyMotion ? undefined : {
               x: [0, -50, 0],
               y: [0, 40, 0],
@@ -224,7 +224,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               className="text-center mb-5"
             >
               <motion.div
-                className="mb-4 inline-block rounded-full border border-border bg-card px-4 py-2 text-xs font-medium tracking-wide text-foreground/90 shadow-sm"
+                className="mb-4 inline-block rounded-md border border-primary/25 bg-card px-4 py-2 text-xs font-medium uppercase tracking-wider text-primary/95"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -377,12 +377,12 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                     transition: { duration: 0.15, ease: "easeOut" }
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border bg-card p-5 text-center shadow-sm transition-shadow hover:shadow-md md:p-6"
+                  className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-5 text-center shadow-none transition-shadow hover:shadow-[0_0_0_1px_rgba(212,255,74,0.15)] md:p-6"
                   style={{ transition: "all 0.15s ease-out" }}
                 >
                   {/* Эффект свечения при наведении */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/[0.06] group-hover:to-primary/[0.02]"
+                    className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/[0.08] group-hover:to-transparent"
                     initial={false}
                     transition={{ duration: 0.3 }}
                   />

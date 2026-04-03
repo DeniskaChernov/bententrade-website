@@ -480,7 +480,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                     </CardTitle>
                     <div className="flex gap-1 ml-2">
                       {product.size && (
-                        <Badge variant="outline" className="border-amber-200 text-amber-700 text-xs">
+                        <Badge variant="outline" className="border-primary/30 text-primary text-xs">
                           {product.size}
                         </Badge>
                       )}
@@ -544,8 +544,8 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                             title={variant.name}
                             className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs border transition-all duration-300 ${
                               selectedVariants[product.id] === variant.id
-                                ? 'border-amber-700 bg-amber-50 text-amber-700 shadow-md'
-                                : 'border-gray-200 bg-white text-gray-600 hover:border-amber-300'
+                                ? 'border-primary bg-primary/15 text-primary shadow-none ring-1 ring-primary/30'
+                                : 'border-border bg-card text-muted-foreground hover:border-primary/40'
                             }`}
                           >
                             <div
@@ -567,7 +567,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                           initial={{ opacity: 0, x: -20 }}
                           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                           transition={{ duration: 0.4, delay: (index * 0.1) + (featureIndex * 0.05) }}
-                          className="flex items-center group-hover:text-amber-700 transition-colors"
+                          className="flex items-center group-hover:text-primary transition-colors"
                         >
                           <Sparkles className="mr-2 h-3 w-3 flex-shrink-0 text-primary" />
                           {feature}
