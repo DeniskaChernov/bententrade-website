@@ -10,6 +10,16 @@ import { signAdminJwt, verifyAdminJwt } from './admin-auth.js';
 const port = Number(process.env.PORT || 3000);
 const apiPrefix = '/api';
 
+/** Убирает хвостовой «/» в подпути API, чтобы GET /api/health/ не уходил в 401 после isAuthorized. */
+function normalizeApiSubpath(pathname) {
+  if (!pathname.startsWith(apiPrefix)) return pathname;
+  let p = pathname.slice(apiPrefix.length);
+  if (!p) p = '/';
+  if (!p.startsWith('/')) p = `/${p}`;
+  if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+  return p;
+}
+
 console.log(
   `[Bententrade] boot node=${process.version} NODE_ENV=${process.env.NODE_ENV || '(unset)'} PORT=${process.env.PORT ?? '(unset)'} cwd=${process.cwd()}`,
 );
@@ -504,6 +514,30 @@ function isAuthorized(req) {
   return constantTimeEqualString(API_TOKEN, getBearerToken(req));
 }
 
+/** Liveness/readiness для Railway и мониторинга (без Bearer; до isAuthorized). */
+function sendHealthResponse(req, res) {
+  setCorsHeaders(req, res);
+  assignApiRequestId(req, res);
+  const healthUrl = new URL(req.url || '/api/health', 'http://127.0.0.1');
+  const wantDetails =
+    healthUrl.searchParams.get('detailed') === '1' ||
+    healthUrl.searchParams.get('detailed') === 'true';
+  const canSeeDetails = wantDetails && API_TOKEN && getBearerToken(req) === API_TOKEN;
+
+  const dbState = dbReady ? 'ready' : dbInitError ? 'error' : 'initializing';
+  const payload = {
+    success: true,
+    status: 'ok',
+    db: dbState,
+    uptimeSec: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+  };
+  if (canSeeDetails && dbInitError) {
+    payload.dbError = String(dbInitError.message || dbInitError);
+  }
+  sendJson(res, 200, payload);
+}
+
 const DEFAULT_JSON_BODY_MAX = 2 * 1024 * 1024;
 const ORDER_BODY_MAX_BYTES = Math.min(
   DEFAULT_JSON_BODY_MAX,
@@ -626,27 +660,10 @@ async function handleApi(req, res, pathname) {
   }
 
   const method = req.method || 'GET';
-  const path = pathname.replace(apiPrefix, '') || '/';
+  const path = normalizeApiSubpath(pathname);
 
   if (method === 'GET' && path === '/health') {
-    const healthUrl = new URL(req.url || '/api/health', 'http://127.0.0.1');
-    const wantDetails =
-      healthUrl.searchParams.get('detailed') === '1' ||
-      healthUrl.searchParams.get('detailed') === 'true';
-    const canSeeDetails = wantDetails && API_TOKEN && getBearerToken(req) === API_TOKEN;
-
-    const dbState = dbReady ? 'ready' : dbInitError ? 'error' : 'initializing';
-    const payload = {
-      success: true,
-      status: 'ok',
-      db: dbState,
-      uptimeSec: Math.round(process.uptime()),
-      timestamp: new Date().toISOString(),
-    };
-    if (canSeeDetails && dbInitError) {
-      payload.dbError = String(dbInitError.message || dbInitError);
-    }
-    sendJson(res, 200, payload);
+    sendHealthResponse(req, res);
     return true;
   }
 
@@ -1151,62 +1168,79 @@ async function handleApi(req, res, pathname) {
 }
 
 const server = http.createServer(async (request, response) => {
-  const requestUrl = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+  try {
+    const requestUrl = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+    const method = request.method || 'GET';
 
-  if (requestUrl.pathname.startsWith(apiPrefix)) {
-    const handled = await handleApi(request, response, requestUrl.pathname);
-    if (handled) return;
-    setCorsHeaders(request, response);
-    sendJson(response, 404, { success: false, error: 'Not found' });
-    return;
-  }
-
-  const method = request.method || 'GET';
-  const htmlPath = normalizeHtmlPathname(requestUrl.pathname);
-  if (method === 'GET' && PRERENDER_HTML[htmlPath]) {
-    const filePath = path.join(process.cwd(), 'build', PRERENDER_HTML[htmlPath]);
-    try {
-      const buf = await fs.readFile(filePath);
-      response.statusCode = 200;
-      response.setHeader('Content-Type', 'text/html; charset=utf-8');
-      response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      response.setHeader('X-Content-Type-Options', 'nosniff');
-      response.setHeader('X-Frame-Options', 'SAMEORIGIN');
-      response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-      response.end(buf);
+    // Короткий путь для Railway healthcheck (не только /api/health).
+    if (method === 'GET' && normalizeHtmlPathname(requestUrl.pathname) === '/health') {
+      sendHealthResponse(request, response);
       return;
-    } catch (err) {
-      console.error('Prerender HTML read failed:', err.message);
+    }
+
+    if (requestUrl.pathname.startsWith(apiPrefix)) {
+      const handled = await handleApi(request, response, requestUrl.pathname);
+      if (handled) return;
+      setCorsHeaders(request, response);
+      sendJson(response, 404, { success: false, error: 'Not found' });
+      return;
+    }
+
+    const htmlPath = normalizeHtmlPathname(requestUrl.pathname);
+    if (method === 'GET' && PRERENDER_HTML[htmlPath]) {
+      const filePath = path.join(process.cwd(), 'build', PRERENDER_HTML[htmlPath]);
+      try {
+        const buf = await fs.readFile(filePath);
+        response.statusCode = 200;
+        response.setHeader('Content-Type', 'text/html; charset=utf-8');
+        response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        response.setHeader('X-Content-Type-Options', 'nosniff');
+        response.setHeader('X-Frame-Options', 'SAMEORIGIN');
+        response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        response.end(buf);
+        return;
+      } catch (err) {
+        console.error('Prerender HTML read failed:', err.message);
+      }
+    }
+
+    return handler(request, response, {
+      public: 'build',
+      cleanUrls: true,
+      rewrites: [{ source: '**', destination: '/index.html' }],
+      headers: [
+        {
+          source: '**',
+          headers: [
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+            { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          ],
+        },
+        {
+          source: '**/*.@(js|css|woff2|webp|avif)',
+          headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+        },
+        {
+          source: '**/*.@(svg|png|jpg|jpeg|gif)',
+          headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+        },
+        {
+          source: 'index.html',
+          headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
+        },
+      ],
+    });
+  } catch (err) {
+    console.error('HTTP handler error:', err?.message || err);
+    try {
+      if (!response.headersSent) {
+        sendJson(response, 500, { success: false, error: 'Internal server error' });
+      }
+    } catch {
+      /* ignore */
     }
   }
-
-  return handler(request, response, {
-    public: 'build',
-    cleanUrls: true,
-    rewrites: [{ source: '**', destination: '/index.html' }],
-    headers: [
-      {
-        source: '**',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-        ],
-      },
-      {
-        source: '**/*.@(js|css|woff2|webp|avif)',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
-      },
-      {
-        source: '**/*.@(svg|png|jpg|jpeg|gif)',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
-      },
-      {
-        source: 'index.html',
-        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
-      },
-    ],
-  });
 });
 
 async function initializeDatabaseWithRetry() {
