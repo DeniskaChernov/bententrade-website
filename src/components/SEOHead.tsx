@@ -268,7 +268,7 @@ export const SEOHead = memo(function SEOHead({
 
     // Mobile/perf
     upsertMeta('meta[name="viewport"]', { name: 'viewport' }, 'width=device-width, initial-scale=1.0, maximum-scale=5.0');
-    upsertMeta('meta[name="theme-color"]', { name: 'theme-color' }, '#D4A574');
+    upsertMeta('meta[name="theme-color"]', { name: 'theme-color' }, '#b45309');
     upsertMeta('meta[http-equiv="X-UA-Compatible"]', { 'http-equiv': 'X-UA-Compatible' }, 'IE=edge');
     upsertMeta('meta[name="format-detection"]', { name: 'format-detection' }, 'telephone=no');
     upsertMeta('meta[name="google-site-verification"]', { name: 'google-site-verification' }, 'QnkIBpzO6K2FktpV6_xI4QtjDQxHVcfVkNSC9WEstHY');

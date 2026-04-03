@@ -416,38 +416,35 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
   };
 
   return (
-    <section id="catalog" className="pt-20 relative overflow-hidden">
-      
-      <div className="container mx-auto px-4 relative z-10" ref={ref}>
-        <div className="text-center mb-16">
-          <motion.h2 
-            className="text-3xl md:text-4xl font-bold mb-4 text-brand-cream"
-            initial={{ opacity: 0, y: 50 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-            transition={{ duration: 0.6 }}
+    <section id="catalog" className="section-y relative scroll-mt-24 overflow-hidden border-b border-border bg-muted/25">
+      <div className="section-inset-wide relative z-10" ref={ref}>
+        <header className="mx-auto mb-14 max-w-3xl text-center md:mb-16">
+          <p className="section-eyebrow">
+            {language === 'uz' ? 'Tanlangan' : language === 'en' ? 'Featured' : 'Подборка'}
+          </p>
+          <motion.h2
+            className="section-head text-balance"
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ duration: 0.5 }}
           >
-{t.popularProducts}
+            {t.popularProducts}
           </motion.h2>
-          
           <motion.p
-            className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            className="section-desc mx-auto text-balance"
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
           >
-{language === 'uz' ? 'Toshkentda ishlab chiqarilgan sun\'iy rattandan eng mashhur mahsulotlarimiz' : 'Наши самые востребованные плетёные изделия из искусственного ротанга, произведённые в Ташкенте'}
+            {language === 'uz'
+              ? 'Toshkentda ishlab chiqarilgan sun\'iy rattandan eng mashhur mahsulotlarimiz'
+              : 'Наши самые востребованные плетёные изделия из искусственного ротанга, произведённые в Ташкенте'}
           </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={inView ? { opacity: 1, width: '100px' } : { opacity: 0, width: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="h-1 bg-gradient-to-r from-brand-light to-brand-cream mx-auto rounded-full"
-          />
-        </div>
-        
+          <div className="section-divider" aria-hidden />
+        </header>
+
         {/* Товары */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6 max-w-7xl mx-auto mb-12">
+        <div className="mx-auto mb-14 grid max-w-7xl gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:gap-8">
           {displayProducts.map((product, index) => (
             <motion.div
               key={product.id}
@@ -457,7 +454,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
               whileHover={{ y: -10, scale: 1.02 }}
               className="group"
             >
-              <Card className="card-elevated overflow-hidden transition-all duration-300 h-full border border-primary/10">
+              <Card className="card-elevated h-full overflow-hidden transition-all duration-300">
                 <CardHeader className="p-0 m-0 relative overflow-hidden aspect-square">
                   <ImageWithFallback
                     key={`${product.id}-${selectedVariants[product.id] || 'default'}`}
@@ -469,7 +466,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                   {/* Бейдж "Популярное" */}
                   {product.popular && (
                     <div className="absolute top-3 left-3 z-10">
-                      <Badge className="bg-brand-light text-brand-dark hover:bg-brand-cream">
+                      <Badge className="border-0 bg-primary/15 font-medium text-primary hover:bg-primary/20">
  ⭐ {t.popular}
                       </Badge>
                     </div>
@@ -572,7 +569,7 @@ export function MiniCatalog({ onAddToCart, onViewFullCatalog }: MiniCatalogProps
                           transition={{ duration: 0.4, delay: (index * 0.1) + (featureIndex * 0.05) }}
                           className="flex items-center group-hover:text-amber-700 transition-colors"
                         >
-                          <Sparkles className="w-3 h-3 text-brand-light mr-2 flex-shrink-0" />
+                          <Sparkles className="mr-2 h-3 w-3 flex-shrink-0 text-primary" />
                           {feature}
                         </motion.li>
                       ))}

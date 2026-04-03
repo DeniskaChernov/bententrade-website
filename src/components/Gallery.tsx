@@ -197,38 +197,32 @@ export function Gallery() {
     : projects.filter(project => project.category === activeFilter);
 
   return (
-    <section id="gallery" className="pt-20 relative overflow-hidden">
-      
-      <div className="container mx-auto px-4 relative z-10" ref={ref}>
-        {/* Заголовок секции */}
-        <div className="text-center mb-16">
-          <motion.h2 
-            className="text-3xl md:text-4xl font-bold mb-6 text-brand-cream"
-            initial={{ opacity: 0, y: 50 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-            transition={{ duration: 0.6 }}
+    <section id="gallery" className="section-y-compact relative scroll-mt-24 overflow-hidden border-b border-border">
+      <div className="section-inset-wide relative z-10" ref={ref}>
+        <header className="mx-auto mb-14 max-w-3xl text-center md:mb-16">
+          <p className="section-eyebrow">
+            {language === 'uz' ? 'Portfolio' : language === 'en' ? 'Portfolio' : 'Портфолио'}
+          </p>
+          <motion.h2
+            className="section-head text-balance"
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ duration: 0.5 }}
           >
             {language === 'uz' ? 'Loyihalar galereyasi' : 'Галерея проектов'}
           </motion.h2>
-          
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={inView ? { opacity: 1, width: '100px' } : { opacity: 0, width: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="h-1 bg-gradient-to-r from-brand-light to-brand-cream mx-auto rounded-full"
-          />
-
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-muted-foreground text-lg mt-6 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+            className="section-desc mx-auto text-balance"
           >
-            {language === 'uz' 
+            {language === 'uz'
               ? 'Bizning guldonlarimiz mijozlarimizning uylari va ofislarini qanday o\'zgartirganini ko\'ring'
-              : 'Посмотрите, как наши кашпо преобразили дома и офисы наших киентов'}
+              : 'Посмотрите, как наши кашпо преобразили дома и офисы наших клиентов'}
           </motion.p>
-        </div>
+          <div className="section-divider" aria-hidden />
+        </header>
 
         {/* Сетка проектов */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -245,7 +239,7 @@ export function Gallery() {
                 onHoverEnd={() => setHoveredProject(null)}
                 className="group cursor-pointer"
               >
-                <Card className="overflow-hidden hover:shadow-xl transition-all duration-500 border-brand border-opacity-50 bg-gradient-to-b from-card to-secondary/20 h-full flex flex-col">
+                <Card className="flex h-full flex-col overflow-hidden border-border bg-card shadow-sm transition-all duration-300 hover:shadow-lg">
                   {/* Изображение */}
                   <div className="aspect-[4/3] overflow-hidden relative rounded-t-xl">
                     <img
@@ -256,7 +250,7 @@ export function Gallery() {
 
                     {/* Категория badge */}
                     <div className="absolute top-4 left-4 z-10">
-                      <Badge className="glass-effect bg-brand-brown/40 backdrop-blur-md hover:bg-brand-brown/60 text-brand-cream capitalize shadow-lg !scale-100">
+                      <Badge className="!scale-100 border-0 bg-background/90 capitalize text-foreground shadow-sm backdrop-blur-sm">
                         {categories.find(c => c.id === project.category)?.name}
                       </Badge>
                     </div>
@@ -265,7 +259,7 @@ export function Gallery() {
                   {/* Контент */}
                   <div className="p-6 flex-1 flex flex-col">
                     {/* Заголовок */}
-                    <h3 className="font-semibold text-lg mb-3 text-brand-cream group-hover:text-brand-light transition-colors line-clamp-2">
+                    <h3 className="mb-3 line-clamp-2 text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
                       {project.title}
                     </h3>
                     
@@ -280,7 +274,7 @@ export function Gallery() {
                         <Badge 
                           key={tag} 
                           variant="outline" 
-                          className="border-brand-light text-brand-light text-xs"
+                          className="border-primary/30 text-xs text-primary"
                         >
                           {translateTag(tag)}
                         </Badge>

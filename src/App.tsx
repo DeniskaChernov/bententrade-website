@@ -232,7 +232,7 @@ function ModernAdminLogin({ isOpen, onClose, onLogin }: { isOpen: boolean; onClo
     <AnimatePresence>
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-          <DialogContent className="sm:max-w-md glass-effect border-primary/20">
+          <DialogContent className="sm:max-w-md border-border bg-card shadow-xl">
             <DialogHeader className="space-y-4">
               <DialogTitle className="flex items-center justify-center gap-3 text-2xl">
                 <motion.div
@@ -886,23 +886,22 @@ export default function App() {
   // Оптимизированный фон с упрощенными эффектами
   const ModernBackground = () => (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      {/* Основной градиент */}
       <div className="absolute inset-0 bg-background" />
-      
-      {/* Упрощенные статичные эффекты */}
-      <div 
-        className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-10"
-        style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 70%)' }}
+      <div
+        className="absolute -top-32 right-0 h-[min(520px,80vw)] w-[min(520px,80vw)] rounded-full opacity-90"
+        style={{
+          background: 'radial-gradient(circle at center, rgba(180, 83, 9, 0.09), transparent 62%)',
+        }}
       />
-      
-      <div 
-        className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full opacity-8"
-        style={{ background: 'radial-gradient(circle, #F5F3F0 0%, transparent 60%)' }}
+      <div
+        className="absolute top-1/3 -left-24 h-[420px] w-[420px] rounded-full opacity-90"
+        style={{
+          background: 'radial-gradient(circle at center, rgba(77, 124, 15, 0.07), transparent 58%)',
+        }}
       />
-      
-      <div 
-        className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full opacity-6"
-        style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 50%)' }}
+      <div
+        className="absolute bottom-0 left-1/2 h-px w-[min(100%,48rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-border to-transparent"
+        aria-hidden
       />
     </div>
   );
@@ -946,7 +945,7 @@ export default function App() {
             <ModernBackground />
             
             <motion.div 
-              className="fixed top-0 left-0 right-0 glass-effect border-b border-red-400/20 text-red-400 text-center py-2 text-sm z-50"
+              className="fixed left-0 right-0 top-0 z-50 border-b border-red-300/40 bg-background/95 py-2 text-center text-sm text-red-600 backdrop-blur-md dark:text-red-400"
               initial={{ y: -100 }}
               animate={{ y: 0 }}
               transition={{ duration: 0.5 }}
@@ -1436,8 +1435,12 @@ export default function App() {
             <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
               <BlogSection onOpenPost={handleOpenBlogPost} />
             </Suspense>
-            <div className="text-center pb-8">
-              <Button variant="outline" onClick={handleOpenBlogList} className="glass-card border-primary/20 hover:border-primary/40">
+            <div className="pb-12 text-center md:pb-16">
+              <Button
+                variant="outline"
+                onClick={handleOpenBlogList}
+                className="rounded-full border-border bg-card px-8 text-base shadow-sm hover:border-primary/40"
+              >
                 Все статьи блога
               </Button>
             </div>

@@ -75,26 +75,9 @@ export function Footer({ onLegalDocumentClick, onBlogClick }: FooterProps) {
   ];
 
   return (
-    <footer className="relative mt-24 border-t border-primary/10">
-      {/* Декоративные элементы */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
-          className="absolute -top-12 left-1/4 w-32 h-32 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 70%)' }}
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.2, 0.1] 
-          }}
-          transition={{ 
-            duration: 8, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-        />
-      </div>
-
+    <footer className="relative mt-20 border-t border-border bg-muted/40 md:mt-28">
       <div className="relative">
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-4 py-16 md:px-6 md:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             
             {/* Логотип и описание */}
@@ -108,20 +91,20 @@ export function Footer({ onLegalDocumentClick, onBlogClick }: FooterProps) {
               <div className="space-y-6">
                 {/* Логотип */}
                 <div className="flex items-center gap-3">
-                  <motion.div 
-                    className="w-12 h-12 rounded-xl glass-card flex items-center justify-center overflow-hidden border border-primary/20"
-                    whileHover={{ rotate: 5, scale: 1.05 }}
+                  <motion.div
+                    className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+                    whileHover={{ rotate: 4, scale: 1.03 }}
                     transition={{ duration: 0.2 }}
                   >
                     <img 
                       src={logoImage} 
                       alt="Bententrade Logo" 
-                      className="w-8 h-8 object-contain filter brightness-110"
+                      className="h-8 w-8 object-contain"
                     />
                   </motion.div>
                   
                   <div className="flex flex-col">
-                    <span className="text-xl font-bold text-gradient font-grotesk">
+                    <span className="font-grotesk text-xl font-semibold tracking-tight text-foreground">
                       Bententrade
                     </span>
                     <span className="text-xs text-muted-foreground">
@@ -146,7 +129,7 @@ export function Footer({ onLegalDocumentClick, onBlogClick }: FooterProps) {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-10 h-10 rounded-xl glass-card flex items-center justify-center border border-primary/20 text-muted-foreground transition-colors duration-300 ${social.color} hover:border-primary/40`}
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-sm transition-colors duration-300 ${social.color} hover:border-primary/35`}
                       whileHover={{ scale: 1.1, y: -2 }}
                       whileTap={{ scale: 0.95 }}
                       initial={{ opacity: 0, scale: 0 }}

@@ -110,36 +110,30 @@ export function FAQ() {
   };
 
   return (
-    <section id="faq" className="pt-20 relative overflow-hidden">
-      
-      <div className="container mx-auto px-4 relative z-10" ref={ref}>
-        {/* Заголовок секции */}
-        <div className="text-center mb-16">
-          <motion.h2 
-            className="text-3xl md:text-4xl font-bold mb-6 text-brand-cream"
-            initial={{ opacity: 0, y: 50 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-            transition={{ duration: 0.6 }}
+    <section id="faq" className="section-y-compact relative scroll-mt-24 overflow-hidden border-b border-border">
+      <div className="section-inset-wide relative z-10" ref={ref}>
+        <header className="mx-auto mb-14 max-w-3xl text-center md:mb-16">
+          <p className="section-eyebrow">FAQ</p>
+          <motion.h2
+            className="section-head text-balance"
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ duration: 0.5 }}
           >
             {language === 'uz' ? 'Ko\'p so\'raladigan savollar' : 'Часто задаваемые вопросы'}
           </motion.h2>
-          
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={inView ? { opacity: 1, width: '100px' } : { opacity: 0, width: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="h-1 bg-gradient-to-r from-brand-light to-brand-cream mx-auto rounded-full"
-          />
-
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-muted-foreground text-lg mt-6 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="section-desc mx-auto text-balance"
           >
-            {language === 'uz' ? 'Mahsulotlarimiz va xizmatlarimiz haqidagi eng mashhur savollarga javoblar' : 'Ответы на самые популярные вопросы о наших товарах и услугах'}
+            {language === 'uz'
+              ? 'Mahsulotlarimiz va xizmatlarimiz haqidagi eng mashhur savollarga javoblar'
+              : 'Ответы на популярные вопросы о товарах и услугах'}
           </motion.p>
-        </div>
+          <div className="section-divider" aria-hidden />
+        </header>
 
         {/* Фильтры по категориям */}
         <motion.div

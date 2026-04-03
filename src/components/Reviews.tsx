@@ -35,28 +35,25 @@ export function Reviews() {
   ];
 
   return (
-    <section className="pt-20 relative overflow-hidden">
-      
-      <div className="container mx-auto px-4 relative z-10" ref={ref}>
-        <div className="text-center mb-16">
-          <motion.h2 
-            className="text-3xl md:text-4xl font-bold mb-8 text-brand-cream"
-            initial={{ opacity: 0, y: 50 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-            transition={{ duration: 0.6 }}
+    <section className="section-y-compact relative overflow-hidden border-b border-border bg-muted/20">
+      <div className="section-inset-wide relative z-10" ref={ref}>
+        <header className="mx-auto mb-14 max-w-3xl text-center md:mb-16">
+          <p className="section-eyebrow">Отзывы</p>
+          <motion.h2
+            className="section-head text-balance"
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ duration: 0.5 }}
           >
             Отзывы клиентов
           </motion.h2>
-          
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={inView ? { opacity: 1, width: '100px' } : { opacity: 0, width: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="h-1 bg-gradient-to-r from-brand-light to-brand-cream mx-auto rounded-full"
-          />
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+          <p className="section-desc mx-auto text-balance">
+            Реальный опыт тех, кто уже заказывал ротанг и кашпо Bententrade.
+          </p>
+          <div className="section-divider" aria-hidden />
+        </header>
+
+        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
           {reviews.map((review, index) => (
             <motion.div
               key={index}

@@ -1,94 +1,100 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --font-size: 16px;
-  --background: #0A0908;
-  --foreground: #F5F3F0;
-  --card: rgba(245, 243, 240, 0.05);
-  --card-foreground: #F5F3F0;
-  --popover: rgba(245, 243, 240, 0.08);
-  --popover-foreground: #F5F3F0;
-  --primary: #D4A574;
-  --primary-foreground: #0A0908;
-  --secondary: rgba(212, 165, 116, 0.1);
-  --secondary-foreground: #F5F3F0;
-  --muted: rgba(245, 243, 240, 0.1);
-  --muted-foreground: rgba(245, 243, 240, 0.6);
-  --accent: #F5F3F0;
-  --accent-foreground: #0A0908;
-  --destructive: #FF4B4B;
-  --destructive-foreground: #F5F3F0;
-  --border: rgba(245, 243, 240, 0.08);
-  --input: rgba(245, 243, 240, 0.05);
-  --input-background: rgba(245, 243, 240, 0.02);
-  --switch-background: rgba(212, 165, 116, 0.2);
+  --background: #fcfcfb;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #b45309;
+  --primary-foreground: #fffbeb;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #3f3f46;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #ecfccb;
+  --accent-foreground: #365314;
+  --destructive: #dc2626;
+  --destructive-foreground: #fef2f2;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --input-background: #ffffff;
+  --switch-background: #d4d4d8;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --font-weight-bold: 700;
-  --ring: #D4A574;
-  --chart-1: #D4A574;
-  --chart-2: #B8956F;
-  --chart-3: #9D6B42;
-  --chart-4: #8B5A36;
-  --chart-5: #7A4D2F;
-  --radius: 1rem;
-  --glass-surface: rgba(10, 9, 8, 0.84);
-  --glass-card: rgba(245, 243, 240, 0.04);
-  --glass-border-strong: rgba(245, 243, 240, 0.14);
-  --glass-border-soft: rgba(245, 243, 240, 0.08);
-  --glass-shadow-1: 0 8px 26px rgba(0, 0, 0, 0.26);
-  --glass-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --motion-fast: 180ms;
-  --motion-base: 280ms;
-  --motion-slow: 420ms;
-  --sidebar: rgba(245, 243, 240, 0.05);
-  --sidebar-foreground: #F5F3F0;
-  --sidebar-primary: #D4A574;
-  --sidebar-primary-foreground: #0A0908;
-  --sidebar-accent: rgba(212, 165, 116, 0.1);
-  --sidebar-accent-foreground: #F5F3F0;
-  --sidebar-border: rgba(245, 243, 240, 0.08);
-  --sidebar-ring: #D4A574;
+  --ring: #c2410c;
+  --chart-1: #b45309;
+  --chart-2: #4d7c0f;
+  --chart-3: #a16207;
+  --chart-4: #78716c;
+  --chart-5: #57534e;
+  --radius: 0.75rem;
+  --glass-surface: rgba(255, 255, 255, 0.88);
+  --glass-card: #ffffff;
+  --glass-border-strong: #e4e4e7;
+  --glass-border-soft: rgba(228, 228, 231, 0.85);
+  --glass-shadow-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --glass-shadow-2: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --motion-fast: 160ms;
+  --motion-base: 240ms;
+  --motion-slow: 380ms;
+  --sidebar: #f4f4f5;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #b45309;
+  --sidebar-primary-foreground: #fffbeb;
+  --sidebar-accent: #ecfccb;
+  --sidebar-accent-foreground: #365314;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #c2410c;
 }
 
 .dark {
-  --background: #1C1410;
-  --foreground: #FFF6C5;
-  --card: #2D1F15;
-  --card-foreground: #FFF6C5;
-  --popover: #2D1F15;
-  --popover-foreground: #FFF6C5;
-  --primary: #D4A574;
-  --primary-foreground: #1C1410;
-  --secondary: #3D2A1F;
-  --secondary-foreground: #FFF6C5;
-  --muted: #4A2F1C;
-  --muted-foreground: #B8A08C;
-  --accent: #8B5A36;
-  --accent-foreground: #FFF6C5;
-  --destructive: #e53e3e;
-  --destructive-foreground: #FFF6C5;
-  --border: #4A2F1C;
-  --input: #3D2A1F;
-  --ring: #D4A574;
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+  --card: #1c1917;
+  --card-foreground: #fafaf9;
+  --popover: #1c1917;
+  --popover-foreground: #fafaf9;
+  --primary: #ea580c;
+  --primary-foreground: #0c0a09;
+  --secondary: #27272a;
+  --secondary-foreground: #fafaf9;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #365314;
+  --accent-foreground: #ecfccb;
+  --destructive: #ef4444;
+  --destructive-foreground: #fef2f2;
+  --border: #3f3f46;
+  --input: #3f3f46;
+  --ring: #ea580c;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: #D4A574;
-  --chart-2: #B8956F;
-  --chart-3: #9D6B42;
-  --chart-4: #8B5A36;
-  --chart-5: #7A4D2F;
-  --sidebar: #2D1F15;
-  --sidebar-foreground: #FFF6C5;
-  --sidebar-primary: #D4A574;
-  --sidebar-primary-foreground: #1C1410;
-  --sidebar-accent: #3D2A1F;
-  --sidebar-accent-foreground: #FFF6C5;
-  --sidebar-border: #4A2F1C;
-  --sidebar-ring: #D4A574;
+  --chart-1: #ea580c;
+  --chart-2: #84cc16;
+  --chart-3: #fbbf24;
+  --chart-4: #a8a29e;
+  --chart-5: #78716c;
+  --sidebar: #1c1917;
+  --sidebar-foreground: #fafaf9;
+  --sidebar-primary: #ea580c;
+  --sidebar-primary-foreground: #0c0a09;
+  --sidebar-accent: #365314;
+  --sidebar-accent-foreground: #ecfccb;
+  --sidebar-border: #3f3f46;
+  --sidebar-ring: #ea580c;
+  --glass-surface: rgba(28, 25, 23, 0.92);
+  --glass-card: #292524;
+  --glass-border-strong: #3f3f46;
+  --glass-border-soft: rgba(63, 63, 70, 0.9);
+  --glass-shadow-1: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --glass-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 @theme inline {
@@ -139,7 +145,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: 'liga' 1, 'kern' 1, 'calt' 1;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -176,12 +182,13 @@
 /* Современные утилитарные классы 2025 */
 @layer utilities {
   .font-grotesk {
-    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
     font-feature-settings: 'liga' 1, 'kern' 1, 'calt' 1;
+    font-optical-sizing: auto;
   }
   
   .font-montserrat {
-    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: 'liga' 1, 'kern' 1, 'calt' 1;
   }
   
@@ -194,37 +201,26 @@
   }
   .glass-effect {
     background: var(--glass-surface);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border-strong);
-    box-shadow: 
-      var(--glass-shadow-1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border-soft);
+    box-shadow: var(--glass-shadow-1);
   }
   
   .glass-card {
     background: var(--glass-card);
-    -webkit-backdrop-filter: blur(16px);
-    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border-soft);
-    box-shadow: 
-      var(--glass-shadow-2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: var(--glass-shadow-2);
   }
   
   .modern-gradient {
-    background: linear-gradient(
-      135deg,
-      #D4A574 0%,
-      #B8956F 25%,
-      #9D6B42 50%,
-      #8B5A36 75%,
-      #6B4423 100%
-    );
+    background: linear-gradient(135deg, #b45309 0%, #c2410c 40%, #4d7c0f 100%);
   }
   
   .text-gradient {
-    background: linear-gradient(135deg, #D4A574 0%, #F5F3F0 100%);
+    background: linear-gradient(135deg, #9a3412 0%, #b45309 45%, #4d7c0f 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -235,29 +231,31 @@
   }
   
   .hover-text-gradient:hover {
-    background: linear-gradient(135deg, #D4A574 0%, #F5F3F0 100%);
+    background: linear-gradient(135deg, #9a3412 0%, #b45309 45%, #4d7c0f 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .hover-glass-nav {
-    transition: all var(--motion-base) cubic-bezier(0.4, 0, 0.6, 1);
+    transition: background var(--motion-base) cubic-bezier(0.4, 0, 0.6, 1),
+      color var(--motion-base) ease;
     position: relative;
   }
   
   .hover-glass-nav:hover {
-    background: rgba(245, 243, 240, 0.08);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(212, 165, 116, 0.2);
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 0 20px rgba(212, 165, 116, 0.1);
+    background: rgba(244, 244, 245, 0.95);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  
+  .dark .hover-glass-nav:hover {
+    background: rgba(39, 39, 42, 0.95);
+    border-color: var(--border);
   }
   
   .group:hover .group-hover\:text-gradient {
-    background: linear-gradient(135deg, #D4A574 0%, #F5F3F0 100%);
+    background: linear-gradient(135deg, #9a3412 0%, #b45309 45%, #4d7c0f 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -268,10 +266,10 @@
   }
   
   .hover-lift:hover {
-    transform: translateY(-8px);
-    box-shadow: 
-      0 20px 40px rgba(0, 0, 0, 0.4),
-      0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-6px);
+    box-shadow:
+      0 20px 40px rgba(15, 23, 42, 0.08),
+      0 8px 16px rgba(15, 23, 42, 0.05);
   }
   
   .micro-interaction {
@@ -292,14 +290,13 @@
   }
   
   .neon-glow {
-    box-shadow: 
-      0 0 20px rgba(212, 165, 116, 0.3),
-      0 0 40px rgba(212, 165, 116, 0.2),
-      0 0 80px rgba(212, 165, 116, 0.1);
+    box-shadow:
+      0 0 0 1px rgba(180, 83, 9, 0.15),
+      0 12px 40px rgba(180, 83, 9, 0.12);
   }
   
   .text-shadow-modern {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px rgba(28, 25, 23, 0.06);
   }
   
   /* Безопасные отступы для мобильных устройств с notch */
@@ -352,10 +349,16 @@
       -webkit-backdrop-filter: none;
     }
     .glass-effect {
-      background: rgba(10, 9, 8, 0.96);
+      background: rgba(255, 255, 255, 0.97);
     }
     .glass-card {
-      background: rgba(22, 20, 18, 0.94);
+      background: #ffffff;
+    }
+    .dark .glass-effect {
+      background: rgba(28, 25, 23, 0.97);
+    }
+    .dark .glass-card {
+      background: #292524;
     }
     .hover-lift:hover,
     .micro-interaction:hover {
@@ -438,10 +441,10 @@
   /* Анимация свечения */
   @keyframes glow {
     0%, 100% {
-      box-shadow: 0 0 20px rgba(212, 165, 116, 0.3), 0 0 40px rgba(212, 165, 116, 0.2);
+      box-shadow: 0 0 0 1px rgba(180, 83, 9, 0.12), 0 8px 28px rgba(180, 83, 9, 0.1);
     }
     50% {
-      box-shadow: 0 0 30px rgba(212, 165, 116, 0.5), 0 0 60px rgba(212, 165, 116, 0.3);
+      box-shadow: 0 0 0 1px rgba(180, 83, 9, 0.2), 0 12px 36px rgba(180, 83, 9, 0.14);
     }
   }
   
@@ -503,7 +506,7 @@
   }
 
   .agency-cta-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, #c49560 45%, var(--primary) 100%);
+    background: linear-gradient(135deg, #c2410c 0%, #b45309 50%, #9a3412 100%);
     background-size: 200% auto;
     transition:
       transform var(--motion-fast) cubic-bezier(0.4, 0, 0.2, 1),
@@ -513,7 +516,7 @@
   @media (prefers-reduced-motion: no-preference) {
     .agency-cta-primary:hover {
       animation: agency-border-flow 2.8s ease infinite;
-      box-shadow: 0 14px 42px rgba(212, 165, 116, 0.28);
+      box-shadow: 0 12px 36px rgba(180, 83, 9, 0.25);
     }
   }
 
@@ -527,8 +530,8 @@
   @media (prefers-reduced-motion: no-preference) {
     .trust-pill-interactive:hover {
       transform: translateY(-2px);
-      border-color: rgba(212, 165, 116, 0.4);
-      background-color: rgba(212, 165, 116, 0.1);
+      border-color: rgba(180, 83, 9, 0.35);
+      background-color: rgba(254, 243, 199, 0.45);
     }
   }
 
@@ -541,9 +544,51 @@
 
   @media (prefers-reduced-motion: no-preference) {
     .card-spotlight-hover:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.38);
+      transform: translateY(-4px);
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.1);
     }
+  }
+
+  /* Секции: воздух, сетка как у Apple / Uzum (ясная иерархия) */
+  .section-y {
+    @apply py-20 md:py-28 lg:py-32;
+  }
+
+  .section-y-compact {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .section-inset {
+    @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-inset-wide {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-eyebrow {
+    @apply mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground;
+  }
+
+  .section-head {
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    @apply text-3xl font-semibold tracking-tight text-foreground sm:text-4xl md:text-[2.65rem] md:leading-[1.12];
+  }
+
+  .section-desc {
+    @apply mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg md:leading-relaxed;
+  }
+
+  .section-divider {
+    @apply mx-auto mt-8 h-px max-w-md bg-gradient-to-r from-transparent via-border to-transparent;
+  }
+
+  .surface-band {
+    @apply border-y border-border/80 bg-muted/30;
+  }
+
+  .card-elevated {
+    @apply rounded-2xl border border-border bg-card shadow-sm transition-shadow duration-300 hover:shadow-md;
   }
 }
 
@@ -553,7 +598,7 @@
 @layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1, h2, h3, h4, h5, h6 {
-      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
       font-feature-settings: 'liga' 1, 'kern' 1, 'calt' 1;
     }
 
@@ -586,7 +631,7 @@
     }
 
     p {
-      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: clamp(1rem, 1.5vw, 1.125rem);
       font-weight: 400;
       line-height: 1.65;
@@ -595,7 +640,7 @@
     }
 
     label {
-      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 0.875rem;
       font-weight: 500;
       line-height: 1.4;
@@ -603,7 +648,7 @@
     }
 
     button {
-      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 1rem;
       font-weight: 500;
       line-height: 1.4;
@@ -611,7 +656,7 @@
     }
 
     input, textarea {
-      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 1rem;
       font-weight: 400;
       line-height: 1.4;

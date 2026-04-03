@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { CheckCircle, Award, Users, Truck, Phone } from '../utils/lucide-stub';
+import { Award, Users, Truck, Phone } from '../utils/lucide-stub';
 import { useLanguage } from '../utils/language-context';
 import aboutImage from '@/assets/4a325745d14bda219a7c6548cbb5b9e9b8c0bd41.webp'; // ✅ Новое изображение для секции About
 
@@ -45,48 +45,38 @@ export function About() {
   };
 
   return (
-    <section id="about" className="py-24 relative overflow-hidden">
-      <div className="container mx-auto px-4">
-        <div ref={ref} className="max-w-6xl mx-auto">
+    <section id="about" className="section-y relative scroll-mt-24 overflow-hidden border-b border-border">
+      <div className="section-inset-wide">
+        <div ref={ref} className="mx-auto max-w-6xl">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            className="mb-14 text-center md:mb-20"
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-effect border border-primary/20 mb-6"
-            >
-              <CheckCircle className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">
-                {language === 'uz' ? 'Biz haqimizda' : 'О нашей компании'}
-              </span>
-            </motion.div>
-
-            <h2 className="mb-6 text-shadow-modern">
-              <span className="text-gradient">
-                {language === 'uz' ? 'Bententrade -' : 'Bententrade -'}
-              </span>
-              <br />
-              <span>
-                {language === 'uz' ? 'Sifat va ishonch' : 'Качество и доверие'}
-              </span>
-            </h2>
-
-            <p className="text-xl max-w-3xl mx-auto leading-relaxed opacity-90">
-              {language === 'uz' 
-                ? 'Biz 3 yildan ortiq vaqtdan beri yuqori sifatli sun\'iy rattan ip va pletilgan koshpo ishlab chiqaramiz. Bizning maqsadimiz - har bir mijozga eng yaxshi mahsulot va xizmat taqdim etish.'
-                : 'Более 3 лет мы производим высококачественную искусственную ротанговую нить и плетеные кашпо. Наша цель - предоставить каждому клиенту лучший продукт и сервис.'
-              }
+            <p className="section-eyebrow">
+              {language === 'uz' ? 'Kompaniya' : language === 'en' ? 'About' : 'О компании'}
             </p>
+            <h2 className="section-head mx-auto max-w-3xl text-balance">
+              {language === 'uz'
+                ? 'Bententrade — sifat va ishonch'
+                : language === 'en'
+                  ? 'Bententrade — quality you can trust'
+                  : 'Bententrade — качество и доверие'}
+            </h2>
+            <p className="section-desc mx-auto text-balance">
+              {language === 'uz'
+                ? 'Biz 3 yildan ortiq vaqtdan beri yuqori sifatli sun\'iy rattan ip va pletilgan koshpo ishlab chiqaramiz. Maqsadimiz — har bir mijozga eng yaxshi mahsulot va xizmat.'
+                : language === 'en'
+                  ? 'For over three years we have crafted artificial rattan thread and woven planters. Our goal is the best product and service for every customer.'
+                  : 'Более трёх лет производим искусственную ротанговую нить и плетёные кашпо. Цель — лучший продукт и сервис для каждого клиента.'}
+            </p>
+            <div className="section-divider" aria-hidden />
           </motion.div>
 
           {/* Content Grid */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
+          <div className="mb-16 grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             {/* Left - Image */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -95,7 +85,7 @@ export function About() {
               whileHover={{ scale: 1.02 }}
               className="relative"
             >
-              <div className="relative rounded-3xl overflow-hidden glass-card group cursor-pointer">
+              <div className="group relative cursor-pointer overflow-hidden rounded-3xl border border-border bg-card shadow-md">
                 <motion.img
                   src={aboutImage}
                   alt="Плетеные изделия Bententrade"
@@ -180,10 +170,10 @@ export function About() {
               className="space-y-8"
             >
               <div>
-                <h3 className="text-2xl font-bold mb-4 text-gradient">
+                <h3 className="mb-4 font-grotesk text-2xl font-semibold tracking-tight text-foreground">
                   {language === 'uz' ? 'Nima uchun bizni tanlash kerak?' : 'Почему выбирают нас?'}
                 </h3>
-                <p className="text-lg leading-relaxed opacity-90 mb-6">
+                <p className="mb-6 text-lg leading-relaxed text-muted-foreground">
                   {language === 'uz' 
                     ? 'Bizning mahsulotlarimiz nafaqat chiroyli, balki uzoq muddat xizmat qiladi. Har bir mahsulot alohida e\'tibor va sifat nazorati bilan tayyorlanadi.'
                     : 'Наши изделия не только красивы, но и долговечны. Каждый продукт изготавливается с особым вниманием и контролем качества.'
@@ -201,7 +191,7 @@ export function About() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={isInView ? { opacity: 1, y: 0 } : {}}
                       transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                      className="text-center glass-card p-4 rounded-xl"
+                      className="rounded-2xl border border-border bg-card p-4 text-center shadow-sm"
                     >
                       <div className="text-2xl font-bold text-primary mb-1">{stat.number}</div>
                       <div className="text-sm opacity-80">{stat.label}</div>

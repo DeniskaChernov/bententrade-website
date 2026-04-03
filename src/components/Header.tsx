@@ -130,18 +130,14 @@ export const Header = memo(function Header({
   ];
 
   return (
-    <header 
+    <header
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
-        isScrolled 
-          ? 'glass-effect border-b border-primary/20 shadow-lg shadow-black/10' 
-          : 'bg-transparent border-b border-transparent'
-      } ${isAdminMode ? 'border-b-red-400/30' : ''}`}
-      style={{ 
-        backdropFilter: isScrolled ? 'blur(12px)' : 'none',
-        WebkitBackdropFilter: isScrolled ? 'blur(12px)' : 'none'
-      }}
+        isScrolled
+          ? 'border-b border-border bg-background/90 shadow-sm backdrop-blur-md'
+          : 'border-b border-transparent bg-background/40 backdrop-blur-sm'
+      } ${isAdminMode ? 'border-b-red-400/40' : ''}`}
     >
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-3.5 md:px-6 md:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <motion.button
@@ -175,9 +171,9 @@ export const Header = memo(function Header({
             )}
             
             <div className="relative">
-              <motion.div 
-                className="w-10 h-10 rounded-xl glass-card flex items-center justify-center overflow-hidden border border-primary/15"
-                whileHover={{ rotate: 5 }}
+              <motion.div
+                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+                whileHover={{ rotate: 4 }}
                 transition={{ duration: 0.2 }}
               >
                 <img 
@@ -186,7 +182,7 @@ export const Header = memo(function Header({
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
-                  className="w-8 h-8 object-contain filter brightness-110"
+                  className="h-8 w-8 object-contain"
                 />
               </motion.div>
               
@@ -199,11 +195,11 @@ export const Header = memo(function Header({
               )}
             </div>
             
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-gradient">
+            <div className="flex flex-col text-left">
+              <span className="font-grotesk text-lg font-semibold tracking-tight text-foreground">
                 Bententrade
               </span>
-              <span className="text-xs opacity-60">
+              <span className="text-xs text-muted-foreground">
                 {pickLang(language, {
                   uz: 'Premium sifat',
                   ru: 'Премиум качество',
@@ -226,7 +222,7 @@ export const Header = memo(function Header({
                     scrollToSection(item.id);
                   }
                 }}
-                className={`text-base font-medium px-4 py-2 h-auto rounded-xl hover-glass-nav micro-interaction group ${
+                className={`group h-auto rounded-lg px-3 py-2 text-base font-medium micro-interaction ${
                   'navPage' in item &&
                   item.navPage &&
                   (currentPage === 'blog' ||
@@ -234,13 +230,11 @@ export const Header = memo(function Header({
                     currentPage === 'wholesale' ||
                     currentPage === 'export') &&
                   item.navPage === currentPage
-                    ? 'text-primary bg-primary/10'
-                    : ''
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground/90 hover:bg-muted hover:text-foreground'
                 }`}
               >
-                <span className="group-hover:text-gradient transition-all duration-300">
-                  {item.name}
-                </span>
+                <span className="transition-colors duration-300">{item.name}</span>
               </Button>
             ))}
           </nav>
@@ -276,7 +270,7 @@ export const Header = memo(function Header({
                 ru: 'Открыть корзину',
                 en: 'Open cart',
               })}
-              className="relative h-10 px-4 rounded-xl glass-card border-primary/20 hover:border-primary/40 micro-interaction"
+              className="relative h-10 rounded-lg border border-border bg-card px-4 shadow-sm micro-interaction hover:border-primary/40 hover:bg-muted/50"
             >
               <ShoppingCart className="w-5 h-5" />
               {cartItems > 0 && (
@@ -289,7 +283,7 @@ export const Header = memo(function Header({
                 >
                   <Badge
                     variant="destructive"
-                    className="min-w-6 h-6 text-xs rounded-full bg-primary text-primary-foreground px-2 shadow-[0_0_12px_rgba(212,165,116,0.45)]"
+                    className="h-6 min-w-6 rounded-full bg-primary px-2 text-xs text-primary-foreground shadow-sm"
                   >
                     {cartItems}
                   </Badge>
@@ -310,7 +304,7 @@ export const Header = memo(function Header({
                   })}
                   aria-expanded={isMobileMenuOpen}
                   aria-controls="mobile-nav-sheet"
-                  className="lg:hidden h-10 px-3 rounded-xl glass-card border-primary/20 hover:border-primary/40"
+                  className="h-10 rounded-lg border border-border bg-card px-3 shadow-sm lg:hidden hover:border-primary/40"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
@@ -320,7 +314,7 @@ export const Header = memo(function Header({
                 id="mobile-nav-sheet"
                 side="right" 
                 aria-labelledby="mobile-nav-title"
-                className="w-80 glass-effect border-l border-primary/20 p-0"
+                className="w-80 border-l border-border bg-background p-0 shadow-xl"
               >
                 <motion.div
                   initial={{ x: 300 }}

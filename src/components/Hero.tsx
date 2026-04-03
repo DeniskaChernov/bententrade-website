@@ -155,7 +155,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
 
   return (
     <>
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-12">
+      <section className="relative flex min-h-[min(100dvh,920px)] items-center justify-center overflow-hidden pb-16 pt-24 md:pb-24 md:pt-28">
         {/* Анимированный параллакс фон с эффектами */}
         <motion.div 
           className="absolute inset-0"
@@ -163,8 +163,8 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
         >
           {/* Большие плавающие градиентные сферы */}
           <motion.div
-            className="absolute top-20 -left-20 w-96 h-96 rounded-full opacity-20 blur-3xl"
-            style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 70%)' }}
+            className="absolute top-20 -left-20 h-96 w-96 rounded-full opacity-40 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(180, 83, 9, 0.22) 0%, transparent 70%)' }}
             animate={reduceHeavyMotion ? undefined : {
               x: [0, 100, 0],
               y: [0, 50, 0],
@@ -178,8 +178,8 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           />
           
           <motion.div
-            className="absolute bottom-10 right-0 w-80 h-80 rounded-full opacity-15 blur-3xl"
-            style={{ background: 'radial-gradient(circle, #F5F3F0 0%, transparent 60%)' }}
+            className="absolute bottom-10 right-0 h-80 w-80 rounded-full opacity-35 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(77, 124, 15, 0.14) 0%, transparent 60%)' }}
             animate={reduceHeavyMotion ? undefined : {
               x: [0, -80, 0],
               y: [0, -60, 0],
@@ -194,8 +194,8 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
           />
           
           <motion.div
-            className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full opacity-10 blur-3xl"
-            style={{ background: 'radial-gradient(circle, #D4A574 0%, transparent 50%)' }}
+            className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 rounded-full opacity-30 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(234, 88, 12, 0.1) 0%, transparent 50%)' }}
             animate={reduceHeavyMotion ? undefined : {
               x: [0, -50, 0],
               y: [0, 40, 0],
@@ -211,11 +211,11 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
         </motion.div>
 
         {/* Основной контент */}
-        <motion.div 
-          className="relative z-10 container mx-auto px-4 text-center"
+        <motion.div
+          className="relative z-10 mx-auto w-full max-w-6xl px-4 text-center sm:px-6 lg:px-8"
           style={{ opacity: prefersReducedMotion ? 1 : opacity }}
         >
-          <div className="max-w-5xl mx-auto">
+          <div className="mx-auto max-w-4xl">
             {/* Премиальный заголовок */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -223,8 +223,8 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               transition={{ duration: 0.8, delay: 0.1 }}
               className="text-center mb-5"
             >
-              <motion.div 
-                className="inline-block mb-4 px-4 py-2 glass-effect rounded-full text-xs tracking-wide text-primary border border-primary/20"
+              <motion.div
+                className="mb-4 inline-block rounded-full border border-border bg-card px-4 py-2 text-xs font-medium tracking-wide text-foreground/90 shadow-sm"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -232,11 +232,11 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 {t.heroBadge}
               </motion.div>
               
-              <h1 className="text-shadow-modern font-grotesk max-w-4xl mx-auto">
-                <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-balance">
+              <h1 className="font-grotesk mx-auto max-w-4xl">
+                <span className="block text-balance text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
                   {t.heroTitle}
                 </span>
-                <span className="block text-lg md:text-xl font-normal mt-4 opacity-85 text-balance">
+                <span className="mt-4 block text-balance font-montserrat text-lg font-normal text-muted-foreground md:text-xl">
                   {t.heroSubtitle}
                 </span>
               </h1>
@@ -247,14 +247,14 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="max-w-2xl mx-auto text-center mb-5"
+              className="mx-auto mb-8 max-w-2xl text-center md:mb-10"
             >
-              <p className="text-base md:text-lg leading-relaxed mb-5 text-balance opacity-80 max-w-2xl mx-auto">
+              <p className="mx-auto mb-5 max-w-2xl text-balance font-montserrat text-base leading-relaxed text-muted-foreground md:text-lg">
                 {t.heroLead}
               </p>
               
               <motion.div 
-                className="flex flex-wrap justify-center gap-6 md:gap-10 text-xs md:text-sm text-muted-foreground"
+                className="flex flex-wrap justify-center gap-3 md:gap-4 text-xs md:text-sm text-muted-foreground"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
@@ -262,7 +262,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 <motion.span
                   whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
                   whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
-                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full px-3 py-1.5 border border-primary/15 bg-background/50 backdrop-blur-sm"
+                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
                   title={pickLang(language, {
                     uz: 'UV barqarorligi — rang uzoq vaqt ochilmaydi',
                     ru: 'Устойчивость к ультрафиолету — цвет держится дольше',
@@ -275,7 +275,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 <motion.span
                   whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
                   whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
-                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full px-3 py-1.5 border border-primary/15 bg-background/50 backdrop-blur-sm"
+                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
                   title={pickLang(language, {
                     uz: 'Nam va yomg‘irga chidamli — tashqi muhit uchun mos',
                     ru: 'Не боится влаги и дождя — подходит для улицы и террасы',
@@ -288,7 +288,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 <motion.span
                   whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
                   whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
-                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full px-3 py-1.5 border border-primary/15 bg-background/50 backdrop-blur-sm"
+                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
                   title={pickLang(language, {
                     uz: 'Ko‘cha, bog‘ va ochiq maydonlar uchun',
                     ru: 'Для улицы, сада и открытых площадок',
@@ -306,12 +306,12 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-10"
+              className="mb-14 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5"
             >
               <Button
                 onClick={onViewCatalog}
                 size="lg"
-                className="agency-cta-primary h-11 min-w-[220px] px-6 text-sm rounded-lg text-primary-foreground hover:bg-primary/95 micro-interaction shadow-md"
+                className="agency-cta-primary micro-interaction h-11 min-w-[220px] rounded-lg px-6 text-sm font-semibold text-primary-foreground shadow-md"
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
                 {t.heroCtaBuy}
@@ -321,7 +321,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 onClick={handleConsultationClick}
                 variant="outline"
                 size="lg"
-                className="h-11 min-w-[220px] px-6 text-sm rounded-lg glass-effect border-primary/30 hover:border-primary/50 hover:bg-primary/10 micro-interaction"
+                className="micro-interaction h-11 min-w-[220px] rounded-lg border-2 border-primary/25 bg-card px-6 text-sm font-medium text-foreground hover:border-primary/45 hover:bg-muted/60"
               >
                 <Phone className="w-4 h-4 mr-2" />
                 {t.getConsultation}
@@ -333,7 +333,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 max-w-4xl mx-auto"
+              className="mx-auto grid max-w-4xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-5"
             >
               {[
                 { 
@@ -377,12 +377,12 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                     transition: { duration: 0.15, ease: "easeOut" }
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="text-center glass-card p-5 md:p-6 rounded-xl relative overflow-hidden group cursor-pointer border border-primary/10"
+                  className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border bg-card p-5 text-center shadow-sm transition-shadow hover:shadow-md md:p-6"
                   style={{ transition: "all 0.15s ease-out" }}
                 >
                   {/* Эффект свечения при наведении */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/10 group-hover:to-primary/5"
+                    className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/[0.06] group-hover:to-primary/[0.02]"
                     initial={false}
                     transition={{ duration: 0.3 }}
                   />
@@ -413,7 +413,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
             ru: 'Прокрутить к следующему разделу',
             en: 'Scroll to next section',
           })}
-          className="absolute left-1/2 transform -translate-x-1/2 p-3 rounded-full glass-effect border border-primary/20 hover:border-primary/40 micro-interaction group cursor-pointer"
+          className="group absolute left-1/2 -translate-x-1/2 transform cursor-pointer rounded-full border border-border bg-card p-3 shadow-md micro-interaction hover:border-primary/35"
           style={{ bottom: '17px' }}
           whileHover={{ y: -4, scale: 1.1 }}
           whileTap={{ y: 0, scale: 0.95 }}
@@ -457,7 +457,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
 
       {/* Форма консультации */}
       <Dialog open={showConsultationForm} onOpenChange={setShowConsultationForm}>
-        <DialogContent className="sm:max-w-md glass-effect border-primary/20">
+        <DialogContent className="sm:max-w-md border-border bg-card shadow-xl">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -498,7 +498,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                     required
                     autoComplete="name"
                     disabled={isSubmitting}
-                    className="glass-card border-primary/20 h-12 rounded-xl"
+                    className="h-12 rounded-xl border border-border bg-background"
                   />
                 </div>
                 
@@ -530,7 +530,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                       en: 'Enter a valid phone number',
                     })}
                     disabled={isSubmitting}
-                    className="glass-card border-primary/20 h-12 rounded-xl"
+                    className="h-12 rounded-xl border border-border bg-background"
                   />
                 </div>
                 
@@ -553,7 +553,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                     autoComplete="off"
                     disabled={isSubmitting}
-                    className="glass-card border-primary/20 rounded-xl"
+                    className="rounded-xl border border-border bg-background"
                     rows={3}
                   />
                 </div>

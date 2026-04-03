@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from './ui/button';
 import { Sparkles, ArrowRight, LayoutGrid } from '../utils/lucide-stub';
-import { useLanguage } from '../utils/language-context';
+import { pickLang, useLanguage } from '../utils/language-context';
 import { trackEvent } from '../utils/analytics';
 
 type Segment = 'A' | 'B' | 'C' | null;
@@ -24,7 +24,7 @@ export function RattanQuizSection({
   onScrollToContacts,
   onOpenCart,
 }: RattanQuizSectionProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const reduceMotion = useReducedMotion();
 
   const [phase, setPhase] = useState<'intro' | 'quiz' | 'result'>('intro');
@@ -106,39 +106,43 @@ export function RattanQuizSection({
   const progress = phase === 'quiz' ? (step / totalSteps) * 100 : 0;
 
   const choiceBtn =
-    'w-full text-left rounded-xl border border-primary/15 bg-background/70 px-4 py-3 text-sm transition-all hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
+    'w-full rounded-xl border border-border bg-background px-4 py-3 text-left text-sm transition-all hover:border-primary/35 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25';
 
   return (
     <section
       id="rattan-quiz"
-      className="relative py-16 md:py-24 border-b border-primary/10 overflow-hidden"
+      className="section-y relative scroll-mt-24 overflow-hidden border-b border-border"
       aria-labelledby="rattan-quiz-heading"
     >
       <div className="absolute inset-0 pointer-events-none opacity-30">
         <div
           className="absolute top-1/4 right-0 w-72 h-72 rounded-full blur-3xl"
-          style={{ background: 'radial-gradient(circle, #D4A57433 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(180, 83, 9, 0.12) 0%, transparent 70%)' }}
         />
       </div>
 
-      <div className="container mx-auto px-4 max-w-2xl relative z-10">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs text-primary mb-4">
-            <LayoutGrid className="w-3.5 h-3.5" aria-hidden />
+      <div className="relative z-10 mx-auto max-w-2xl px-4 sm:px-6">
+        <header className="mb-12 text-center md:mb-14">
+          <p className="section-eyebrow">
+            {pickLang(language, { uz: 'Yordamchi', ru: 'Подбор', en: 'Matcher' })}
+          </p>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-primary shadow-sm">
+            <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
             <span>Quiz</span>
           </div>
           <h2
             id="rattan-quiz-heading"
-            className="text-2xl md:text-3xl font-semibold tracking-tight font-grotesk text-balance"
+            className="section-head text-balance"
           >
             {t.quizTitle}
           </h2>
-          <p className="mt-2 text-sm md:text-base text-muted-foreground text-balance">
+          <p className="section-desc mx-auto mt-3 text-balance">
             {t.quizSubtitle}
           </p>
-        </div>
+          <div className="section-divider" aria-hidden />
+        </header>
 
-        <div className="rounded-2xl border border-primary/15 bg-background/80 backdrop-blur-md shadow-sm p-6 md:p-8">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-md md:p-8">
           <AnimatePresence mode="wait">
             {phase === 'intro' && (
               <motion.div

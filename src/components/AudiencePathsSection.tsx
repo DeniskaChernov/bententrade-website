@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, ShoppingBag, LayoutGrid, Building } from '../utils/lucide-stub';
 import { Button } from './ui/button';
-import { useLanguage } from '../utils/language-context';
+import { pickLang, useLanguage } from '../utils/language-context';
 import { trackEvent } from '../utils/analytics';
 
 type PathId = 'A' | 'B' | 'C';
@@ -17,7 +17,7 @@ export function AudiencePathsSection({
   onScrollToHits,
   onScrollToQuote,
 }: AudiencePathsSectionProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const reduceMotion = useReducedMotion();
 
   const runPath = (id: PathId, action: () => void) => {
@@ -66,29 +66,33 @@ export function AudiencePathsSection({
   return (
     <section
       id="audience-paths"
-      className="relative py-16 md:py-20 border-b border-primary/10"
+      className="section-y-compact relative border-b border-border scroll-mt-24"
       aria-labelledby="audience-paths-heading"
     >
-      <div className="container mx-auto px-4 max-w-6xl">
+      <div className="section-inset">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-40px' }}
           transition={{ duration: 0.45 }}
-          className="text-center max-w-2xl mx-auto mb-12"
+          className="mx-auto mb-14 max-w-3xl text-center md:mb-16"
         >
+          <p className="section-eyebrow">
+            {pickLang(language, { uz: 'Tez yo‘l', ru: 'Быстрый старт', en: 'Quick paths' })}
+          </p>
           <h2
             id="audience-paths-heading"
-            className="text-2xl md:text-3xl font-semibold tracking-tight text-balance font-grotesk"
+            className="section-head text-balance"
           >
             {t.audiencePathsTitle}
           </h2>
-          <p className="mt-3 text-sm md:text-base text-muted-foreground text-balance">
+          <p className="section-desc mx-auto text-balance">
             {t.audiencePathsSubtitle}
           </p>
+          <div className="section-divider" aria-hidden />
         </motion.div>
 
-        <div className="grid gap-4 md:gap-6 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3 md:gap-6 lg:gap-8">
           {cards.map((card, index) => (
             <motion.article
               key={card.id}
@@ -105,7 +109,7 @@ export function AudiencePathsSection({
                     }
               }
               whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-              className="card-spotlight-hover group relative flex flex-col rounded-2xl border border-primary/15 bg-background/60 backdrop-blur-sm p-6 shadow-sm hover:border-primary/40"
+              className="card-spotlight-hover group relative flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm hover:border-primary/35"
             >
               <div className="flex items-start justify-between gap-3 mb-4">
                 <span
