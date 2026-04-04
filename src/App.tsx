@@ -18,9 +18,8 @@ import { LanguageProvider, pickLang, type Language } from './utils/language-cont
 import { SEOHead } from './components/SEOHead';
 import { StructuredData } from './components/StructuredData';
 import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { AudiencePathsSection } from './components/AudiencePathsSection';
-import { RattanQuizSection } from './components/RattanQuizSection';
+import { HomePage } from './components/site/HomePage';
+import { SkipToMain } from './components/site/SkipToMain';
 import { WholesalePage, ExportPage } from './components/B2BTradePages';
 import { trackEvent } from './utils/analytics';
 import { defaultQuantity, unitPriceUzs } from './utils/pricing';
@@ -39,16 +38,6 @@ import { API_BASE_URL, API_TOKEN } from './utils/env';
 import { getBlogPostBySlug } from './data/blogPosts';
 
 // Optimized lazy loading with shorter timeout and retry mechanism
-const Gallery = lazy(() => 
-  import('./components/Gallery')
-    .then(module => ({ default: module.Gallery }))
-    .catch(() => ({ default: () => <div className="text-center p-8 text-muted-foreground">Галерея временно недоступна</div> }))
-);
-const Trend2025 = lazy(() => 
-  import('./components/Trend2025')
-    .then(module => ({ default: module.Trend2025 }))
-    .catch(() => ({ default: () => <div className="text-center p-8 text-muted-foreground">Раздел временно недоступен</div> }))
-);
 const CatalogPage = lazy(() => 
   import('./components/CatalogPage')
     .then(module => ({ default: module.CatalogPage }))
@@ -59,17 +48,8 @@ const AdminPanel = lazy(() =>
     .then(module => ({ default: module.default }))
     .catch(() => ({ default: () => <div className="text-center p-8 text-muted-foreground">Админ-панель временно недоступна</div> }))
 );
-const About = lazy(() => import('./components/About').then(module => ({ default: module.About })));
-const MiniCatalog = lazy(() => import('./components/MiniCatalog').then(module => ({ default: module.MiniCatalog })));
-const WhyUs = lazy(() => import('./components/WhyUs').then(module => ({ default: module.WhyUs })));
-const FAQ = lazy(() => import('./components/FAQ').then(module => ({ default: module.FAQ })));
-const Reviews = lazy(() => import('./components/Reviews').then(module => ({ default: module.Reviews })));
-const Contacts = lazy(() => import('./components/Contacts').then(module => ({ default: module.Contacts })));
-const BlogSection = lazy(() => import('./components/BlogSection').then(module => ({ default: module.BlogSection })));
 const BlogPostPage = lazy(() => import('./components/BlogPostPage').then(module => ({ default: module.BlogPostPage })));
 const BlogListPage = lazy(() => import('./components/BlogListPage').then(module => ({ default: module.BlogListPage })));
-const SEOContent = lazy(() => import('./components/SEOContent').then(module => ({ default: module.SEOContent })));
-const HomeSEOClusters = lazy(() => import('./components/HomeSEOClusters').then(module => ({ default: module.HomeSEOClusters })));
 const UserProfilePage = lazy(() =>
   import('./components/UserProfilePage').then((m) => ({ default: m.UserProfilePage })),
 );
@@ -886,30 +866,26 @@ export default function App() {
   // Оптимизированный фон с упрощенными эффектами
   const ModernBackground = () => (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 bg-background" />
       <div
-        className="absolute -top-40 right-[-10%] h-[min(560px,90vw)] w-[min(560px,90vw)] rounded-full opacity-80"
+        className="absolute inset-0 bg-[#f8fafc]"
         style={{
-          background: 'radial-gradient(circle at center, rgba(212, 255, 74, 0.07), transparent 55%)',
+          backgroundImage: `radial-gradient(ellipse 110% 70% at 95% -10%, rgba(13, 148, 136, 0.09), transparent 52%),
+            radial-gradient(ellipse 90% 55% at 5% 105%, rgba(99, 102, 241, 0.06), transparent 48%),
+            linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)`,
         }}
       />
       <div
-        className="absolute top-1/4 -left-32 h-[380px] w-[380px] rounded-full opacity-70"
+        className="absolute inset-0 opacity-[0.35] mix-blend-soft-light"
         style={{
-          background: 'radial-gradient(circle at center, rgba(34, 211, 238, 0.06), transparent 58%)',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")`,
         }}
+        aria-hidden
       />
       <div
-        className="absolute bottom-[-20%] left-1/3 h-[320px] w-[320px] rounded-full opacity-60"
+        className="absolute inset-0 opacity-[0.04]"
         style={{
-          background: 'radial-gradient(circle at center, rgba(167, 139, 250, 0.05), transparent 60%)',
-        }}
-      />
-      <div
-        className="absolute inset-0 opacity-[0.035]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(rgba(15,23,42,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(15,23,42,0.07) 1px, transparent 1px)`,
           backgroundSize: '48px 48px',
         }}
         aria-hidden
@@ -1355,117 +1331,17 @@ export default function App() {
         />
         
         <div className="min-h-screen">
+          <SkipToMain />
           <ModernBackground />
-          
-          <main className="relative z-10">
-            <Hero onViewCatalog={() => handleNavigate('catalog')} />
-            <AudiencePathsSection
-              onOpenFullCatalog={() => handleNavigate('catalog')}
-              onScrollToHits={() => {
-                document.getElementById('catalog')?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start',
-                });
-              }}
-              onScrollToQuote={() => {
-                document.getElementById('contacts')?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start',
-                });
-              }}
-            />
-            <Suspense fallback={<section className="py-10" aria-hidden="true" />}>
-              <About />
-            </Suspense>
-            
-            <div ref={trendTriggerRef} className="h-2 w-full" aria-hidden="true" />
-            {shouldRenderTrend ? (
-              <Suspense fallback={
-                <section className="py-24">
-                  <div className="container mx-auto px-4">
-                    <LoadingSpinner text="Загрузка тренда 2025..." />
-                  </div>
-                </section>
-              }>
-                <ErrorBoundary fallback={<LazyLoadError />}>
-                  <Trend2025 />
-                </ErrorBoundary>
-              </Suspense>
-            ) : (
-              <section className="py-12" aria-hidden="true" />
-            )}
-
-            <Suspense fallback={<section className="py-10" aria-hidden="true" />}>
-              <MiniCatalog 
-                onAddToCart={addToCart} 
-                onViewFullCatalog={() => handleNavigate('catalog')}
-              />
-            </Suspense>
-
-            <RattanQuizSection
-              onOpenCatalog={() => handleNavigate('catalog')}
-              onScrollToHits={() => {
-                document.getElementById('catalog')?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start',
-                });
-              }}
-              onScrollToContacts={() => {
-                document.getElementById('contacts')?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start',
-                });
-              }}
-              onOpenCart={handleCartClick}
-            />
-            
-            {/* SEO-оптимизированные секции грузятся отложенно */}
-            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
-              <SEOContent />
-            </Suspense>
-            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
-              <HomeSEOClusters />
-            </Suspense>
-            
-            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
-              <WhyUs />
-            </Suspense>
-            
-            <Suspense fallback={
-              <section className="py-24">
-                <div className="container mx-auto px-4">
-                  <LoadingSpinner text="Загрузка галереи..." />
-                </div>
-              </section>
-            }>
-              <ErrorBoundary fallback={<LazyLoadError />}>
-                <Gallery />
-              </ErrorBoundary>
-            </Suspense>
-
-            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
-              <BlogSection onOpenPost={handleOpenBlogPost} />
-            </Suspense>
-            <div className="pb-12 text-center md:pb-16">
-              <Button
-                variant="outline"
-                onClick={handleOpenBlogList}
-                className="rounded-lg border-border bg-card px-8 text-base shadow-none hover:border-primary/40"
-              >
-                Все статьи блога
-              </Button>
-            </div>
-
-            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
-              <FAQ />
-            </Suspense>
-            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
-              <Reviews />
-            </Suspense>
-            <Suspense fallback={<section className="py-8" aria-hidden="true" />}>
-              <Contacts />
-            </Suspense>
-          </main>
+          <HomePage
+            trendTriggerRef={trendTriggerRef}
+            shouldRenderTrend={shouldRenderTrend}
+            onNavigateCatalog={() => handleNavigate('catalog')}
+            onAddToCart={addToCart}
+            onOpenBlogPost={handleOpenBlogPost}
+            onOpenBlogList={handleOpenBlogList}
+            onCartClick={handleCartClick}
+          />
 
           <Footer onLegalDocumentClick={handleLegalDocumentClick} onBlogClick={handleOpenBlogList} />
 

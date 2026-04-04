@@ -75,7 +75,7 @@ export function Footer({ onLegalDocumentClick, onBlogClick }: FooterProps) {
   ];
 
   return (
-    <footer className="relative mt-20 border-t border-border bg-[#0d0d10] md:mt-28">
+    <footer className="relative mt-20 border-t border-border bg-gradient-to-b from-muted/50 to-background md:mt-28">
       <div className="relative">
         <div className="container mx-auto px-4 py-16 md:px-6 md:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
@@ -92,7 +92,7 @@ export function Footer({ onLegalDocumentClick, onBlogClick }: FooterProps) {
                 {/* Логотип */}
                 <div className="flex items-center gap-3">
                   <motion.div
-                    className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-border bg-card"
+                    className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-border bg-card shadow-sm"
                     whileHover={{ rotate: 4, scale: 1.03 }}
                     transition={{ duration: 0.2 }}
                   >

@@ -133,8 +133,8 @@ export const Header = memo(function Header({
     <header
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         isScrolled
-          ? 'border-b border-border bg-background/95 shadow-[0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-md'
-          : 'border-b border-transparent bg-background/50 backdrop-blur-sm'
+          ? 'border-b border-border/90 bg-background/92 shadow-sm backdrop-blur-xl'
+          : 'border-b border-transparent bg-background/65 backdrop-blur-md'
       } ${isAdminMode ? 'border-b-red-400/40' : ''}`}
     >
       <div className="container mx-auto px-4 py-3.5 md:px-6 md:py-4">
@@ -172,7 +172,7 @@ export const Header = memo(function Header({
             
             <div className="relative">
               <motion.div
-                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-border bg-card"
+                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-card shadow-sm"
                 whileHover={{ rotate: 4 }}
                 transition={{ duration: 0.2 }}
               >

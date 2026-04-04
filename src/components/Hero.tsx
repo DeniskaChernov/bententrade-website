@@ -4,10 +4,11 @@ import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { ShoppingBag, Phone, ArrowDown, Sparkles, Star, ChevronDown, Sun, Droplets, MapPin } from '../utils/lucide-stub';
+import { ShoppingBag, Phone, ChevronDown, Sun, Droplets, MapPin } from '../utils/lucide-stub';
 import { pickLang, useLanguage } from '../utils/language-context';
 import { sendQuickConsultationRequest } from '../utils/telegram';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import heroShowcase from '@/assets/aaa3f6c434f81fb8787b230c4e80ff40a3ff1805.webp';
 
 interface HeroProps {
   onViewCatalog?: () => void;
@@ -78,7 +79,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
   };
 
   const scrollToNext = () => {
-    const element = document.getElementById('about');
+    const element = document.getElementById('catalog');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -155,250 +156,208 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
 
   return (
     <>
-      <section className="relative flex min-h-[min(100dvh,920px)] items-center justify-center overflow-hidden pb-16 pt-24 md:pb-24 md:pt-28">
-        {/* Анимированный параллакс фон с эффектами */}
-        <motion.div 
-          className="absolute inset-0"
+      <section className="relative flex min-h-[min(100dvh,920px)] items-center overflow-hidden border-b border-border/60 pb-20 pt-24 md:pb-28 md:pt-28">
+        <motion.div
+          className="pointer-events-none absolute inset-0"
           style={{ y: prefersReducedMotion ? '0%' : y }}
         >
-          {/* Большие плавающие градиентные сферы */}
-          <motion.div
-            className="absolute top-20 -left-20 h-96 w-96 rounded-full opacity-40 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(212, 255, 74, 0.12) 0%, transparent 70%)' }}
-            animate={reduceHeavyMotion ? undefined : {
-              x: [0, 100, 0],
-              y: [0, 50, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+          <div
+            className="absolute -right-24 top-10 h-[min(420px,70vw)] w-[min(420px,70vw)] rounded-full opacity-45 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(13, 148, 136, 0.14) 0%, transparent 65%)' }}
           />
-          
-          <motion.div
-            className="absolute bottom-10 right-0 h-80 w-80 rounded-full opacity-35 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 60%)' }}
-            animate={reduceHeavyMotion ? undefined : {
-              x: [0, -80, 0],
-              y: [0, -60, 0],
-              scale: [1, 1.3, 1],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 5
-            }}
-          />
-          
-          <motion.div
-            className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, transparent 50%)' }}
-            animate={reduceHeavyMotion ? undefined : {
-              x: [0, -50, 0],
-              y: [0, 40, 0],
-              scale: [1, 1.4, 1],
-            }}
-            transition={{
-              duration: 30,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 10
-            }}
+          <div
+            className="absolute bottom-0 left-[-15%] h-[min(360px,60vw)] w-[min(360px,60vw)] rounded-full opacity-35 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 60%)' }}
           />
         </motion.div>
 
-        {/* Основной контент */}
         <motion.div
-          className="relative z-10 mx-auto w-full max-w-6xl px-4 text-center sm:px-6 lg:px-8"
+          className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8"
           style={{ opacity: prefersReducedMotion ? 1 : opacity }}
         >
-          <div className="mx-auto max-w-4xl">
-            {/* Премиальный заголовок */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}  
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-center mb-5"
-            >
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-x-14">
+            {/* Текст и действия */}
+            <div className="order-2 text-center lg:order-1 lg:col-span-6 lg:text-left">
               <motion.div
-                className="mb-4 inline-block rounded-md border border-primary/25 bg-card px-4 py-2 text-xs font-medium uppercase tracking-wider text-primary/95"
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.75, delay: 0.05 }}
               >
-                {t.heroBadge}
-              </motion.div>
-              
-              <h1 className="font-grotesk mx-auto max-w-4xl">
-                <span className="block text-balance text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-                  {t.heroTitle}
-                </span>
-                <span className="mt-4 block text-balance font-montserrat text-lg font-normal text-muted-foreground md:text-xl">
-                  {t.heroSubtitle}
-                </span>
-              </h1>
-            </motion.div>
-
-            {/* Премиальное описание */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="mx-auto mb-8 max-w-2xl text-center md:mb-10"
-            >
-              <p className="mx-auto mb-5 max-w-2xl text-balance font-montserrat text-base leading-relaxed text-muted-foreground md:text-lg">
-                {t.heroLead}
-              </p>
-              
-              <motion.div 
-                className="flex flex-wrap justify-center gap-3 md:gap-4 text-xs md:text-sm text-muted-foreground"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
-                <motion.span
-                  whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
-                  whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
-                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
-                  title={pickLang(language, {
-                    uz: 'UV barqarorligi — rang uzoq vaqt ochilmaydi',
-                    ru: 'Устойчивость к ультрафиолету — цвет держится дольше',
-                    en: 'UV-stable pigments for longer-lasting colour',
-                  })}
-                >
-                  <Sun className="w-4 h-4 text-primary shrink-0" aria-hidden />
-                  {t.heroTrustSun}
-                </motion.span>
-                <motion.span
-                  whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
-                  whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
-                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
-                  title={pickLang(language, {
-                    uz: 'Nam va yomg‘irga chidamli — tashqi muhit uchun mos',
-                    ru: 'Не боится влаги и дождя — подходит для улицы и террасы',
-                    en: 'Moisture-resistant — fine for terraces and outdoor use',
-                  })}
-                >
-                  <Droplets className="w-4 h-4 text-primary shrink-0" aria-hidden />
-                  {t.heroTrustWater}
-                </motion.span>
-                <motion.span
-                  whileHover={reduceHeavyMotion ? undefined : { y: -2 }}
-                  whileTap={reduceHeavyMotion ? undefined : { scale: 0.98 }}
-                  className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
-                  title={pickLang(language, {
-                    uz: 'Ko‘cha, bog‘ va ochiq maydonlar uchun',
-                    ru: 'Для улицы, сада и открытых площадок',
-                    en: 'Made for streets, gardens and open spaces',
-                  })}
-                >
-                  <MapPin className="w-4 h-4 text-primary shrink-0" aria-hidden />
-                  {t.heroTrustOutdoor}
-                </motion.span>
-              </motion.div>
-            </motion.div>
-
-            {/* CTA кнопки */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="mb-14 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5"
-            >
-              <Button
-                onClick={onViewCatalog}
-                size="lg"
-                className="agency-cta-primary micro-interaction h-11 min-w-[220px] rounded-lg px-6 text-sm font-semibold text-primary-foreground shadow-md"
-              >
-                <ShoppingBag className="w-4 h-4 mr-2" />
-                {t.heroCtaBuy}
-              </Button>
-              
-              <Button
-                onClick={handleConsultationClick}
-                variant="outline"
-                size="lg"
-                className="micro-interaction h-11 min-w-[220px] rounded-lg border-2 border-primary/25 bg-card px-6 text-sm font-medium text-foreground hover:border-primary/45 hover:bg-muted/60"
-              >
-                <Phone className="w-4 h-4 mr-2" />
-                {t.getConsultation}
-              </Button>
-            </motion.div>
-
-            {/* Статистика с анимацией */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-              className="mx-auto grid max-w-4xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-5"
-            >
-              {[
-                { 
-                  number: '500+', 
-                  label: pickLang(language, {
-                    uz: 'Mamnun mijozlar',
-                    ru: 'Довольных клиентов',
-                    en: 'Happy customers',
-                  }),
-                },
-                { 
-                  number: '3+', 
-                  label: pickLang(language, {
-                    uz: 'Yillik tajriba',
-                    ru: 'Года опыта',
-                    en: 'Years of craft',
-                  }),
-                },
-                { 
-                  number: '100%', 
-                  label: pickLang(language, {
-                    uz: 'Sifat kafolati',
-                    ru: 'Гарантия качества',
-                    en: 'Quality focus',
-                  }),
-                }
-              ].map((stat, index) => (
                 <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    delay: 0.8 + index * 0.15,
-                    type: "spring",
-                    stiffness: 100
-                  }}
-                  whileHover={{ 
-                    scale: 1.05, 
-                    y: -5,
-                    transition: { duration: 0.15, ease: "easeOut" }
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-5 text-center shadow-none transition-shadow hover:shadow-[0_0_0_1px_rgba(212,255,74,0.15)] md:p-6"
-                  style={{ transition: "all 0.15s ease-out" }}
+                  className="mb-6 inline-flex rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-primary"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.15 }}
                 >
-                  {/* Эффект свечения при наведении */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/[0.08] group-hover:to-transparent"
-                    initial={false}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  <motion.div 
-                    className="text-3xl md:text-4xl font-bold text-primary mb-1 relative z-10"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 + index * 0.15, duration: 0.5 }}
-                  >
-                    {stat.number}
-                  </motion.div>
-                  <div className="text-xs opacity-70 relative z-10">{stat.label}</div>
+                  {t.heroBadge}
                 </motion.div>
-              ))}
-            </motion.div>
+
+                <h1 className="font-grotesk text-balance">
+                  <span className="block text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-[3.35rem] lg:leading-[1.02]">
+                    {t.heroTitle}
+                  </span>
+                  <span className="mt-5 block font-montserrat text-lg font-normal leading-snug text-muted-foreground md:text-xl">
+                    {t.heroSubtitle}
+                  </span>
+                </h1>
+
+                <p className="mx-auto mt-6 max-w-xl text-balance font-montserrat text-base leading-relaxed text-muted-foreground md:text-lg lg:mx-0">
+                  {t.heroLead}
+                </p>
+
+                <motion.div
+                  className="mt-6 flex flex-wrap justify-center gap-2.5 md:gap-3 lg:justify-start"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.35 }}
+                >
+                  {[
+                    {
+                      icon: Sun,
+                      text: t.heroTrustSun,
+                      title: pickLang(language, {
+                        uz: 'UV barqarorligi — rang uzoq vaqt ochilmaydi',
+                        ru: 'Устойчивость к ультрафиолету — цвет держится дольше',
+                        en: 'UV-stable pigments for longer-lasting colour',
+                      }),
+                    },
+                    {
+                      icon: Droplets,
+                      text: t.heroTrustWater,
+                      title: pickLang(language, {
+                        uz: 'Nam va yomg‘irga chidamli — tashqi muhit uchun mos',
+                        ru: 'Не боится влаги и дождя — подходит для улицы и террасы',
+                        en: 'Moisture-resistant — fine for terraces and outdoor use',
+                      }),
+                    },
+                    {
+                      icon: MapPin,
+                      text: t.heroTrustOutdoor,
+                      title: pickLang(language, {
+                        uz: 'Ko‘cha, bog‘ va ochiq maydonlar uchun',
+                        ru: 'Для улицы, сада и открытых площадок',
+                        en: 'Made for streets, gardens and open spaces',
+                      }),
+                    },
+                  ].map(({ icon: Icon, text, title: tip }) => (
+                    <motion.span
+                      key={text}
+                      whileHover={reduceHeavyMotion ? undefined : { y: -1 }}
+                      className="trust-pill-interactive flex cursor-default items-center gap-2 rounded-full border border-border/90 bg-card/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur-sm md:text-sm"
+                      title={tip}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                      {text}
+                    </motion.span>
+                  ))}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.25 }}
+                  className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start"
+                >
+                  <Button
+                    onClick={onViewCatalog}
+                    size="lg"
+                    className="agency-cta-primary micro-interaction h-12 min-w-[220px] rounded-xl px-8 text-sm font-semibold shadow-md"
+                  >
+                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    {t.heroCtaBuy}
+                  </Button>
+                  <Button
+                    onClick={handleConsultationClick}
+                    variant="outline"
+                    size="lg"
+                    className="micro-interaction h-12 min-w-[220px] rounded-xl border-border bg-card px-8 text-sm font-medium text-foreground shadow-sm hover:border-primary/35 hover:bg-muted/50"
+                  >
+                    <Phone className="mr-2 h-4 w-4" />
+                    {t.getConsultation}
+                  </Button>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="mt-12 border-t border-border/80 pt-8"
+                >
+                  <div className="grid grid-cols-3 gap-4 md:gap-8">
+                    {[
+                      {
+                        number: '500+',
+                        label: pickLang(language, {
+                          uz: 'Mamnun mijozlar',
+                          ru: 'Довольных клиентов',
+                          en: 'Happy customers',
+                        }),
+                      },
+                      {
+                        number: '3+',
+                        label: pickLang(language, {
+                          uz: 'Yillik tajriba',
+                          ru: 'Года опыта',
+                          en: 'Years of craft',
+                        }),
+                      },
+                      {
+                        number: '100%',
+                        label: pickLang(language, {
+                          uz: 'Sifat kafolati',
+                          ru: 'Гарантия качества',
+                          en: 'Quality focus',
+                        }),
+                      },
+                    ].map((stat) => (
+                      <div key={stat.label} className="text-center lg:text-left">
+                        <div className="font-grotesk text-2xl font-semibold text-primary md:text-3xl">{stat.number}</div>
+                        <div className="mt-1 text-[0.7rem] uppercase tracking-wider text-muted-foreground md:text-xs">
+                          {stat.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
+
+            {/* Витрина */}
+            <div className="order-1 lg:order-2 lg:col-span-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative mx-auto max-w-lg lg:mx-0 lg:ml-auto lg:max-w-none"
+              >
+                <div
+                  className="absolute -right-3 -top-3 h-28 w-28 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent opacity-80"
+                  aria-hidden
+                />
+                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-[0_28px_64px_-16px_rgba(15,23,42,0.18)] ring-1 ring-border">
+                  <ImageWithFallback
+                    src={heroShowcase}
+                    alt={pickLang(language, {
+                      uz: 'Bententrade — pletёnaya kolleksiya',
+                      ru: 'Bententrade — плетёная коллекция кашпо',
+                      en: 'Bententrade — woven planter collection',
+                    })}
+                    className="h-full w-full object-cover object-center"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/15 via-transparent to-transparent"
+                    aria-hidden
+                  />
+                </div>
+                <p className="mt-4 text-center text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground lg:text-left">
+                  {pickLang(language, {
+                    uz: '5l kolleksiya — batafsil katalogda',
+                    ru: 'Коллекция 5л — в каталоге',
+                    en: '5L collection — see catalog',
+                  })}
+                </p>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
 
@@ -413,7 +372,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
             ru: 'Прокрутить к следующему разделу',
             en: 'Scroll to next section',
           })}
-          className="group absolute left-1/2 -translate-x-1/2 transform cursor-pointer rounded-full border border-border bg-card p-3 shadow-md micro-interaction hover:border-primary/35"
+          className="group absolute left-1/2 -translate-x-1/2 transform cursor-pointer rounded-full border border-border bg-card p-3 shadow-md micro-interaction hover:border-primary/40"
           style={{ bottom: '17px' }}
           whileHover={{ y: -4, scale: 1.1 }}
           whileTap={{ y: 0, scale: 0.95 }}
@@ -572,7 +531,7 @@ export function Hero({ onViewCatalog }: HeroProps = {}) {
                 <Button
                   type="submit"
                   disabled={isSubmitting || !formData.name || !formData.phone}
-                  className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 micro-interaction neon-glow"
+                  className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 micro-interaction shadow-md"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center gap-2">
